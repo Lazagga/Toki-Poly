@@ -57,6 +57,7 @@ namespace GaeBullBing.Presentation.Game
         private int inspectedTileIndex = -1;
         private bool tileInfoReturnsToPlayerFocus;
         private const int MaxTowerElementDamageBonus = 30;
+        private const int BossResultWave = 8;
         private static bool startImmediatelyAfterReload;
         private static bool fadeTitleAfterReload;
         
@@ -91,6 +92,7 @@ private bool finishRoutineStarted;
             var remainingLife = State.BossEscaped
                 ? 0
                 : Mathf.Max(0, State.EscapeLimit - State.EscapedMonsterCount);
+            var reachedWave = State.BossSpawned ? BossResultWave : State.Difficulty.Level;
             var damageColor = highestDamageElement switch
             {
                 TowerElement.Fire => "#FF4B4B",
@@ -101,7 +103,7 @@ private bool finishRoutineStarted;
             };
 
             left =
-                $"도달 웨이브: {State.Difficulty.Level}웨이브\n" +
+                $"도달 웨이브: {reachedWave}웨이브\n" +
                 $"총 턴 수: {State.Round}턴\n" +
                 $"총 포획: {TotalKills}\n" +
                 $"남은 라이프: {remainingLife}";
