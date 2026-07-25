@@ -1983,6 +1983,14 @@ MonoBehaviour:
   frozenTile: {fileID: 11400000, guid: 7fe818c30db72af41b212792301dc72b, type: 2}
   igniteTile: {fileID: 11400000, guid: f48ee86b2f70e7e4ab017243e739b800, type: 2}
   featherTile: {fileID: 11400000, guid: 58f0856f099443b4da2c1632f40a9508, type: 2}
+  fireBottomRightSprite: {fileID: 21300000, guid: 107186bc4358bfe418cde392a5e2c999, type: 3}
+  fireTopLeftSprite: {fileID: 21300000, guid: 5d539eea25a53744f990d9a279c2790f, type: 3}
+  iceBottomRightSprite: {fileID: 21300000, guid: e634d8365c2827d4db8ecf8de4da2c66, type: 3}
+  iceTopLeftSprite: {fileID: 21300000, guid: 80634dd1f24fa614f94ba99af98edace, type: 3}
+  physicsBottomRightSprite: {fileID: 21300000, guid: a9dbe08e14486fd4990d292ff5f75f62, type: 3}
+  physicsTopLeftSprite: {fileID: 21300000, guid: e43a2ef37bc18b044b098143b81f6df3, type: 3}
+  electricBottomRightSprite: {fileID: 21300000, guid: b258d60bdd9f40240b0b8ea9fc653c63, type: 3}
+  electricTopLeftSprite: {fileID: 21300000, guid: 639b13f845932714f96ff97e6ac420e6, type: 3}
   buildOnAwake: 1
   playerPressDepth: 0.1
   playerPressDuration: 0.07
@@ -10808,9 +10816,9 @@ RectTransform:
   - {fileID: 126731460}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 83, y: -75}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1865992683
@@ -12400,9 +12408,9 @@ RectTransform:
   - {fileID: 52571044}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 267, y: -75}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2105496171

@@ -397,6 +397,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 new TowerService(),
                 new TowerCombatService());
             Session.StartNewGame(boardDefinition: boardDefinition);
+            boardView.RefreshBuildElementOverlays(State.Board, towerDefinitions);
             monsterDatabase = new MonsterDatabase(monsterDefinitions);
             var bossAppearanceLevel = FindBossDefinition()?.AppearanceWave ?? DifficultyService.FinalBossLevel;
             difficultyService = new DifficultyService(

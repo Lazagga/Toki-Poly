@@ -121,7 +121,7 @@ namespace GaeBullBing.Presentation.Board
         {
             if (hoveredIndex == index) return;
             if (hoveredIndex >= 0)
-                boardView.Tilemap.SetColor(boardView.GetCellPosition(hoveredIndex), hoveredOriginalColor);
+                boardView.SetTileColor(hoveredIndex, hoveredOriginalColor);
             hoveredIndex = index;
             if (hoveredIndex < 0)
             {
@@ -129,10 +129,8 @@ namespace GaeBullBing.Presentation.Board
                     selectionHoverExited?.Invoke();
                 return;
             }
-            var cell = boardView.GetCellPosition(hoveredIndex);
-            boardView.Tilemap.SetTileFlags(cell, TileFlags.None);
-            hoveredOriginalColor = boardView.Tilemap.GetColor(cell);
-            boardView.Tilemap.SetColor(cell, hoverColor);
+            hoveredOriginalColor = boardView.GetTileColor(hoveredIndex);
+            boardView.SetTileColor(hoveredIndex, hoverColor);
             if (selected != null)
                 selectionHovered?.Invoke(hoveredIndex);
         }

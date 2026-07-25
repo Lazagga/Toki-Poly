@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 5174bd5291ee572408e8fdd353b76a3e
+guid: 639b13f845932714f96ff97e6ac420e6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3009030071399605479
-    second: Tile_init_0
+      213: -4797876641865686728
+    second: Electric_topleft_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Tile_init_0
+      name: Electric_topleft_0
       rect:
         serializedVersion: 2
-        x: 41
-        y: 15
-        width: 601
-        height: 419
+        x: 45
+        y: 237
+        width: 408
+        height: 193
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7e4ed3c48e832c920800000000000000
-      internalID: 3009030071399605479
+      spriteID: 831a37d4d948a6db0800000000000000
+      internalID: -4797876641865686728
       vertices: []
       indices: 
       edges: []
@@ -126,7 +126,7 @@ TextureImporter:
     physicsShape: []
     bones: []
     spriteID: 5e97eb03825dee720800000000000000
-    internalID: 1537655665
+    internalID: 0
     vertices: []
     indices: 
     edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Tile_init_0: 3009030071399605479
+      Electric_topleft_0: -4797876641865686728
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using GaeBullBing.Core.Board;
+using GaeBullBing.Core.Data;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -13,6 +14,15 @@ namespace GaeBullBing.Presentation.Board
         [SerializeField] private TileBase frozenTile;
         [SerializeField] private TileBase igniteTile;
         [SerializeField] private TileBase featherTile;
+        [Header("Build Element Overlays")]
+        [SerializeField] private Sprite fireBottomRightSprite;
+        [SerializeField] private Sprite fireTopLeftSprite;
+        [SerializeField] private Sprite iceBottomRightSprite;
+        [SerializeField] private Sprite iceTopLeftSprite;
+        [SerializeField] private Sprite physicsBottomRightSprite;
+        [SerializeField] private Sprite physicsTopLeftSprite;
+        [SerializeField] private Sprite electricBottomRightSprite;
+        [SerializeField] private Sprite electricTopLeftSprite;
         [SerializeField] private bool buildOnAwake = true;
         [SerializeField, Min(0f)] private float playerPressDepth = 0.1f;
         [SerializeField, Min(0.01f)] private float playerPressDuration = 0.07f;
@@ -21,6 +31,8 @@ namespace GaeBullBing.Presentation.Board
         private readonly Dictionary<int, Coroutine> pressRoutines = new();
         private readonly float[] pressAmounts = new float[BoardState.DefaultTileCount];
         private readonly float[] transitionOffsets = new float[BoardState.DefaultTileCount];
+        private readonly Dictionary<int, SpriteRenderer> individualTileRenderers = new();
+        private readonly Dictionary<int, SpriteRenderer> buildElementOverlayRenderers = new();
         private BoardState currentBoardState;
 
         public Tilemap Tilemap => tilemap != null ? tilemap : tilemap = GetComponent<Tilemap>();
@@ -34,6 +46,14 @@ namespace GaeBullBing.Presentation.Board
         }
 
         private void Reset() => ConfigureSorting();
+
+        private void LateUpdate()
+        {
+            foreach (var pair in individualTileRenderers)
+                PositionIndividualTile(pair.Key, pair.Value);
+            foreach (var pair in buildElementOverlayRenderers)
+                PositionBuildElementOverlay(pair.Key, pair.Value);
+        }
 
         private void ConfigureSorting()
         {
@@ -60,6 +80,9 @@ namespace GaeBullBing.Presentation.Board
                 Tilemap.SetTile(GetCellPosition(index), normalTile);
                 ApplyPressTransform(index);
             }
+
+            if (Application.isPlaying)
+                RebuildIndividualTileRenderers();
         }
 
 public void RefreshTileEffects(BoardState board)
@@ -70,6 +93,64 @@ public void RefreshTileEffects(BoardState board)
             for (var index = 0; index < count; index++)
                 RefreshTileEffect(board, index);
             RefreshRendererSorting();
+        }
+
+        public void RefreshBuildElementOverlays(
+            BoardState board,
+            IReadOnlyList<TowerDefinition> towerDefinitions)
+        {
+            foreach (var renderer in buildElementOverlayRenderers.Values)
+                if (renderer != null)
+                    Destroy(renderer.gameObject);
+            buildElementOverlayRenderers.Clear();
+
+            if (board == null || towerDefinitions == null)
+                return;
+
+            var container = transform.Find("Build Element Overlays");
+            if (container == null)
+            {
+                var containerObject = new GameObject("Build Element Overlays");
+                container = containerObject.transform;
+                container.SetParent(transform, false);
+            }
+
+            var tileCount = Mathf.Min(board.TileCount, BoardLayout.Cells.Count);
+            for (var tileIndex = 0; tileIndex < tileCount; tileIndex++)
+            {
+                var tile = board.Tiles[tileIndex];
+                if (!tile.CanBuildTower || IsCorner(tileIndex))
+                    continue;
+
+                TowerDefinition towerDefinition = null;
+                foreach (var candidate in towerDefinitions)
+                    if (candidate != null && candidate.Id == tile.BuildTowerDefinitionId)
+                    {
+                        towerDefinition = candidate;
+                        break;
+                    }
+                if (towerDefinition == null)
+                    continue;
+
+                var sprite = GetBuildElementOverlaySprite(
+                    towerDefinition.Element, tileIndex, out var flipX);
+                if (sprite == null)
+                    continue;
+
+                var overlayObject = new GameObject(
+                    $"Tile {tileIndex} {towerDefinition.Element} Build Overlay");
+                overlayObject.transform.SetParent(container, false);
+                var renderer = overlayObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = sprite;
+                renderer.flipX = flipX;
+                renderer.color = Color.white;
+                var tilemapRenderer = GetComponent<TilemapRenderer>();
+                if (tilemapRenderer != null)
+                    renderer.sortingLayerID = tilemapRenderer.sortingLayerID;
+                renderer.spriteSortPoint = SpriteSortPoint.Pivot;
+                buildElementOverlayRenderers.Add(tileIndex, renderer);
+                PositionBuildElementOverlay(tileIndex, renderer);
+            }
         }
 
 public void RefreshTileEffect(BoardState board, int tileIndex)
@@ -88,6 +169,7 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             Tilemap.SetTile(GetCellPosition(tileIndex), tile);
             Tilemap.SetColor(GetCellPosition(tileIndex), Color.white);
             ApplyPressTransform(tileIndex);
+            RefreshIndividualTileRenderer(tileIndex);
         }
 
 
@@ -113,6 +195,7 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             Tilemap.SetTile(cell, active && featherTile != null ? featherTile : normalTile);
             Tilemap.SetColor(cell, Color.white);
             ApplyPressTransform(tileIndex);
+            RefreshIndividualTileRenderer(tileIndex);
             RefreshRendererSorting();
         }
 
@@ -122,6 +205,13 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             ConfigureSorting();
             var tilemapRenderer = GetComponent<TilemapRenderer>();
             if (tilemapRenderer == null) return;
+            if (Application.isPlaying && individualTileRenderers.Count > 0)
+            {
+                tilemapRenderer.enabled = false;
+                foreach (var pair in individualTileRenderers)
+                    RefreshIndividualTileRenderer(pair.Key);
+                return;
+            }
             tilemapRenderer.enabled = false;
             tilemapRenderer.enabled = true;
         }
@@ -256,5 +346,111 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
                 Quaternion.identity,
                 Vector3.one));
         }
+
+        private Sprite GetBuildElementOverlaySprite(
+            GaeBullBing.Core.TowerElement element,
+            int tileIndex,
+            out bool flipX)
+        {
+            var boardSideDirection = -GetInwardDirectionWorld(tileIndex);
+            var pointsRight = boardSideDirection.x > 0f;
+            var pointsUp = boardSideDirection.y > 0f;
+            flipX = pointsUp ? pointsRight : !pointsRight;
+
+            return element switch
+            {
+                GaeBullBing.Core.TowerElement.Fire =>
+                    pointsUp ? fireTopLeftSprite : fireBottomRightSprite,
+                GaeBullBing.Core.TowerElement.Ice =>
+                    pointsUp ? iceTopLeftSprite : iceBottomRightSprite,
+                GaeBullBing.Core.TowerElement.Physics =>
+                    pointsUp ? physicsTopLeftSprite : physicsBottomRightSprite,
+                GaeBullBing.Core.TowerElement.Electric =>
+                    pointsUp ? electricTopLeftSprite : electricBottomRightSprite,
+                _ => null
+            };
+        }
+
+        private void PositionBuildElementOverlay(int tileIndex, SpriteRenderer renderer)
+        {
+            if (renderer == null)
+                return;
+            var tilePosition = GetWorldPosition(tileIndex);
+            renderer.transform.position = tilePosition + GetTileVisualWorldOffset(tileIndex);
+            renderer.sortingOrder = BoardDepthSorting.GetOrder(tilePosition, -99);
+        }
+
+        public Color GetTileColor(int tileIndex)
+        {
+            return individualTileRenderers.TryGetValue(tileIndex, out var renderer) && renderer != null
+                ? renderer.color
+                : Tilemap.GetColor(GetCellPosition(tileIndex));
+        }
+
+        public void SetTileColor(int tileIndex, Color color)
+        {
+            if (tileIndex < 0 || tileIndex >= BoardLayout.Cells.Count)
+                return;
+            var cell = GetCellPosition(tileIndex);
+            Tilemap.SetTileFlags(cell, TileFlags.None);
+            Tilemap.SetColor(cell, color);
+            if (individualTileRenderers.TryGetValue(tileIndex, out var renderer) && renderer != null)
+                renderer.color = color;
+        }
+
+        private void RebuildIndividualTileRenderers()
+        {
+            foreach (var renderer in individualTileRenderers.Values)
+                if (renderer != null)
+                    Destroy(renderer.gameObject);
+            individualTileRenderers.Clear();
+
+            var container = transform.Find("Individual Tile Renderers");
+            if (container == null)
+            {
+                var containerObject = new GameObject("Individual Tile Renderers");
+                container = containerObject.transform;
+                container.SetParent(transform, false);
+            }
+
+            var tilemapRenderer = GetComponent<TilemapRenderer>();
+            for (var tileIndex = 0; tileIndex < BoardLayout.Cells.Count; tileIndex++)
+            {
+                var tileObject = new GameObject($"Tile {tileIndex} Visual");
+                tileObject.transform.SetParent(container, false);
+                var renderer = tileObject.AddComponent<SpriteRenderer>();
+                if (tilemapRenderer != null)
+                    renderer.sortingLayerID = tilemapRenderer.sortingLayerID;
+                renderer.spriteSortPoint = SpriteSortPoint.Pivot;
+                individualTileRenderers.Add(tileIndex, renderer);
+                RefreshIndividualTileRenderer(tileIndex);
+            }
+
+            if (tilemapRenderer != null)
+                tilemapRenderer.enabled = false;
+        }
+
+        private void RefreshIndividualTileRenderer(int tileIndex)
+        {
+            if (!individualTileRenderers.TryGetValue(tileIndex, out var renderer) || renderer == null)
+                return;
+            var cell = GetCellPosition(tileIndex);
+            Tilemap.RefreshTile(cell);
+            renderer.sprite = Tilemap.GetSprite(cell);
+            renderer.color = Tilemap.GetColor(cell);
+            PositionIndividualTile(tileIndex, renderer);
+        }
+
+        private void PositionIndividualTile(int tileIndex, SpriteRenderer renderer)
+        {
+            if (renderer == null)
+                return;
+            var tilePosition = GetWorldPosition(tileIndex);
+            renderer.transform.position = tilePosition + GetTileVisualWorldOffset(tileIndex);
+            renderer.sortingOrder = BoardDepthSorting.GetOrder(tilePosition, -100);
+        }
+
+        private static bool IsCorner(int tileIndex) =>
+            tileIndex == 0 || tileIndex == 9 || tileIndex == 18 || tileIndex == 27;
     }
 }
