@@ -57,6 +57,7 @@ namespace GaeBullBing.Core.Game
             State.Player.CurrentTileIndex = 0;
             State.Player.DicePoints = 0;
             State.Round = 1;
+            State.CompletedLaps = 0;
             State.EscapedMonsterCount = 0;
             State.BossSpawned = false;
             State.BossDefeated = false;
@@ -119,7 +120,11 @@ namespace GaeBullBing.Core.Game
             State.CurrentPhase = TurnPhase.PlayerMove;
             var completedLap = State.Player.CurrentTileIndex + distance >= State.Board.TileCount;
             movementService.Move(State.Player, State.Board, distance);
-            if (completedLap) State.AddPermanentAllTowerDamageRateBonus(.05f);
+            if (completedLap)
+            {
+                State.CompletedLaps++;
+                State.AddPermanentAllTowerDamageRateBonus(.05f);
+            }
             State.CurrentPhase = TurnPhase.TileResolve;
             return distance;
         }

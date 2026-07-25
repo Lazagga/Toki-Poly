@@ -20,6 +20,7 @@ namespace GaeBullBing.Presentation.Board
         private Coroutine layoutRoutine;
         private bool isMoving;
         private Vector3 transitionOffset;
+        private Vector3 shadowGroundPosition;
 
         public Vector3 CameraFollowPosition { get; private set; }
         public int CurrentTileIndex => currentTileIndex;
@@ -74,10 +75,11 @@ namespace GaeBullBing.Presentation.Board
             {
                 transform.position = boardView.GetPlayerStandWorldPosition(currentTileIndex) + positionOffset + transitionOffset;
                 CameraFollowPosition = GetCameraTilePosition(currentTileIndex);
+                shadowGroundPosition = GetShadowGroundPosition(currentTileIndex);
             }
             if (visualRenderer != null)
-                visualRenderer.sortingOrder = BoardDepthSorting.GetOrder(CameraFollowPosition, 20);
-            shadow?.Set(CameraFollowPosition);
+                visualRenderer.sortingOrder = BoardDepthSorting.GetOrder(shadowGroundPosition, 20);
+            shadow?.Set(shadowGroundPosition);
         }
 
         public void SnapTo(int tileIndex)
@@ -87,6 +89,7 @@ namespace GaeBullBing.Presentation.Board
             boardView.ResetPress(tileIndex);
             transform.position = boardView.GetPlayerStandWorldPosition(tileIndex) + positionOffset + transitionOffset;
             CameraFollowPosition = GetCameraTilePosition(tileIndex);
+            shadowGroundPosition = GetShadowGroundPosition(tileIndex);
         }
 
         public void SetLayoutOffset(Vector3 offset)
@@ -102,6 +105,7 @@ namespace GaeBullBing.Presentation.Board
             if (isMoving || boardView == null) return;
             transform.position = boardView.GetPlayerStandWorldPosition(currentTileIndex) + positionOffset + transitionOffset;
             CameraFollowPosition = GetCameraTilePosition(currentTileIndex);
+            shadowGroundPosition = GetShadowGroundPosition(currentTileIndex);
         }
 
         private IEnumerator AnimateLayoutOffset(Vector3 targetOffset)
@@ -117,6 +121,7 @@ namespace GaeBullBing.Presentation.Board
                 {
                     transform.position = boardView.GetPlayerStandWorldPosition(currentTileIndex) + positionOffset + transitionOffset;
                     CameraFollowPosition = GetCameraTilePosition(currentTileIndex);
+                    shadowGroundPosition = GetShadowGroundPosition(currentTileIndex);
                 }
                 yield return null;
             }
@@ -125,6 +130,7 @@ namespace GaeBullBing.Presentation.Board
             {
                 transform.position = boardView.GetPlayerStandWorldPosition(currentTileIndex) + positionOffset + transitionOffset;
                 CameraFollowPosition = GetCameraTilePosition(currentTileIndex);
+                shadowGroundPosition = GetShadowGroundPosition(currentTileIndex);
             }
             layoutRoutine = null;
         }
@@ -157,6 +163,8 @@ namespace GaeBullBing.Presentation.Board
                     var to = boardView.GetPlayerStandWorldPosition(toIndex);
                     var easedProgress = Mathf.SmoothStep(0f, 1f, progress);
                     var position = Vector3.Lerp(from, to, easedProgress) + positionOffset + transitionOffset;
+                    // 점프 높이는 적용하기 전 좌표를 그림자 지면 좌표로 사용한다.
+                    shadowGroundPosition = position;
                     // 캐릭터는 혼잡도에 따른 시각적 슬롯으로 이동하지만,
                     // 카메라는 타일 클릭과 동일한 논리적 타일 중심 경로를 따라간다.
                     CameraFollowPosition = Vector3.Lerp(
@@ -173,16 +181,21 @@ namespace GaeBullBing.Presentation.Board
                     boardView.PlayPress(toIndex);
                 transform.position = boardView.GetPlayerStandWorldPosition(toIndex) + positionOffset + transitionOffset;
                 CameraFollowPosition = GetCameraTilePosition(toIndex);
+                shadowGroundPosition = GetShadowGroundPosition(toIndex);
                 TileEntered?.Invoke(toIndex);
             }
 
             isMoving = false;
             transform.position = boardView.GetPlayerStandWorldPosition(currentTileIndex) + positionOffset + transitionOffset;
             CameraFollowPosition = GetCameraTilePosition(currentTileIndex);
+            shadowGroundPosition = GetShadowGroundPosition(currentTileIndex);
         }
 
         private Vector3 GetCameraTilePosition(int tileIndex) =>
             boardView.GetWorldPosition(tileIndex);
+
+        private Vector3 GetShadowGroundPosition(int tileIndex) =>
+            boardView.GetPlayerStandWorldPosition(tileIndex) + positionOffset + transitionOffset;
 
         private void EnsureBoardView()
         {

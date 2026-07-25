@@ -11,6 +11,7 @@ namespace GaeBullBing.Core.Game
         public const int DefaultEscapeLimit = 5;
 
         public int Round { get; set; }
+        public int CompletedLaps { get; set; }
         public TurnPhase CurrentPhase { get; set; }
         public int EscapedMonsterCount { get; set; }
         public int EscapeLimit { get; set; } = DefaultEscapeLimit;

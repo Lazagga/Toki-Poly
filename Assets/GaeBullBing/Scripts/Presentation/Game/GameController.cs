@@ -68,6 +68,46 @@ private bool finishRoutineStarted;
         public GameState State { get; private set; }
         public GameSession Session { get; private set; }
         public int TotalKills => State?.Difficulty?.KillCount ?? 0;
+
+        public void BuildResultStatistics(out string left, out string right)
+        {
+            left = string.Empty;
+            right = string.Empty;
+            if (State == null) return;
+
+            var towerCount = 0;
+            var highestDamage = 0;
+            var highestDamageElement = TowerElement.None;
+            foreach (var tile in State.Board.Tiles)
+            {
+                if (!tile.HasTower) continue;
+                towerCount++;
+                if (tile.Tower.LastResolvedDamage <= highestDamage) continue;
+                highestDamage = tile.Tower.LastResolvedDamage;
+                var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+                highestDamageElement = definition != null ? definition.Element : TowerElement.None;
+            }
+
+            var remainingLife = Mathf.Max(0, State.EscapeLimit - State.EscapedMonsterCount);
+            var damageColor = highestDamageElement switch
+            {
+                TowerElement.Fire => "#FF4B4B",
+                TowerElement.Ice => "#40BFFF",
+                TowerElement.Physics => "#63D471",
+                TowerElement.Electric => "#B56CFF",
+                _ => "#FFFFFF"
+            };
+
+            left =
+                $"도달 웨이브: {State.Difficulty.Level}웨이브\n" +
+                $"총 턴 수: {State.Round}턴\n" +
+                $"총 포획: {TotalKills}\n" +
+                $"남은 라이프: {remainingLife}";
+            right =
+                $"완주 수: {State.CompletedLaps}바퀴\n" +
+                $"건설한 타워: {towerCount}개\n" +
+                $"최고 피해량: <color={damageColor}>{highestDamage}</color>";
+        }
         public int RemainingKills => difficultyService == null ? 0 : difficultyService.GetRemainingKills(State.Difficulty);
         public bool IsFinalPattern => difficultyService != null && difficultyService.IsFinalPattern(State.Difficulty);
         public bool IsBossLevel => difficultyService != null && difficultyService.IsBossLevel(State.Difficulty);

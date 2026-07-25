@@ -17,6 +17,10 @@ namespace GaeBullBing.Presentation.UI
         [SerializeField] private GameObject victoryRoot;
         [SerializeField] private CanvasGroup victoryCanvasGroup;
         [SerializeField] private Button victoryTitleButton;
+        [SerializeField] private Text defeatStatisticsLeftText;
+        [SerializeField] private Text defeatStatisticsRightText;
+        [SerializeField] private Text victoryStatisticsLeftText;
+        [SerializeField] private Text victoryStatisticsRightText;
         [SerializeField] private CanvasGroup gameplayUi;
         [SerializeField] private GameBoardTransition boardTransition;
         [SerializeField] private GameObject transitionBlocker;
@@ -61,8 +65,21 @@ namespace GaeBullBing.Presentation.UI
                 portraitFadeRoutine = StartCoroutine(FadePortraitsIn());
             }
         }
-        public void ShowDefeat() => ShowResult(defeatRoot, defeatCanvasGroup);
-        public void ShowVictory() => ShowResult(victoryRoot, victoryCanvasGroup);
+        public void ShowDefeat()
+        {
+            controller.BuildResultStatistics(out var left, out var right);
+            if (defeatStatisticsLeftText != null) defeatStatisticsLeftText.text = left;
+            if (defeatStatisticsRightText != null) defeatStatisticsRightText.text = right;
+            ShowResult(defeatRoot, defeatCanvasGroup);
+        }
+
+        public void ShowVictory()
+        {
+            controller.BuildResultStatistics(out var left, out var right);
+            if (victoryStatisticsLeftText != null) victoryStatisticsLeftText.text = left;
+            if (victoryStatisticsRightText != null) victoryStatisticsRightText.text = right;
+            ShowResult(victoryRoot, victoryCanvasGroup);
+        }
 
         public void BeginRestart()
         {
