@@ -125,6 +125,20 @@
       ]
     },
     {
+      "id": "UPG_FIRE_T3_04",
+      "name": "TOW_01_불_T3_04",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격한 대상의 화상 수치를 두 배로 만듭니다.",
+      "stat_modifiers": [
+        { "stat": "damage", "operation": "add", "value": 20 }
+      ],
+      "effect_ids": [
+        { "id": "double_burn", "value": 1 }
+      ]
+    },
+    {
       "id": "UPG_ICE_T2_00",
       "name": "TOW_02_얼음_T2_00",
       "element": "Ice",

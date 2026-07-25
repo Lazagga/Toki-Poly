@@ -54,9 +54,9 @@
       "tier": "Boss",
       "appearance_wave": 8,
       "base_stats": {
-        "max_hp": 1500,
+        "max_hp": 2500,
         "move_speed": 4,
-        "base_defense": 150
+        "base_defense": 200
       },
       "status_immunities": [
         "knockback"

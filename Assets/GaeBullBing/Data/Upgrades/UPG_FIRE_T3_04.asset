@@ -10,15 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
-  m_Name: UPG_FIRE_T3_02
+  m_Name: UPG_FIRE_T3_04
   m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
-  id: UPG_FIRE_T3_02
-  displayName: "TOW_01_\uBD88_T3_02"
-  description: "\uD53C\uD574\uB97C \uBC1B\uC740 \uB4A4, \uBAAC\uC2A4\uD130\uC758
-    \uD654\uC0C1 \uC911\uCCA9\uC774 20 \uC774\uC0C1\uC778 \uACBD\uC6B0 \uD3ED\uBC1C\uD558\uBA70
-    \uD574\uB2F9 \uD0C0\uC77C \uBC0F \uC8FC\uBCC0 1\uD0C0\uC77C\uC5D0 \uD53C\uD574\uB97C
-    \uC785\uD799\uB2C8\uB2E4. (\uD654\uC0C1 \uC2A4\uD0DD\uC740 \uC0AC\uB77C\uC9C0\uC9C0
-    \uC54A\uC74C)"
+  id: UPG_FIRE_T3_04
+  displayName: "TOW_01_\uBD88_T3_04"
+  description: "\uACF5\uACA9\uD55C \uB300\uC0C1\uC758 \uD654\uC0C1 \uC218\uCE58\uB97C
+    \uB450 \uBC30\uB85C \uB9CC\uB4ED\uB2C8\uB2E4."
   element: 1
   tier: 3
   weight: 1
@@ -27,5 +24,5 @@ MonoBehaviour:
     Operation: add
     Value: 20
   effects:
-  - Id: burn_explode
+  - Id: double_burn
     Value: 1

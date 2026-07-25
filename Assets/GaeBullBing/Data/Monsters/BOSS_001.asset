@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "\uAE4C\uB9C8\uADC0"
   tier: 1
   appearanceWave: 8
-  maxHp: 1500
+  maxHp: 2500
   moveDistance: 4
-  baseDefense: 150
+  baseDefense: 200
   statusImmunities:
   - knockback
   killRewardDicePoints: 5

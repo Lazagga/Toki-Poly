@@ -1,0 +1,6 @@
+﻿<Solution>
+  <Project Path="GaeBullBing.Core.csproj" />
+  <Project Path="GaeBullBing.Presentation.csproj" />
+  <Project Path="GaeBullBing.Editor.csproj" />
+  <Project Path="GaeBullBing.EditModeTests.csproj" />
+</Solution>

@@ -2,7 +2,7 @@
   "wavedata": [
     {
       "required_kills": 5,
-      "multiplier": 1.2,
+      "multiplier": 1.35,
       "defense_per_wave": 20.0
     }
   ],
