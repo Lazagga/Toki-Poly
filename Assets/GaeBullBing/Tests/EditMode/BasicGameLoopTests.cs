@@ -506,11 +506,11 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
-        public void TowerCombat_PrioritizesExistingTargetBeforeCloserMonster()
+        public void TowerCombat_IgnoresExistingTargetAndPrioritizesGoalProgress()
         {
             var state = CreateCombatState();
             var tower = state.Board.Tiles[5].Tower;
-            tower.TargetInstanceIds.Add(2);
+            tower.TargetInstanceIds.Add(1);
             state.Monsters.Add(CreateMonster(1, 4, 10, 4));
             state.Monsters.Add(CreateMonster(2, 8, 10, 8));
 

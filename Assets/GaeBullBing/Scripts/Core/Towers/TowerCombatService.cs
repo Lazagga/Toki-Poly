@@ -248,7 +248,7 @@ namespace GaeBullBing.Core.Towers
                     candidates.Add(monster);
             }
 
-            candidates.Sort((left, right) => CompareTargets(tower, tile.Index, left, right));
+            candidates.Sort(CompareTargets);
             tower.TargetInstanceIds.Clear();
 
             var selectedCount = Math.Min(stats.TargetCount, candidates.Count);
@@ -277,7 +277,7 @@ namespace GaeBullBing.Core.Towers
             foreach (var monster in state.Monsters)
                 if (!monster.IsDead && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
                     candidates.Add(monster);
-            candidates.Sort((left, right) => CompareTargets(tower, tile.Index, left, right));
+            candidates.Sort(CompareTargets);
 
             var selectedTiles = new HashSet<int>();
             foreach (var candidate in candidates)
@@ -309,7 +309,7 @@ namespace GaeBullBing.Core.Towers
             foreach (var monster in state.Monsters)
                 if (!monster.IsDead && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
                     candidates.Add(monster);
-            candidates.Sort((left, right) => CompareTargets(tile.Tower, tile.Index, left, right));
+            candidates.Sort(CompareTargets);
 
             var attackedTiles = new HashSet<int>();
             for (var index = 0; index < Math.Min(stats.TargetCount, candidates.Count); index++)
@@ -347,7 +347,7 @@ namespace GaeBullBing.Core.Towers
                     targets.Add(monster);
                     attackedTiles.Add(monster.CurrentTileIndex);
                 }
-            targets.Sort((left, right) => CompareTargets(tile.Tower, tile.Index, left, right));
+            targets.Sort(CompareTargets);
             AddAreaTileMarkers(tile.Tower.InstanceId, attackedTiles, results);
             tile.Tower.TargetInstanceIds.Clear();
             foreach (var monster in targets)
@@ -373,19 +373,9 @@ namespace GaeBullBing.Core.Towers
         private static bool HasEffect(TowerState tower, string effectId) =>
             tower != null && tower.HasEffect(effectId);
 
-        private static int CompareTargets(
-            TowerState tower,
-            int towerTileIndex,
-            MonsterState left,
-            MonsterState right)
+        private static int CompareTargets(MonsterState left, MonsterState right)
         {
-            var leftWasTargeted = tower.TargetInstanceIds.Contains(left.InstanceId);
-            var rightWasTargeted = tower.TargetInstanceIds.Contains(right.InstanceId);
-            var comparison = rightWasTargeted.CompareTo(leftWasTargeted);
-            if (comparison != 0)
-                return comparison;
-
-            comparison = right.IsBoss.CompareTo(left.IsBoss);
+            var comparison = right.IsBoss.CompareTo(left.IsBoss);
             if (comparison != 0)
                 return comparison;
 
