@@ -1270,6 +1270,7 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
 
             Assert.That(state.CurrentPhase, Is.EqualTo(TurnPhase.Defeat));
             Assert.That(state.EscapedMonsterCount, Is.EqualTo(0));
+            Assert.That(state.BossEscaped, Is.True);
             Assert.That(state.Monsters, Is.Empty);
         }
 

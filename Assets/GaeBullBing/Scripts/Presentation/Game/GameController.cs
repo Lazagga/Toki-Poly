@@ -88,7 +88,9 @@ private bool finishRoutineStarted;
                 highestDamageElement = definition != null ? definition.Element : TowerElement.None;
             }
 
-            var remainingLife = Mathf.Max(0, State.EscapeLimit - State.EscapedMonsterCount);
+            var remainingLife = State.BossEscaped
+                ? 0
+                : Mathf.Max(0, State.EscapeLimit - State.EscapedMonsterCount);
             var damageColor = highestDamageElement switch
             {
                 TowerElement.Fire => "#FF4B4B",

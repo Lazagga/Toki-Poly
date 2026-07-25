@@ -20,6 +20,7 @@ namespace GaeBullBing.Core.Game
         public bool IsFinished => IsGameOver || IsVictory;
         public bool BossSpawned { get; set; }
         public bool BossDefeated { get; set; }
+        public bool BossEscaped { get; set; }
         public int BossInstanceId { get; set; }
         public PlayerState Player { get; } = new();
         public BoardState Board { get; } = new();

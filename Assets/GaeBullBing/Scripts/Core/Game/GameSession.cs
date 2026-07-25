@@ -61,6 +61,7 @@ namespace GaeBullBing.Core.Game
             State.EscapedMonsterCount = 0;
             State.BossSpawned = false;
             State.BossDefeated = false;
+            State.BossEscaped = false;
             State.BossInstanceId = 0;
             State.ResetPermanentTowerBonuses();
             State.EscapeLimit = GameState.DefaultEscapeLimit;
@@ -179,7 +180,10 @@ namespace GaeBullBing.Core.Game
                 }
                 results.Add(result.WithFeatherEvents(events));
                 if (result.ReachedBase)
+                {
+                    State.BossEscaped = true;
                     State.CurrentPhase = TurnPhase.Defeat;
+                }
             }
 
             if (State.CurrentPhase != TurnPhase.Defeat &&
