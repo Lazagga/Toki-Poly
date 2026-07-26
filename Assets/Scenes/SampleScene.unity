@@ -3824,7 +3824,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &600632375
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5649,7 +5649,7 @@ MonoBehaviour:
   descendDuration: 0.48
   holdDuration: 0.55
   ascendDuration: 0.38
-  swingAngle: 3.5
+  swingAngle: 2
   swingCycles: 1.5
 --- !u!222 &890345595
 CanvasRenderer:
