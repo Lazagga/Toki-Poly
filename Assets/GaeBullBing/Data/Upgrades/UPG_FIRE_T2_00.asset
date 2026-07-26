@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
   id: UPG_FIRE_T2_00
   displayName: "TOW_01_\uBD88_T2_00"
-  description: "\uD574\uB2F9 \uD0C0\uC77C\uC744 \uD3EC\uD568\uD55C \uC591\uC606 1\uD0C0\uC77C\uC758
+  description: "\uACF5\uACA9 \uB300\uC0C1\uC758 \uD0C0\uC77C\uACFC \uC591\uC606 1\uD0C0\uC77C\uC758
     \uBAA8\uB4E0 \uC801\uC5D0\uAC8C \uD3ED\uBC1C \uD53C\uD574\uB97C \uC785\uD799\uB2C8\uB2E4."
   element: 1
   tier: 2

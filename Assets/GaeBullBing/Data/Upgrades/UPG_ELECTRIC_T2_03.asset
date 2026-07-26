@@ -14,9 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
   id: UPG_ELECTRIC_T2_03
   displayName: "TOW_04_\uC804\uAE30_T2_03"
-  description: "\uACF5\uACA9\uD55C \uD0C0\uC77C\uC758 \uC804\uC774 \uBC94\uC704\uAC00
-    1 \uC99D\uAC00\uD569\uB2C8\uB2E4. (\uC591\uC606\uC73C\uB85C 2\uCE78\uAE4C\uC9C0
-    \uC7A5\uD310 \uD37C\uC9D0)"
+  description: "\uACF5\uACA9\uD55C \uD0C0\uC77C\uC758 \uD6A8\uACFC \uC804\uC774 \uBC94\uC704\uAC00
+    1 \uC99D\uAC00\uD569\uB2C8\uB2E4."
   element: 4
   tier: 2
   weight: 1

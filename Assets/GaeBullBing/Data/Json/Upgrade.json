@@ -6,7 +6,7 @@
       "element": "Fire",
       "tier": 2,
       "weight": 1,
-      "description": "해당 타일을 포함한 양옆 1타일의 모든 적에게 폭발 피해를 입힙니다.",
+      "description": "공격 대상의 타일과 양옆 1타일의 모든 적에게 폭발 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 10 }
       ],
@@ -46,7 +46,7 @@
       "element": "Fire",
       "tier": 2,
       "weight": 1,
-      "description": "피해량이 1.5배 증가하며, 해당 타일 내 모든 적에게 피해를 입힙니다.",
+      "description": "피해량이 1.5배 증가하며, 공격 대상의 타일 내 모든 적에게 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 10 },
         { "stat": "damage", "operation": "Multiply", "value": 1.5 }
@@ -88,7 +88,7 @@
       "element": "Fire",
       "tier": 3,
       "weight": 1,
-      "description": "피해를 입힌 타일에 1턴간 불을 붙입니다. (밟을 때마다 화상 피해가 한번 더 발동하며 화상 1중첩 추가)",
+      "description": "피해를 입힌 타일에 1턴간 불을 붙입니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
@@ -102,7 +102,7 @@
       "element": "Fire",
       "tier": 3,
       "weight": 1,
-      "description": "공격을 받은 몬스터의 화상 중첩이 10 이상인 경우 폭발하며 해당 타일 및 주변 1타일에 피해를 입힙니다. (화상 스택은 사라지지 않음)",
+      "description": "공격 대상의 화상 중첩이 10 이상인 경우, 폭발하며 해당 타일 및 양옆 1타일에 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
@@ -116,7 +116,7 @@
       "element": "Fire",
       "tier": 3,
       "weight": 1,
-      "description": "공격할 때마다 화상 중첩당 공격력의 20% 피해를 입힙니다.",
+      "description": "공격 대상의 화상 중첩당, 공격력의 20% 추가 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
@@ -170,7 +170,7 @@
       "element": "Ice",
       "tier": 2,
       "weight": 1,
-      "description": "피해량이 1.5배 증가하며, 해당 타일 내 모든 적에게 피해를 입힙니다.",
+      "description": "피해량이 1.5배 증가하며, 공격 대상의 타일 내 모든 적에게 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 15 },
         { "stat": "damage", "operation": "Multiply", "value": 1.5 }
@@ -198,7 +198,7 @@
       "element": "Ice",
       "tier": 2,
       "weight": 1,
-      "description": "일반 공격을 사거리 내의 모든 적에 대한 범위공격으로 전환합니다.",
+      "description": "일반 공격을 사거리 내의 모든 적에 대한 범위 공격으로 전환합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 15 }
       ],
@@ -212,7 +212,7 @@
       "element": "Ice",
       "tier": 3,
       "weight": 1,
-      "description": "공격 대상을 1턴간 빙결시킵니다. (빙결된 적은 다음 턴 동안 이동하지 못하고 그 다음 턴 시작 시 해제 후 이동하며, 한 번 빙결된 적은 그 라인 동안 다시 빙결되지 않음)",
+      "description": "공격 대상을 1턴간 빙결시킵니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 25 }
       ],
@@ -226,7 +226,7 @@
       "element": "Ice",
       "tier": 3,
       "weight": 1,
-      "description": "공격한 타일이 빙판 타일인 경우, 얼음을 제거하고 타일 내의 적에게 피해를 입힙니다.",
+      "description": "공격한 타일이 빙판 타일인 경우, 빙판을 제거하고 타일 내의 적에게 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 25 }
       ],
@@ -366,7 +366,7 @@
       "element": "Physics",
       "tier": 3,
       "weight": 1,
-      "description": "피해를 받은 몬스터는 1타일 뒤로 넉백됩니다. (한 번 넉백된 몬스터는 다음 턴부터 넉백되지 않음)",
+      "description": "피해를 받은 몬스터는 1타일 뒤로 넉백됩니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 30 }
       ],
@@ -380,7 +380,7 @@
       "element": "Electric",
       "tier": 2,
       "weight": 1,
-      "description": "피격된 적의 상태이상을 해당 타일 및 양옆 타일로 전이합니다.",
+      "description": "공격 대상의 상태이상을 해당 타일 및 양옆 타일로 전이합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 15 }
       ],
@@ -422,7 +422,7 @@
       "element": "Electric",
       "tier": 2,
       "weight": 1,
-      "description": "공격한 타일의 전이 범위가 1 증가합니다. (양옆으로 2칸까지 장판 퍼짐)",
+      "description": "공격한 타일의 효과 전이 범위가 1 증가합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 15 }
       ],
@@ -449,7 +449,7 @@
       "element": "Electric",
       "tier": 3,
       "weight": 1,
-      "description": "공격한 타일에 설치된 타워의 공격 횟수가 1회 증가합니다. (2턴간 지속, 중첩되지 않음)",
+      "description": "공격한 타일에 설치된 타워의 공격 횟수가 1회 증가합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 25 }
       ],
@@ -477,7 +477,7 @@
       "element": "Electric",
       "tier": 3,
       "weight": 1,
-      "description": "피해를 받은 적에게 감전 상태이상을 부여합니다. (영구 지속, 감전 상태이상 보유 중인 적이 받는 피해량 30% 증가)",
+      "description": "피해를 받은 적에게 감전 상태이상을 부여합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 25 }
       ],

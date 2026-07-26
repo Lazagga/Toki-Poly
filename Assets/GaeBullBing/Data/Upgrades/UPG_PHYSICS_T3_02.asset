@@ -15,9 +15,7 @@ MonoBehaviour:
   id: UPG_PHYSICS_T3_02
   displayName: "TOW_03_\uBB3C\uB9AC_T3_02"
   description: "\uD53C\uD574\uB97C \uBC1B\uC740 \uBAAC\uC2A4\uD130\uB294 1\uD0C0\uC77C
-    \uB4A4\uB85C \uB109\uBC31\uB429\uB2C8\uB2E4. (\uD55C \uBC88 \uB109\uBC31\uB41C
-    \uBAAC\uC2A4\uD130\uB294 \uB2E4\uC74C \uD134\uBD80\uD130 \uB109\uBC31\uB418\uC9C0
-    \uC54A\uC74C)"
+    \uB4A4\uB85C \uB109\uBC31\uB429\uB2C8\uB2E4."
   element: 3
   tier: 3
   weight: 1
