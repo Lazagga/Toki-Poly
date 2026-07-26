@@ -16,17 +16,24 @@ namespace GaeBullBing.Editor
         [MenuItem("GaeBullBing/UI/Build Tile Information Panel")]
         public static void Build()
         {
-            var canvas = Object.FindFirstObjectByType<Canvas>();
-            if (canvas == null)
+            var interactionPanelsRoot =
+                GameObject.Find("Game UI/Gameplay UI Root/Interaction Panels Root")?.transform;
+            var fallbackCanvas = Object.FindFirstObjectByType<Canvas>();
+            var panelParent = interactionPanelsRoot != null
+                ? interactionPanelsRoot
+                : fallbackCanvas != null
+                    ? fallbackCanvas.transform
+                    : null;
+            if (panelParent == null)
             {
-                Debug.LogError("Tile information panel requires a Canvas in the active scene.");
+                Debug.LogError("Tile information panel requires Interaction Panels Root or a Canvas in the active scene.");
                 return;
             }
 
-            var old = canvas.transform.Find("Tile Information Panel");
+            var old = panelParent.Find("Tile Information Panel");
             if (old != null) Undo.DestroyObjectImmediate(old.gameObject);
 
-            var root = CreateUiObject("Tile Information Panel", canvas.transform);
+            var root = CreateUiObject("Tile Information Panel", panelParent);
             Undo.RegisterCreatedObjectUndo(root, "Build Tile Information Panel");
             var rect = root.GetComponent<RectTransform>();
             rect.anchorMin = new Vector2(1f, .5f);
@@ -50,36 +57,62 @@ namespace GaeBullBing.Editor
             dividerImage.raycastTarget = false;
             SetRect(divider.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(18f, -72f), new Vector2(-36f, 2f), new Vector2(0f, 1f));
 
-            var tower = CreateText("Tower Information", root.transform, 27, FontStyle.Normal, TextAnchor.UpperLeft);
-            tower.resizeTextForBestFit = true;
-            tower.resizeTextMinSize = 18;
-            tower.resizeTextMaxSize = 27;
-            SetRect(tower.rectTransform, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(18f, -88f), new Vector2(-36f, 330f), new Vector2(0f, 1f));
+            var scrollView = CreateUiObject("Information Scroll View", root.transform);
+            var scrollRectTransform = scrollView.GetComponent<RectTransform>();
+            scrollRectTransform.anchorMin = Vector2.zero;
+            scrollRectTransform.anchorMax = Vector2.one;
+            scrollRectTransform.pivot = new Vector2(.5f, .5f);
+            scrollRectTransform.offsetMin = new Vector2(14f, 40f);
+            scrollRectTransform.offsetMax = new Vector2(-14f, -82f);
+            var scrollImage = scrollView.AddComponent<Image>();
+            scrollImage.color = Color.clear;
+            scrollImage.raycastTarget = true;
+            var scrollMask = scrollView.AddComponent<RectMask2D>();
+            scrollMask.padding = Vector4.zero;
+            scrollView.AddComponent<BoardPointerPassthrough>();
+            var informationScroll = scrollView.AddComponent<ScrollRect>();
+            informationScroll.viewport = scrollRectTransform;
+            informationScroll.horizontal = false;
+            informationScroll.vertical = true;
+            informationScroll.movementType = ScrollRect.MovementType.Clamped;
+            informationScroll.inertia = true;
+            informationScroll.scrollSensitivity = 28f;
 
-            var monsterBox = CreateUiObject("Monster Background", root.transform);
-            var monsterImage = monsterBox.AddComponent<Image>();
-            monsterImage.color = new Color(0f, 0f, 0f, .22f);
-            monsterImage.raycastTarget = true;
-            SetRect(monsterBox.GetComponent<RectTransform>(), new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(14f, 40f), new Vector2(-28f, 178f), new Vector2(0f, 0f));
-            var monsterMask = monsterBox.AddComponent<RectMask2D>();
-            monsterMask.padding = Vector4.zero;
-            monsterBox.AddComponent<BoardPointerPassthrough>();
-            var monsterScroll = monsterBox.AddComponent<ScrollRect>();
-            monsterScroll.viewport = monsterBox.GetComponent<RectTransform>();
-            monsterScroll.horizontal = false;
-            monsterScroll.vertical = true;
-            monsterScroll.movementType = ScrollRect.MovementType.Clamped;
-            monsterScroll.inertia = true;
-            monsterScroll.scrollSensitivity = 28f;
+            var content = CreateUiObject("Content", scrollView.transform);
+            var contentRect = content.GetComponent<RectTransform>();
+            SetRect(contentRect, new Vector2(0f, 1f), Vector2.one, Vector2.zero, Vector2.zero, new Vector2(.5f, 1f));
+            var contentLayout = content.AddComponent<VerticalLayoutGroup>();
+            contentLayout.padding = new RectOffset(4, 4, 12, 12);
+            contentLayout.spacing = 18f;
+            contentLayout.childAlignment = TextAnchor.UpperLeft;
+            contentLayout.childControlWidth = true;
+            contentLayout.childControlHeight = true;
+            contentLayout.childForceExpandWidth = true;
+            contentLayout.childForceExpandHeight = false;
+            var contentFitter = content.AddComponent<ContentSizeFitter>();
+            contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            informationScroll.content = contentRect;
+
+            var tower = CreateText("Tower Information", content.transform, 27, FontStyle.Normal, TextAnchor.UpperLeft);
+            tower.resizeTextForBestFit = false;
+            tower.verticalOverflow = VerticalWrapMode.Overflow;
+
+            var monsterBox = CreateUiObject("Monster Background", content.transform);
+            var monsterLayout = monsterBox.AddComponent<VerticalLayoutGroup>();
+            monsterLayout.padding = new RectOffset(12, 12, 12, 12);
+            monsterLayout.childAlignment = TextAnchor.UpperLeft;
+            monsterLayout.childControlWidth = true;
+            monsterLayout.childControlHeight = true;
+            monsterLayout.childForceExpandWidth = true;
+            monsterLayout.childForceExpandHeight = false;
+            var monsterBoxFitter = monsterBox.AddComponent<ContentSizeFitter>();
+            monsterBoxFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+            monsterBoxFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             var monsters = CreateText("Monster Information", monsterBox.transform, 27, FontStyle.Normal, TextAnchor.UpperLeft);
             monsters.resizeTextForBestFit = false;
             monsters.verticalOverflow = VerticalWrapMode.Overflow;
-            SetRect(monsters.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -12f), new Vector2(-24f, 0f), new Vector2(.5f, 1f));
-            var monsterFitter = monsters.gameObject.AddComponent<ContentSizeFitter>();
-            monsterFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
-            monsterFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            monsterScroll.content = monsters.rectTransform;
 
             var hint = CreateText("Hint", root.transform, 21, FontStyle.Italic, TextAnchor.MiddleRight);
             hint.text = "다른 타일 선택 · 바깥 클릭으로 닫기";
@@ -91,6 +124,7 @@ namespace GaeBullBing.Editor
             serializedView.FindProperty("titleText").objectReferenceValue = title;
             serializedView.FindProperty("towerText").objectReferenceValue = tower;
             serializedView.FindProperty("monsterText").objectReferenceValue = monsters;
+            serializedView.FindProperty("informationScroll").objectReferenceValue = informationScroll;
             serializedView.ApplyModifiedPropertiesWithoutUndo();
 
             var controller = Object.FindFirstObjectByType<GameController>();
