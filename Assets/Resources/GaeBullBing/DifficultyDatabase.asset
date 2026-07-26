@@ -22,7 +22,7 @@ MonoBehaviour:
     - MON_002
     - MON_002
   - RequiredKills: 5
-    HealthMultiplier: 1.35
+    HealthMultiplier: 1.45
     MonsterIds:
     - MON_001
     - MON_001
@@ -30,7 +30,7 @@ MonoBehaviour:
     - MON_003
     - MON_003
   - RequiredKills: 10
-    HealthMultiplier: 1.8225001
+    HealthMultiplier: 2.1025002
     MonsterIds:
     - MON_001
     - MON_001
@@ -38,7 +38,7 @@ MonoBehaviour:
     - MON_003
     - MON_003
   - RequiredKills: 15
-    HealthMultiplier: 2.4603753
+    HealthMultiplier: 3.0486255
     MonsterIds:
     - MON_002
     - MON_002
@@ -46,7 +46,7 @@ MonoBehaviour:
     - MON_002
     - MON_003
   - RequiredKills: 20
-    HealthMultiplier: 3.3215067
+    HealthMultiplier: 4.420507
     MonsterIds:
     - MON_001
     - MON_001
@@ -54,5 +54,5 @@ MonoBehaviour:
     - MON_003
     - MON_003
   killsPerLevel: 5
-  healthMultiplierPerLevel: 1.35
+  healthMultiplierPerLevel: 1.45
   defensePerLevel: 20

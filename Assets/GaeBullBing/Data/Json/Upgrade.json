@@ -102,7 +102,7 @@
       "element": "Fire",
       "tier": 3,
       "weight": 1,
-      "description": "피해를 받은 뒤, 몬스터의 화상 중첩이 10 이상인 경우 폭발하며 해당 타일 및 주변 1타일에 피해를 입힙니다. (화상 스택은 사라지지 않음)",
+      "description": "공격을 받은 몬스터의 화상 중첩이 10 이상인 경우 폭발하며 해당 타일 및 주변 1타일에 피해를 입힙니다. (화상 스택은 사라지지 않음)",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
@@ -246,6 +246,20 @@
       ],
       "effect_ids": [
         { "id": "freeze_damage_multiply", "value": 5 }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_03",
+      "name": "TOW_02_얼음_T3_03",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격한 타일에 1턴간 빙판 타일을 생성합니다.",
+      "stat_modifiers": [
+        { "stat": "damage", "operation": "add", "value": 25 }
+      ],
+      "effect_ids": [
+        { "id": "tile_freeze", "value": 5 }
       ]
     },
     {
