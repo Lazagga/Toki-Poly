@@ -35,6 +35,7 @@ namespace GaeBullBing.Presentation.Game
             yield return AnimateActors(hiddenDistance, 0f);
             boardView.PlayPress(playerView.CurrentTileIndex);
             yield return new WaitForSeconds(.14f);
+            yield return boardView.PlayBonusTileOutlineFadeIn();
         }
 
         public IEnumerator PlayOutro()

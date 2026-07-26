@@ -322,7 +322,13 @@ namespace GaeBullBing.Core.Game
         public TowerState UpgradeTower(int tileIndex, TowerUpgradeDefinition upgrade)
         {
             State.CurrentPhase = TurnPhase.TowerResolve;
-            var tower = towerService.Upgrade(State.Board.Tiles[tileIndex], upgrade.Id, upgrade.Tier);
+            var tile = State.Board.Tiles[tileIndex];
+            var tower = tile.IsBonusTile &&
+                tile.Tower != null &&
+                tile.Tower.UpgradeTier == 3 &&
+                upgrade.Tier == 3
+                    ? towerService.ApplyBonusTier3Upgrade(tile, upgrade.Id, upgrade.Tier)
+                    : towerService.Upgrade(tile, upgrade.Id, upgrade.Tier);
             foreach (var effect in upgrade.Effects)
                 if (!string.IsNullOrWhiteSpace(effect.Id))
                 {
@@ -473,6 +479,16 @@ namespace GaeBullBing.Core.Game
         {
             if (tileIndex < 0 || tileIndex >= State.Board.TileCount) throw new ArgumentOutOfRangeException(nameof(tileIndex));
             State.Player.CurrentTileIndex = tileIndex;
+        }
+
+        public bool ResolvePlayerBonusTile(int tileIndex)
+        {
+            if (tileIndex < 0 || tileIndex >= State.Board.TileCount)
+                throw new ArgumentOutOfRangeException(nameof(tileIndex));
+
+            // Concrete bonus handlers will be dispatched from here once their
+            // effect definitions are finalized.
+            return State.Board.Tiles[tileIndex].IsBonusTile;
         }
 
 

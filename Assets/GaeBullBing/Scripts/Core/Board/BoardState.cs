@@ -22,6 +22,7 @@ namespace GaeBullBing.Core.Board
         public int IceTurnsRemaining { get; set; }
         public int FireTurnsRemaining { get; set; }
         public bool HasBossFeather { get; set; }
+        public bool IsBonusTile { get; set; }
 
         public bool HasTower => Tower != null;
         public bool CanBuildTower => !string.IsNullOrEmpty(BuildTowerDefinitionId);

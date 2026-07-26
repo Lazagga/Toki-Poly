@@ -5,6 +5,13 @@ namespace GaeBullBing.Core.Board
 {
     public sealed class BoardService
     {
+        private readonly Random random;
+
+        public BoardService(Random random = null)
+        {
+            this.random = random ?? new Random();
+        }
+
         public void Initialize(
             BoardState board,
             int tileCount = BoardState.DefaultTileCount,
@@ -25,6 +32,7 @@ namespace GaeBullBing.Core.Board
                     BuildTowerDefinitionId = IsCorner(index) ? string.Empty : buildTowerDefinitionId
                 });
             }
+            AssignBonusTiles(board);
         }
 
         public void Initialize(BoardState board, BoardDefinition definition)
@@ -49,6 +57,20 @@ namespace GaeBullBing.Core.Board
                 });
             }
             board.Tiles.Sort((left, right) => left.Index.CompareTo(right.Index));
+            AssignBonusTiles(board);
+        }
+
+        private void AssignBonusTiles(BoardState board)
+        {
+            if (board.Tiles.Count != BoardState.DefaultTileCount)
+                return;
+
+            var sideStep = BoardLayout.SideLength - 1;
+            for (var line = 0; line < 4; line++)
+            {
+                var selectedIndex = line * sideStep + random.Next(1, sideStep);
+                board.Tiles[selectedIndex].IsBonusTile = true;
+            }
         }
 
         private static bool IsCorner(int tileIndex)

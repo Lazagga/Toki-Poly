@@ -1991,6 +1991,10 @@ MonoBehaviour:
   physicsTopLeftSprite: {fileID: 21300000, guid: e43a2ef37bc18b044b098143b81f6df3, type: 3}
   electricBottomRightSprite: {fileID: 21300000, guid: b258d60bdd9f40240b0b8ea9fc653c63, type: 3}
   electricTopLeftSprite: {fileID: 21300000, guid: 639b13f845932714f96ff97e6ac420e6, type: 3}
+  bonusTileOutlineSprite: {fileID: 21300000, guid: 737f21f66c3300e4db76949d1063817a, type: 3}
+  bonusTileOutlineOffset: {x: 0, y: 0.01}
+  bonusTileOutlineThickness: 1.06
+  bonusTileOutlineColor: {r: 1, g: 0.7249701, b: 0, a: 1}
   buildOnAwake: 1
   playerPressDepth: 0.1
   playerPressDuration: 0.07

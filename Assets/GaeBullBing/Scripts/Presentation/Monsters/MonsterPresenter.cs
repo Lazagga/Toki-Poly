@@ -163,6 +163,8 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
                 yield return view.MoveSteps(result.StartTileIndex, result.Distance);
             if (result.ReachedBase)
             {
+                if (result.IsBoss)
+                    yield return view.PlayGoalArrival();
                 view.TileChanged -= OnMonsterTileChanged;
                 views.Remove(result.InstanceId);
                 states.Remove(result.InstanceId);

@@ -322,6 +322,43 @@ public void UpdateStatus(MonsterState state)
             if (!reachedBase) boardView.PlayPress(targetTileIndex);
         }
 
+        public IEnumerator PlayGoalArrival()
+        {
+            if (!isBoss || boardView == null)
+                yield break;
+
+            var standingPosition = GetStandingPosition(CurrentTileIndex);
+            isMoving = true;
+            ApplyBossDirection(CurrentTileIndex, false);
+            var landingHeight = 0.45f;
+            var landingDuration = Mathf.Max(0.05f, stepDuration * 0.45f);
+            for (var elapsed = 0f; elapsed < landingDuration; elapsed += Time.deltaTime)
+            {
+                var progress = Mathf.SmoothStep(
+                    0f,
+                    1f,
+                    Mathf.Clamp01(elapsed / landingDuration));
+                transform.position = standingPosition +
+                    Vector3.up * Mathf.Lerp(landingHeight, 0f, progress);
+                shadowGroundPosition = GetShadowPosition(CurrentTileIndex);
+                yield return null;
+            }
+            transform.position = standingPosition;
+            isMoving = false;
+
+            boardView.PlayPress(CurrentTileIndex);
+            for (var elapsed = 0f;
+                 elapsed < boardView.PressPulseDuration;
+                 elapsed += Time.deltaTime)
+            {
+                transform.position = GetStandingPosition(CurrentTileIndex);
+                shadowGroundPosition = GetShadowPosition(CurrentTileIndex);
+                yield return null;
+            }
+            transform.position = GetStandingPosition(CurrentTileIndex);
+            shadowGroundPosition = GetShadowPosition(CurrentTileIndex);
+        }
+
         public IEnumerator PlayKnockback(int fromTileIndex, int toTileIndex)
         {
             if (fromTileIndex == toTileIndex) yield break;

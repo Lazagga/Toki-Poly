@@ -63,6 +63,9 @@ namespace GaeBullBing.Presentation.Game
         
         private int pendingConsoleUpgradeTile = -1;
         private readonly List<TowerUpgradeDefinition> pendingConsoleUpgrades = new();
+        private TowerDefinition pendingConsoleBuildDefinition;
+        private int pendingBonusBuildTile = -1;
+        private TowerDefinition pendingBonusBuildDefinition;
         public bool HasPendingConsoleUpgrade => pendingConsoleUpgradeTile >= 0 && pendingConsoleUpgrades.Count > 0;
 private bool finishRoutineStarted;
 
@@ -187,6 +190,7 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
         {
             pendingConsoleUpgradeTile = -1;
             pendingConsoleUpgrades.Clear();
+            pendingConsoleBuildDefinition = null;
             if (tileIndex < 0 || tileIndex >= State.Board.TileCount)
             {
                 message = $"타일 번호는 0~{State.Board.TileCount - 1} 범위여야 합니다.";
@@ -210,6 +214,20 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
                 var previousPhase = State.CurrentPhase;
                 try
                 {
+                    if (tile.IsBonusTile)
+                    {
+                        PopulateConsoleUpgradeChoices(definition, 2, null);
+                        if (pendingConsoleUpgrades.Count == 0)
+                        {
+                            message = $"{definition.DisplayName}의 2티어 강화 데이터가 없습니다.";
+                            return false;
+                        }
+                        pendingConsoleUpgradeTile = tileIndex;
+                        pendingConsoleBuildDefinition = definition;
+                        message = BuildConsoleUpgradePrompt();
+                        return true;
+                    }
+
                     Session.BuildTower(tileIndex, definition);
                     towerPresenter.SetTower(tileIndex, definition, 1);
                     message = $"{tileIndex}번 타일에 {definition.DisplayName} 1티어를 설치했습니다.";
@@ -224,15 +242,12 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
                 message = $"타워 데이터를 찾을 수 없습니다: {tile.Tower.DefinitionId}";
                 return false;
             }
-            foreach (var upgrade in towerUpgradeDefinitions)
-                if (upgrade != null && upgrade.Element == towerDefinition.Element &&
-                    upgrade.Tier == tile.Tower.UpgradeTier + 1 &&
-                    !tile.Tower.AppliedUpgradeIds.Contains(upgrade.Id))
-                    pendingConsoleUpgrades.Add(upgrade);
+            var upgradeTargetTier = GetUpgradeTargetTier(tile);
+            PopulateConsoleUpgradeChoices(tile, towerDefinition);
 
             if (pendingConsoleUpgrades.Count == 0)
             {
-                if (tile.Tower.UpgradeTier >= 3)
+                if (upgradeTargetTier < 0 && tile.Tower.UpgradeTier >= 3)
                 {
                     Session.AddPermanentTowerDamageFlatBonus(towerDefinition.Element, MaxTowerElementDamageBonus);
                     message = $"{towerDefinition.DisplayName}은 이미 풀 강화 상태입니다. {towerDefinition.Element} 타워 공격력 +30을 적용했습니다.";
@@ -243,10 +258,7 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
             }
 
             pendingConsoleUpgradeTile = tileIndex;
-            var builder = new StringBuilder("적용할 강화를 숫자로 입력하세요.");
-            for (var index = 0; index < pendingConsoleUpgrades.Count; index++)
-                builder.Append($"\n{index} : {pendingConsoleUpgrades[index].Description}");
-            message = builder.ToString();
+            message = BuildConsoleUpgradePrompt();
             return true;
         }
 
@@ -266,10 +278,13 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var tileIndex = pendingConsoleUpgradeTile;
             var upgrade = pendingConsoleUpgrades[choiceIndex];
             var tile = State.Board.Tiles[tileIndex];
-            var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+            var definition = pendingConsoleBuildDefinition ??
+                FindTowerDefinition(tile.Tower.DefinitionId);
             var previousPhase = State.CurrentPhase;
             try
             {
+                if (pendingConsoleBuildDefinition != null)
+                    Session.BuildTower(tileIndex, pendingConsoleBuildDefinition);
                 Session.UpgradeTower(tileIndex, upgrade);
                 if (definition != null)
                     towerPresenter.SetTower(tileIndex, definition, tile.Tower.UpgradeTier);
@@ -281,6 +296,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 State.CurrentPhase = previousPhase;
                 pendingConsoleUpgradeTile = -1;
                 pendingConsoleUpgrades.Clear();
+                pendingConsoleBuildDefinition = null;
             }
         }
 
@@ -398,6 +414,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 new TowerCombatService());
             Session.StartNewGame(boardDefinition: boardDefinition);
             boardView.RefreshBuildElementOverlays(State.Board, towerDefinitions);
+            boardView.RefreshBonusTileBorders(State.Board);
             monsterDatabase = new MonsterDatabase(monsterDefinitions);
             var bossAppearanceLevel = FindBossDefinition()?.AppearanceWave ?? DifficultyService.FinalBossLevel;
             difficultyService = new DifficultyService(
@@ -688,7 +705,9 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             else foreach (var id in tile.Tower.AppliedUpgradeIds)
             {
                 var upgrade = FindUpgradeDefinition(id);
-                builder.AppendLine(upgrade == null ? $"• {id}" : $"• T{upgrade.Tier} {upgrade.DisplayName}\n  {upgrade.Description}");
+                builder.AppendLine(upgrade == null || string.IsNullOrWhiteSpace(upgrade.Description)
+                    ? "• 설명 없음"
+                    : $"• {upgrade.Description}");
             }
             return featherDescription + builder.ToString().TrimEnd();
         }
@@ -792,6 +811,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             State.CurrentPhase = TurnPhase.TileAction;
             diceHud.SetBusy();
             var tile = State.Board.Tiles[State.Player.CurrentTileIndex];
+            Session.ResolvePlayerBonusTile(tile.Index);
             ApplyArrivalTowerEffects(tile);
             ShowTileInformation(tile.Index, false, tile.HasTower || tile.CanBuildTower);
             if (TryOpenCornerAction(State.Player.CurrentTileIndex))
@@ -884,6 +904,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (State.CurrentPhase != TurnPhase.TileAction)
                 return;
 
+            pendingBonusBuildTile = -1;
+            pendingBonusBuildDefinition = null;
             State.CurrentPhase = TurnPhase.TowerSelection;
             var tile = State.Board.Tiles[State.Player.CurrentTileIndex];
             if (tile.HasTower)
@@ -892,7 +914,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 if (upgrades.Count == 0)
                 {
                     var definition = FindTowerDefinition(tile.Tower.DefinitionId);
-                    if (definition != null)
+                    if (definition != null && GetUpgradeTargetTier(tile) < 0)
                         Session.AddPermanentTowerDamageFlatBonus(definition.Element, MaxTowerElementDamageBonus);
                     radialMenu.Hide();
                     HideTileInformation();
@@ -920,8 +942,21 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
             var tileIndex = State.Player.CurrentTileIndex;
             var tile = State.Board.Tiles[tileIndex];
-            Session.BuildTower(tileIndex, definition);
+            if (tile.IsBonusTile)
+            {
+                var upgrades = GetUpgradeChoices(definition, 2, null);
+                if (upgrades.Count > 0)
+                {
+                    pendingBonusBuildTile = tileIndex;
+                    pendingBonusBuildDefinition = definition;
+                    radialMenu.ShowUpgradeChoices(upgrades, SelectUpgrade);
+                    return;
+                }
+                Debug.LogError(
+                    $"Bonus tile {tileIndex} has no matching tier 2 upgrade data.");
+            }
 
+            Session.BuildTower(tileIndex, definition);
             towerPresenter.SetTower(tileIndex, definition);
             radialMenu.Hide();
             HideTileInformation();
@@ -932,6 +967,23 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         {
             if (State.CurrentPhase != TurnPhase.TowerSelection || upgrade == null) return;
             var tileIndex = State.Player.CurrentTileIndex;
+            if (pendingBonusBuildDefinition != null &&
+                pendingBonusBuildTile == tileIndex)
+            {
+                Session.BuildTower(tileIndex, pendingBonusBuildDefinition);
+                Session.UpgradeTower(tileIndex, upgrade);
+                towerPresenter.SetTower(
+                    tileIndex,
+                    pendingBonusBuildDefinition,
+                    State.Board.Tiles[tileIndex].Tower.UpgradeTier);
+                pendingBonusBuildTile = -1;
+                pendingBonusBuildDefinition = null;
+                radialMenu.Hide();
+                HideTileInformation();
+                StartCoroutine(CompleteTileActionRoutine());
+                return;
+            }
+
             Session.UpgradeTower(tileIndex, upgrade);
             var tile = State.Board.Tiles[tileIndex];
             var definition = FindTowerDefinition(tile.Tower.DefinitionId);
@@ -958,11 +1010,31 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         private List<TowerUpgradeDefinition> GetUpgradeChoices(TileState tile)
         {
+            var tower = FindTowerDefinition(tile.Tower.DefinitionId);
+            if (tower == null)
+                return new List<TowerUpgradeDefinition>();
+            var targetTier = GetUpgradeTargetTier(tile);
+            return GetUpgradeChoices(
+                tower,
+                targetTier,
+                tile.Tower.AppliedUpgradeIds);
+        }
+
+        private List<TowerUpgradeDefinition> GetUpgradeChoices(
+            TowerDefinition tower,
+            int targetTier,
+            ICollection<string> appliedUpgradeIds)
+        {
             var result = new List<TowerUpgradeDefinition>();
-            var tower = FindTowerDefinition(tile.Tower.DefinitionId); if (tower == null) return result;
+            if (tower == null || targetTier < 0)
+                return result;
             var pool = new List<TowerUpgradeDefinition>();
             foreach (var upgrade in towerUpgradeDefinitions)
-                if (upgrade != null && upgrade.Element == tower.Element && upgrade.Tier == tile.Tower.UpgradeTier + 1 && !tile.Tower.AppliedUpgradeIds.Contains(upgrade.Id)) pool.Add(upgrade);
+                if (upgrade != null && upgrade.Element == tower.Element &&
+                    upgrade.Tier == targetTier &&
+                    (appliedUpgradeIds == null ||
+                     !appliedUpgradeIds.Contains(upgrade.Id)))
+                    pool.Add(upgrade);
             while (pool.Count > 0 && result.Count < 3)
             {
                 var total = 0; foreach (var item in pool) total += Mathf.Max(0, item.Weight);
@@ -973,6 +1045,55 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 result.Add(pool[selected]); pool.RemoveAt(selected);
             }
             return result;
+        }
+
+        private static int GetUpgradeTargetTier(TileState tile)
+        {
+            if (tile == null || !tile.HasTower)
+                return -1;
+            if (tile.Tower.UpgradeTier < 3)
+                return tile.Tower.UpgradeTier + 1;
+            if (tile.IsBonusTile && tile.Tower.UpgradeTier == 3 &&
+                !tile.Tower.BonusTier3UpgradeClaimed)
+                return 3;
+            return -1;
+        }
+
+        private void PopulateConsoleUpgradeChoices(
+            TileState tile,
+            TowerDefinition towerDefinition)
+        {
+            var targetTier = GetUpgradeTargetTier(tile);
+            PopulateConsoleUpgradeChoices(
+                towerDefinition,
+                targetTier,
+                tile?.Tower?.AppliedUpgradeIds);
+        }
+
+        private void PopulateConsoleUpgradeChoices(
+            TowerDefinition towerDefinition,
+            int targetTier,
+            ICollection<string> appliedUpgradeIds)
+        {
+            pendingConsoleUpgrades.Clear();
+            if (targetTier < 0 || towerDefinition == null)
+                return;
+
+            foreach (var upgrade in towerUpgradeDefinitions)
+                if (upgrade != null &&
+                    upgrade.Element == towerDefinition.Element &&
+                    upgrade.Tier == targetTier &&
+                    (appliedUpgradeIds == null ||
+                     !appliedUpgradeIds.Contains(upgrade.Id)))
+                    pendingConsoleUpgrades.Add(upgrade);
+        }
+
+        private string BuildConsoleUpgradePrompt()
+        {
+            var builder = new StringBuilder("적용할 강화를 숫자로 입력하세요.");
+            for (var index = 0; index < pendingConsoleUpgrades.Count; index++)
+                builder.Append($"\n{index} : {pendingConsoleUpgrades[index].Description}");
+            return builder.ToString();
         }
 
         private TowerDefinition FindTowerDefinition(string id)

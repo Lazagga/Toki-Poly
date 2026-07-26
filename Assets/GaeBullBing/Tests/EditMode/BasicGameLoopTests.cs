@@ -36,6 +36,36 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
+        public void BoardService_SelectsOneNonCornerBonusTilePerLine()
+        {
+            var board = new BoardState();
+            new BoardService(new System.Random(12345)).Initialize(board);
+            var countsByLine = new int[4];
+
+            foreach (var tile in board.Tiles)
+            {
+                if (!tile.IsBonusTile) continue;
+                countsByLine[tile.Index / (BoardLayout.SideLength - 1)]++;
+                Assert.That(tile.Index != 0 && tile.Index != 9 &&
+                    tile.Index != 18 && tile.Index != 27, Is.True);
+            }
+
+            Assert.That(countsByLine, Is.EqualTo(new[] { 1, 1, 1, 1 }));
+        }
+
+        [Test]
+        public void GameSession_RecognizesSelectedBonusTileOnPlayerArrival()
+        {
+            var state = new GameState();
+            var session = CreateSession(state);
+            session.StartNewGame();
+            var bonusTileIndex = state.Board.Tiles.Find(tile => tile.IsBonusTile).Index;
+
+            Assert.That(session.ResolvePlayerBonusTile(bonusTileIndex), Is.True);
+            Assert.That(session.ResolvePlayerBonusTile(0), Is.False);
+        }
+
+        [Test]
         public void BoardLayout_CreatesTenByTenSquareBorderWithThirtySixUniqueCells()
         {
             Assert.That(BoardLayout.Cells, Has.Count.EqualTo(36));
@@ -434,6 +464,43 @@ namespace GaeBullBing.Tests.EditMode
             Assert.That(tile.Tower.DefinitionId, Is.EqualTo("TOW_01"));
             Assert.That(tile.Tower.UpgradeTier, Is.EqualTo(2));
             Assert.That(tile.Tower.AppliedUpgradeIds, Contains.Item("UPG_FIRE_02"));
+        }
+
+        [Test]
+        public void TowerService_BonusTileAcceptsOneAdditionalTier3Upgrade()
+        {
+            var tile = new TileState
+            {
+                Index = 3,
+                BuildTowerDefinitionId = "TOW_01",
+                IsBonusTile = true
+            };
+            var service = new GaeBullBing.Core.Towers.TowerService();
+            var tower = service.Build(tile, "TOW_01");
+            service.Upgrade(tile, "UPG_T2", 2);
+            service.Upgrade(tile, "UPG_T3_FIRST", 3);
+
+            service.ApplyBonusTier3Upgrade(tile, "UPG_T3_SECOND", 3);
+
+            Assert.That(tower.UpgradeTier, Is.EqualTo(3));
+            Assert.That(tower.BonusTier3UpgradeClaimed, Is.True);
+            Assert.That(tower.AppliedUpgradeIds,
+                Is.EqualTo(new[] { "UPG_T2", "UPG_T3_FIRST", "UPG_T3_SECOND" }));
+            Assert.Throws<System.InvalidOperationException>(() =>
+                service.ApplyBonusTier3Upgrade(tile, "UPG_T3_THIRD", 3));
+        }
+
+        [Test]
+        public void TowerService_RejectsAdditionalTier3UpgradeOnNormalTile()
+        {
+            var tile = new TileState { Index = 3, BuildTowerDefinitionId = "TOW_01" };
+            var service = new GaeBullBing.Core.Towers.TowerService();
+            service.Build(tile, "TOW_01");
+            service.Upgrade(tile, "UPG_T2", 2);
+            service.Upgrade(tile, "UPG_T3_FIRST", 3);
+
+            Assert.Throws<System.InvalidOperationException>(() =>
+                service.ApplyBonusTier3Upgrade(tile, "UPG_T3_SECOND", 3));
         }
 
         [Test]

@@ -14,6 +14,7 @@ namespace GaeBullBing.Core.Towers
         public int InstanceId { get; set; }
         public string DefinitionId { get; set; } = string.Empty;
         public int UpgradeTier { get; set; } = 1;
+        public bool BonusTier3UpgradeClaimed { get; set; }
         public List<string> AppliedUpgradeIds { get; } = new();
         public List<string> AppliedEffectIds { get; } = new();
         public Dictionary<string, float> EffectValues { get; } = new();

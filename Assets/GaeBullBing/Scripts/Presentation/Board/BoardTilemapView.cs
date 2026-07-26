@@ -23,6 +23,12 @@ namespace GaeBullBing.Presentation.Board
         [SerializeField] private Sprite physicsTopLeftSprite;
         [SerializeField] private Sprite electricBottomRightSprite;
         [SerializeField] private Sprite electricTopLeftSprite;
+        [Header("Bonus Tile Outline")]
+        [SerializeField] private Sprite bonusTileOutlineSprite;
+        [SerializeField] private Vector2 bonusTileOutlineOffset;
+        [SerializeField, Min(1.001f)] private float bonusTileOutlineThickness = 1.06f;
+        [SerializeField] private Color bonusTileOutlineColor = new(1f, 0.72f, 0.12f, 1f);
+        [SerializeField, Min(0.01f)] private float bonusTileOutlineFadeDuration = 0.35f;
         [SerializeField] private bool buildOnAwake = true;
         [SerializeField, Min(0f)] private float playerPressDepth = 0.1f;
         [SerializeField, Min(0.01f)] private float playerPressDuration = 0.07f;
@@ -33,6 +39,7 @@ namespace GaeBullBing.Presentation.Board
         private readonly float[] transitionOffsets = new float[BoardState.DefaultTileCount];
         private readonly Dictionary<int, SpriteRenderer> individualTileRenderers = new();
         private readonly Dictionary<int, SpriteRenderer> buildElementOverlayRenderers = new();
+        private readonly Dictionary<int, SpriteRenderer> bonusTileBorderRenderers = new();
         private BoardState currentBoardState;
 
         public Tilemap Tilemap => tilemap != null ? tilemap : tilemap = GetComponent<Tilemap>();
@@ -51,6 +58,8 @@ namespace GaeBullBing.Presentation.Board
         {
             foreach (var pair in individualTileRenderers)
                 PositionIndividualTile(pair.Key, pair.Value);
+            foreach (var pair in bonusTileBorderRenderers)
+                PositionBonusTileBorder(pair.Key, pair.Value);
             foreach (var pair in buildElementOverlayRenderers)
                 PositionBuildElementOverlay(pair.Key, pair.Value);
         }
@@ -150,6 +159,78 @@ public void RefreshTileEffects(BoardState board)
                 renderer.spriteSortPoint = SpriteSortPoint.Pivot;
                 buildElementOverlayRenderers.Add(tileIndex, renderer);
                 PositionBuildElementOverlay(tileIndex, renderer);
+            }
+        }
+
+        public void RefreshBonusTileBorders(BoardState board)
+        {
+            foreach (var renderer in bonusTileBorderRenderers.Values)
+                if (renderer != null)
+                    Destroy(renderer.gameObject);
+            bonusTileBorderRenderers.Clear();
+
+            if (board == null)
+                return;
+
+            currentBoardState = board;
+            var container = transform.Find("Bonus Tile Borders");
+            if (container == null)
+            {
+                var containerObject = new GameObject("Bonus Tile Borders");
+                container = containerObject.transform;
+                container.SetParent(transform, false);
+            }
+
+            var tilemapRenderer = GetComponent<TilemapRenderer>();
+            var tileCount = Mathf.Min(board.TileCount, BoardLayout.Cells.Count);
+            for (var tileIndex = 0; tileIndex < tileCount; tileIndex++)
+            {
+                RefreshIndividualTileRenderer(tileIndex);
+                if (!board.Tiles[tileIndex].IsBonusTile || bonusTileOutlineSprite == null)
+                    continue;
+
+                var borderObject = new GameObject($"Tile {tileIndex} Bonus Border");
+                borderObject.transform.SetParent(container, false);
+                borderObject.transform.localScale = Vector3.one * bonusTileOutlineThickness;
+                var renderer = borderObject.AddComponent<SpriteRenderer>();
+                if (tilemapRenderer != null)
+                    renderer.sortingLayerID = tilemapRenderer.sortingLayerID;
+                renderer.spriteSortPoint = SpriteSortPoint.Pivot;
+                renderer.sprite = bonusTileOutlineSprite;
+                renderer.color = new Color(
+                    bonusTileOutlineColor.r,
+                    bonusTileOutlineColor.g,
+                    bonusTileOutlineColor.b,
+                    0f);
+                bonusTileBorderRenderers.Add(tileIndex, renderer);
+                PositionBonusTileBorder(tileIndex, renderer);
+            }
+        }
+
+        public IEnumerator PlayBonusTileOutlineFadeIn()
+        {
+            var duration = Mathf.Max(0.01f, bonusTileOutlineFadeDuration);
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
+            {
+                SetBonusTileOutlineAlpha(
+                    bonusTileOutlineColor.a *
+                    Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration)));
+                yield return null;
+            }
+            SetBonusTileOutlineAlpha(bonusTileOutlineColor.a);
+        }
+
+        private void SetBonusTileOutlineAlpha(float alpha)
+        {
+            foreach (var renderer in bonusTileBorderRenderers.Values)
+            {
+                if (renderer == null)
+                    continue;
+                renderer.color = new Color(
+                    bonusTileOutlineColor.r,
+                    bonusTileOutlineColor.g,
+                    bonusTileOutlineColor.b,
+                    alpha);
             }
         }
 
@@ -448,6 +529,17 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             var tilePosition = GetWorldPosition(tileIndex);
             renderer.transform.position = tilePosition + GetTileVisualWorldOffset(tileIndex);
             renderer.sortingOrder = BoardDepthSorting.GetOrder(tilePosition, -100);
+        }
+
+        private void PositionBonusTileBorder(int tileIndex, SpriteRenderer renderer)
+        {
+            if (renderer == null)
+                return;
+            var tilePosition = GetWorldPosition(tileIndex);
+            renderer.transform.position = tilePosition +
+                GetTileVisualWorldOffset(tileIndex) +
+                (Vector3)bonusTileOutlineOffset;
+            renderer.sortingOrder = BoardDepthSorting.GetOrder(tilePosition, -101);
         }
 
         private static bool IsCorner(int tileIndex) =>
