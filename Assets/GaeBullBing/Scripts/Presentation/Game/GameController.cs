@@ -33,6 +33,7 @@ namespace GaeBullBing.Presentation.Game
         [SerializeField] private TowerPresenter towerPresenter;
         [SerializeField] private TileInfoPanelView tileInfoPanel;
         [SerializeField] private GameFlowView gameFlowView;
+        [SerializeField] private TurnTransitionBannerView turnTransitionBanner;
         [SerializeField, Min(0f)] private float diceRevealDelay = 0.35f;
         [SerializeField, Range(0f, 1f)] private float cornerDamageRateBonus = .2f;
 
@@ -443,6 +444,9 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             tileSelectionView.EnableInspection(ShowTileInformation, CloseTileInformation);
             if (tileInfoPanel == null)
                 tileInfoPanel = FindFirstObjectByType<TileInfoPanelView>(FindObjectsInactive.Include);
+            if (turnTransitionBanner == null)
+                turnTransitionBanner =
+                    FindFirstObjectByType<TurnTransitionBannerView>(FindObjectsInactive.Include);
         }
 
         private bool TryLoadRequiredGameData(
@@ -532,9 +536,19 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         public void StartGameFromTitle()
         {
             gameFlowView?.HideAll();
-            isBusy = false;
-            AcceptsGameplayInput = true;
+            isBusy = true;
+            AcceptsGameplayInput = false;
+            diceHud.SetBusy();
+            StartCoroutine(BeginFirstPlayerTurnRoutine());
+        }
+
+        private IEnumerator BeginFirstPlayerTurnRoutine()
+        {
+            if (turnTransitionBanner != null)
+                yield return turnTransitionBanner.PlayPlayerTurn();
             diceHud.BeginPlayerTurn();
+            AcceptsGameplayInput = true;
+            isBusy = false;
         }
 
         public void ReturnToTitle()
@@ -1129,6 +1143,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 diceSystem.ShowLapReward(Session.CreateLapReward(), () => diceTuningComplete = true);
                 yield return new WaitUntil(() => diceTuningComplete);
             }
+            if (turnTransitionBanner != null)
+                yield return turnTransitionBanner.PlayEnemyTurn();
             yield return ResolveEnemyTurnRoutine();
         }
 
@@ -1358,6 +1374,8 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
             diceHud.RefreshDiceFaces();
 
             RefreshOpenTileInformation();
+            if (turnTransitionBanner != null)
+                yield return turnTransitionBanner.PlayPlayerTurn();
             diceHud.BeginPlayerTurn();
             isBusy = false;
         }
