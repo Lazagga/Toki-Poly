@@ -26,6 +26,7 @@ namespace GaeBullBing.Presentation.Towers
         [SerializeField, Min(.05f)] private float chainLineDuration = .32f;
         [SerializeField, Min(.05f)] private float projectileDiameter = .58f;
         [SerializeField, Range(.1f, 2f)] private float physicsProjectileScale = .8f;
+        [SerializeField, Min(.01f)] private float areaTileScale = 1.166667f;
         [SerializeField] private Vector3 projectileOffset = new(0f, .32f, 0f);
         [SerializeField] private Vector3 chainTileOffset = new(0f, .05f, 0f);
 
@@ -197,7 +198,8 @@ var renderers = new List<SpriteRenderer>();
                 effectObject.transform.SetParent(transform, false);
                 effectObject.transform.position = boardView.GetWorldPosition(tileIndex) + chainTileOffset;
                 var spriteWidth = sprite.bounds.size.x;
-                effectObject.transform.localScale = Vector3.one * (spriteWidth > .001f ? 1f / spriteWidth : 1f);
+                effectObject.transform.localScale = Vector3.one *
+                    (spriteWidth > .001f ? areaTileScale / spriteWidth : areaTileScale);
                 var renderer = effectObject.AddComponent<SpriteRenderer>();
                 renderer.sprite = sprite;
                 renderer.color = new Color(1f, 1f, 1f, 0f);

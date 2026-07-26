@@ -250,6 +250,7 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
                 if (upgradeTargetTier < 0 && tile.Tower.UpgradeTier >= 3)
                 {
                     Session.AddPermanentTowerDamageFlatBonus(towerDefinition.Element, MaxTowerElementDamageBonus);
+                    StartCoroutine(PlayElementTowerEnhancementEffect(towerDefinition.Element));
                     message = $"{towerDefinition.DisplayName}은 이미 풀 강화 상태입니다. {towerDefinition.Element} 타워 공격력 +30을 적용했습니다.";
                     return true;
                 }
@@ -915,7 +916,13 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 {
                     var definition = FindTowerDefinition(tile.Tower.DefinitionId);
                     if (definition != null && GetUpgradeTargetTier(tile) < 0)
+                    {
                         Session.AddPermanentTowerDamageFlatBonus(definition.Element, MaxTowerElementDamageBonus);
+                        radialMenu.Hide();
+                        HideTileInformation();
+                        StartCoroutine(CompleteFullUpgradeRewardRoutine(definition.Element));
+                        return;
+                    }
                     radialMenu.Hide();
                     HideTileInformation();
                     StartCoroutine(CompleteTileActionRoutine());
@@ -1108,6 +1115,11 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         {
             State.CurrentPhase = TurnPhase.CameraOverview;
             yield return cameraController.ReturnToOverview();
+            yield return CompleteTileActionAfterOverviewRoutine();
+        }
+
+        private IEnumerator CompleteTileActionAfterOverviewRoutine()
+        {
             if (pendingDiceTuning)
             {
                 pendingDiceTuning = false;
@@ -1120,9 +1132,39 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             yield return ResolveEnemyTurnRoutine();
         }
 
+        private IEnumerator CompleteFullUpgradeRewardRoutine(TowerElement element)
+        {
+            State.CurrentPhase = TurnPhase.CameraOverview;
+            yield return cameraController.ReturnToOverview();
+            yield return PlayElementTowerEnhancementEffect(element);
+            yield return CompleteTileActionAfterOverviewRoutine();
+        }
 
+        private IEnumerator PlayElementTowerEnhancementEffect(TowerElement element)
+        {
+            if (attackEffectPresenter == null || State?.Board?.Tiles == null)
+                yield break;
 
+            var tileIndices = new List<int>();
+            var representativeTowerInstanceId = -1;
+            foreach (var tile in State.Board.Tiles)
+            {
+                if (!tile.HasTower)
+                    continue;
 
+                var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+                if (definition == null || definition.Element != element)
+                    continue;
+
+                tileIndices.Add(tile.Index);
+                if (representativeTowerInstanceId < 0)
+                    representativeTowerInstanceId = tile.Tower.InstanceId;
+            }
+
+            if (representativeTowerInstanceId >= 0 && tileIndices.Count > 0)
+                yield return attackEffectPresenter.PlayAreaTiles(
+                    State, representativeTowerInstanceId, tileIndices);
+        }
 
         private IEnumerator ResolveEnemyTurnRoutine()
         {

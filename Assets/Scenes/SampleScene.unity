@@ -1995,6 +1995,7 @@ MonoBehaviour:
   bonusTileOutlineOffset: {x: 0, y: 0.01}
   bonusTileOutlineThickness: 1.06
   bonusTileOutlineColor: {r: 1, g: 0.7249701, b: 0, a: 1}
+  bonusTileOutlineFadeDuration: 0.35
   buildOnAwake: 1
   playerPressDepth: 0.1
   playerPressDuration: 0.07
@@ -11331,15 +11332,16 @@ MonoBehaviour:
   electricAttackSprite: {fileID: -8551911413148298576, guid: 18cbcbb1d3db4ba4bab5c52438330bfb, type: 3}
   fireAreaTileSprite: {fileID: 21300000, guid: 971e29bfa1ddbb04e91e101ed306e6db, type: 3}
   iceAreaTileSprite: {fileID: 21300000, guid: bd728c51122bcc7429dc60c74ce372e0, type: 3}
-  physicsAreaTileSprite: {fileID: 5746505142318639339, guid: 64b9bd412e710fe4a95dce7410361789, type: 3}
-  electricChainLineSprite: {fileID: -225663915943407484, guid: 58693b403dd550243a79ed9343bdcb6e, type: 3}
+  physicsAreaTileSprite: {fileID: 21300000, guid: 64b9bd412e710fe4a95dce7410361789, type: 3}
+  electricChainLineSprite: {fileID: 21300000, guid: 58693b403dd550243a79ed9343bdcb6e, type: 3}
   projectileDuration: 0.24
   impactDuration: 0.1
   chainLineDuration: 0.32
   projectileDiameter: 0.58
   physicsProjectileScale: 0.8
+  areaTileScale: 1.166667
   projectileOffset: {x: 0, y: 0.32, z: 0}
-  chainTileOffset: {x: 0, y: 0.05, z: 0}
+  chainTileOffset: {x: 0, y: 0.2, z: 0}
 --- !u!1 &1997222230
 GameObject:
   m_ObjectHideFlags: 0
