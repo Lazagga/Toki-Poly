@@ -133,8 +133,10 @@ namespace GaeBullBing.Presentation.UI
                 if (!active) continue;
                 var inventoryIndex = index;
                 var dice = inventory[index];
-                button.GetComponentInChildren<Text>(true).text = $"{dice.DisplayName}\n{FormatFaces(dice)}";
-                button.image.color = Color.white;
+                var label = button.GetComponentInChildren<Text>(true);
+                label.text = $"{dice.DisplayName}\n{FormatFaces(dice)}";
+                label.color = dice.UsesBlackPips ? Color.black : Color.white;
+                button.image.color = new Color(dice.Red, dice.Green, dice.Blue, 1f);
                 button.onClick.AddListener(() =>
                 {
                     controller.Session.ReplaceReserveDice(inventoryIndex, pendingReward);
