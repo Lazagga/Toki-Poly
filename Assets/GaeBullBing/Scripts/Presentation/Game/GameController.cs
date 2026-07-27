@@ -1197,6 +1197,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             }
             if (State.IsVictory)
             {
+                CommitCapturedKills(ref killedCount);
                 FinishVictory();
                 yield break;
             }
@@ -1237,6 +1238,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
             if (State.IsGameOver)
             {
+                CommitCapturedKills(ref killedCount);
                 FinishDefeat();
                 yield break;
             }
@@ -1266,6 +1268,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
             if (State.IsGameOver)
             {
+                CommitCapturedKills(ref killedCount);
                 FinishDefeat();
                 yield break;
             }
@@ -1342,8 +1345,13 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
                 if (attackEffectPresenter != null)
                     yield return attackEffectPresenter.PlayAreaTiles(State, areaTowerId, areaTiles);
             }
+            foreach (var attackResult in attackResults)
+                if (attackResult.Killed) killedCount++;
+            Session.CollectKillRewards(attackResults);
+
             if (State.IsVictory)
             {
+                CommitCapturedKills(ref killedCount);
                 boardView.RefreshTileEffects(State.Board);
                 FinishVictory();
                 yield break;
@@ -1354,14 +1362,10 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
                 yield return PlayAttackResult(statusResults[resultIndex], illuminatedLineTowerIds);
             }
             boardView.RefreshTileEffects(State.Board);
-            foreach (var attackResult in attackResults)
-                if (attackResult.Killed) killedCount++;
             foreach (var statusResult in statusResults)
                 if (statusResult.Killed) killedCount++;
-            Session.CollectKillRewards(attackResults);
             Session.CollectKillRewards(statusResults);
-            difficultyService.AddKills(State.Difficulty, killedCount);
-            diceHud.RefreshDifficulty();
+            CommitCapturedKills(ref killedCount);
 
             if (State.IsVictory)
             {
@@ -1378,6 +1382,14 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
                 yield return turnTransitionBanner.PlayPlayerTurn();
             diceHud.BeginPlayerTurn();
             isBusy = false;
+        }
+
+        private void CommitCapturedKills(ref int killedCount)
+        {
+            if (killedCount > 0)
+                difficultyService.AddKills(State.Difficulty, killedCount);
+            killedCount = 0;
+            diceHud.RefreshDifficulty();
         }
 
         private MonsterDefinition FindBossDefinition()
