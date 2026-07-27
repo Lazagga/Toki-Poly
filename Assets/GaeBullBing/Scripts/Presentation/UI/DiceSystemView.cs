@@ -14,11 +14,14 @@ namespace GaeBullBing.Presentation.UI
         [Header("Scene UI")]
         [SerializeField] private RectTransform loadoutRoot;
         [SerializeField] private Button[] slotButtons;
+        [SerializeField] private DiceCardDisplayView[] slotDisplays;
         [SerializeField] private RectTransform dropdown;
         [SerializeField] private Button[] inventoryButtons;
+        [SerializeField] private DiceCardDisplayView[] inventoryDisplays;
         [SerializeField] private Text emptyInventoryText;
         [SerializeField] private GameObject rewardOverlay;
         [SerializeField] private Text rewardText;
+        [SerializeField] private DiceCardDisplayView rewardDisplay;
         [SerializeField] private Button acquireButton;
         [SerializeField] private Button towerBoostButton;
         [SerializeField] private Button[] replacementButtons;
@@ -82,17 +85,8 @@ namespace GaeBullBing.Presentation.UI
             for (var slot = 0; slot < slotButtons.Length; slot++)
             {
                 var dice = controller.State.Dice[slot];
-                var label = slotButtons[slot].GetComponentInChildren<Text>(true);
-                if (dice == null)
-                {
-                    slotButtons[slot].image.color = new Color(.12f, .11f, .10f, 1f);
-                    label.text = "?\n주사위 선택";
-                    label.color = Color.white;
-                    continue;
-                }
-                slotButtons[slot].image.color = new Color(.11f, .10f, .085f, .98f);
-                label.text = $"?\n{dice.DisplayName}";
-                label.color = Color.white;
+                slotButtons[slot].image.color = Color.white;
+                slotDisplays[slot].Bind(dice);
             }
             if (dropdown.gameObject.activeSelf) ShowDropdown(selectedSlot);
         }
@@ -103,7 +97,9 @@ namespace GaeBullBing.Presentation.UI
             pendingRewardCompleted = completed;
             replacementOpen = false;
             rewardOverlay.SetActive(true);
-            rewardText.text = $"완주 보상\n\n{reward.DisplayName}\n{FormatFaces(reward)}\n{reward.PassiveDescription}";
+            rewardText.gameObject.SetActive(false);
+            rewardDisplay.gameObject.SetActive(true);
+            rewardDisplay.Bind(reward);
             SetRewardMainVisible(true);
 
             acquireButton.onClick.RemoveAllListeners();
@@ -123,6 +119,8 @@ namespace GaeBullBing.Presentation.UI
         private void ShowReplacement(Action completed)
         {
             replacementOpen = true;
+            rewardDisplay.gameObject.SetActive(false);
+            rewardText.gameObject.SetActive(true);
             rewardText.text = $"인벤토리가 가득 찼습니다.\n교체할 주사위를 선택하세요.\n\n{pendingReward.DisplayName}\n{FormatFaces(pendingReward)}";
             SetRewardMainVisible(false);
             var inventory = controller.State.DiceInventory.Dice;
@@ -136,7 +134,7 @@ namespace GaeBullBing.Presentation.UI
                 var inventoryIndex = index;
                 var dice = inventory[index];
                 button.GetComponentInChildren<Text>(true).text = $"{dice.DisplayName}\n{FormatFaces(dice)}";
-                button.image.color = DiceColor(dice);
+                button.image.color = Color.white;
                 button.onClick.AddListener(() =>
                 {
                     controller.Session.ReplaceReserveDice(inventoryIndex, pendingReward);
@@ -159,7 +157,11 @@ namespace GaeBullBing.Presentation.UI
                 var dice = inventory[inventoryIndex];
                 if (IsEquipped(dice)) continue;
                 if (candidateIndex >= inventoryButtons.Length) break;
-                ConfigureInventoryButton(inventoryButtons[candidateIndex], inventoryIndex, dice);
+                ConfigureInventoryButton(
+                    inventoryButtons[candidateIndex],
+                    inventoryDisplays[candidateIndex],
+                    inventoryIndex,
+                    dice);
                 candidateIndex++;
             }
             for (var index = candidateIndex; index < inventoryButtons.Length; index++)
@@ -167,13 +169,16 @@ namespace GaeBullBing.Presentation.UI
             emptyInventoryText.gameObject.SetActive(candidateIndex == 0);
         }
 
-        private void ConfigureInventoryButton(Button button, int inventoryIndex, DiceState dice)
+        private void ConfigureInventoryButton(
+            Button button,
+            DiceCardDisplayView display,
+            int inventoryIndex,
+            DiceState dice)
         {
             button.gameObject.SetActive(true);
             button.onClick.RemoveAllListeners();
-            button.GetComponentInChildren<Text>(true).text =
-                $"{dice.DisplayName}\n{FormatFaces(dice)}\n{dice.PassiveDescription}";
-            button.image.color = DiceColor(dice);
+            display.Bind(dice);
+            button.image.color = new Color(dice.Red, dice.Green, dice.Blue, 1f);
             button.onClick.AddListener(() =>
             {
                 controller.Session.QueueDiceEquip(selectedSlot, inventoryIndex);
@@ -268,7 +273,10 @@ namespace GaeBullBing.Presentation.UI
             if (loadoutRoot == null || dropdown == null || rewardOverlay == null || rewardText == null ||
                 acquireButton == null || towerBoostButton == null || emptyInventoryText == null ||
                 slotButtons == null || slotButtons.Length != 2 ||
+                slotDisplays == null || slotDisplays.Length != slotButtons.Length ||
                 inventoryButtons == null || inventoryButtons.Length < 2 ||
+                inventoryDisplays == null || inventoryDisplays.Length != inventoryButtons.Length ||
+                rewardDisplay == null ||
                 replacementButtons == null || replacementButtons.Length != 4)
                 throw new MissingReferenceException("DiceSystemView의 Scene UI 참조가 완전하지 않습니다.");
         }
@@ -303,7 +311,5 @@ namespace GaeBullBing.Presentation.UI
             return string.Join(" ", values);
         }
 
-        private static Color DiceColor(DiceState dice) =>
-            new Color(dice.Red, dice.Green, dice.Blue, 1f);
     }
 }

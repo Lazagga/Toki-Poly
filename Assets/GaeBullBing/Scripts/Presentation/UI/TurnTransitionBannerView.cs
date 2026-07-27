@@ -19,6 +19,7 @@ namespace GaeBullBing.Presentation.UI
         [SerializeField, Min(0f)] private float ropeSpacing = 220f;
         [SerializeField, Min(0f)] private float ropeWidth = 5f;
         [SerializeField, Min(0f)] private float ropeLength = 400f;
+        [SerializeField] private float ropeVerticalOffset = -40f;
 
         [Header("Sprites")]
         [SerializeField] private Sprite playerTurnSprite;
@@ -79,6 +80,7 @@ namespace GaeBullBing.Presentation.UI
             ropeRect.sizeDelta = new Vector2(ropeWidth, ropeLength);
             var position = ropeRect.anchoredPosition;
             position.x = positionX;
+            position.y = ropeVerticalOffset;
             ropeRect.anchoredPosition = position;
         }
 
