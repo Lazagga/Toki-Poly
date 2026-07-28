@@ -75,6 +75,7 @@ private bool finishRoutineStarted;
         public GameState State { get; private set; }
         public GameSession Session { get; private set; }
         public int TotalKills => State?.Difficulty?.KillCount ?? 0;
+        public bool HasGameplayStarted { get; private set; }
 
         public void BuildResultStatistics(out string left, out string right)
         {
@@ -548,6 +549,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         public void StartGameFromTitle()
         {
+            HasGameplayStarted = true;
             gameFlowView?.HideAll();
             isBusy = true;
             AcceptsGameplayInput = false;
@@ -566,6 +568,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         public void ReturnToTitle()
         {
+            HasGameplayStarted = false;
             AcceptsGameplayInput = false;
             startImmediatelyAfterReload = false;
             fadeTitleAfterReload = true;

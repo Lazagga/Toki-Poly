@@ -34,6 +34,10 @@ namespace GaeBullBing.Presentation.UI
         private bool replacementOpen;
         private int selectedSlot = -1;
 
+        public bool HasOpenModal =>
+            rewardOverlay != null && rewardOverlay.activeInHierarchy ||
+            dropdown != null && dropdown.gameObject.activeInHierarchy;
+
         public void Initialize(GameController gameController, DiceHudView diceHud)
         {
             controller = gameController;
