@@ -14375,6 +14375,13 @@ MonoBehaviour:
   areaTileScale: 1.166667
   projectileOffset: {x: 0, y: 0.32, z: 0}
   chainTileOffset: {x: 0, y: 0.2, z: 0}
+  useExperimentalAreaEffects: 0
+  experimentalAreaDuration: 0.34
+  experimentalEllipseWidth: 1.25
+  experimentalAreaOffset: {x: 0, y: 0.05, z: 0}
+  experimentalFireColor: {r: 1, g: 0.18, b: 0.04, a: 1}
+  experimentalIceColor: {r: 0.15, g: 0.65, b: 1, a: 1}
+  experimentalElectricColor: {r: 0.65, g: 0.2, b: 1, a: 1}
 --- !u!1 &1997222230
 GameObject:
   m_ObjectHideFlags: 0
