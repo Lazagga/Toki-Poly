@@ -230,7 +230,7 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
                     }
 
                     Session.BuildTower(tileIndex, definition);
-                    towerPresenter.SetTower(tileIndex, definition, 1);
+                    StartCoroutine(towerPresenter.PlayBuildAnimation(tileIndex, definition, 1));
                     message = $"{tileIndex}번 타일에 {definition.DisplayName} 1티어를 설치했습니다.";
                     return true;
                 }
@@ -285,11 +285,22 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var previousPhase = State.CurrentPhase;
             try
             {
-                if (pendingConsoleBuildDefinition != null)
+                var isNewTower = pendingConsoleBuildDefinition != null;
+                if (isNewTower)
                     Session.BuildTower(tileIndex, pendingConsoleBuildDefinition);
                 Session.UpgradeTower(tileIndex, upgrade);
                 if (definition != null)
-                    towerPresenter.SetTower(tileIndex, definition, tile.Tower.UpgradeTier);
+                {
+                    StartCoroutine(isNewTower
+                        ? towerPresenter.PlayBuildAnimation(
+                            tileIndex,
+                            definition,
+                            tile.Tower.UpgradeTier)
+                        : towerPresenter.PlayUpgradeAnimation(
+                            tileIndex,
+                            definition,
+                            tile.Tower.UpgradeTier));
+                }
                 message = $"{tileIndex}번 타워에 {upgrade.Description} 강화를 적용했습니다.";
                 return true;
             }
@@ -978,10 +989,9 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             }
 
             Session.BuildTower(tileIndex, definition);
-            towerPresenter.SetTower(tileIndex, definition);
             radialMenu.Hide();
             HideTileInformation();
-            StartCoroutine(CompleteTileActionRoutine());
+            StartCoroutine(CompleteTowerBuildRoutine(tileIndex, definition, 1));
         }
 
         public void SelectUpgrade(TowerUpgradeDefinition upgrade)
@@ -993,26 +1003,48 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             {
                 Session.BuildTower(tileIndex, pendingBonusBuildDefinition);
                 Session.UpgradeTower(tileIndex, upgrade);
-                towerPresenter.SetTower(
-                    tileIndex,
-                    pendingBonusBuildDefinition,
-                    State.Board.Tiles[tileIndex].Tower.UpgradeTier);
+                var builtDefinition = pendingBonusBuildDefinition;
+                var builtTier = State.Board.Tiles[tileIndex].Tower.UpgradeTier;
                 pendingBonusBuildTile = -1;
                 pendingBonusBuildDefinition = null;
                 radialMenu.Hide();
                 HideTileInformation();
-                StartCoroutine(CompleteTileActionRoutine());
+                StartCoroutine(CompleteTowerBuildRoutine(
+                    tileIndex,
+                    builtDefinition,
+                    builtTier));
                 return;
             }
 
             Session.UpgradeTower(tileIndex, upgrade);
             var tile = State.Board.Tiles[tileIndex];
             var definition = FindTowerDefinition(tile.Tower.DefinitionId);
-            if (definition != null)
-                towerPresenter.SetTower(tileIndex, definition, tile.Tower.UpgradeTier);
             radialMenu.Hide();
             HideTileInformation();
-            StartCoroutine(CompleteTileActionRoutine());
+            StartCoroutine(CompleteTowerUpgradeRoutine(
+                tileIndex,
+                definition,
+                tile.Tower.UpgradeTier));
+        }
+
+        private IEnumerator CompleteTowerBuildRoutine(
+            int tileIndex,
+            TowerDefinition definition,
+            int tier)
+        {
+            if (towerPresenter != null && definition != null)
+                yield return towerPresenter.PlayBuildAnimation(tileIndex, definition, tier);
+            yield return CompleteTileActionRoutine();
+        }
+
+        private IEnumerator CompleteTowerUpgradeRoutine(
+            int tileIndex,
+            TowerDefinition definition,
+            int tier)
+        {
+            if (towerPresenter != null && definition != null)
+                yield return towerPresenter.PlayUpgradeAnimation(tileIndex, definition, tier);
+            yield return CompleteTileActionRoutine();
         }
 
         private List<TowerDefinition> GetTowerChoices(TileState tile)
@@ -1158,11 +1190,10 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         private IEnumerator PlayElementTowerEnhancementEffect(TowerElement element)
         {
-            if (attackEffectPresenter == null || State?.Board?.Tiles == null)
+            if (towerPresenter == null || State?.Board?.Tiles == null)
                 yield break;
 
             var tileIndices = new List<int>();
-            var representativeTowerInstanceId = -1;
             foreach (var tile in State.Board.Tiles)
             {
                 if (!tile.HasTower)
@@ -1173,13 +1204,10 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     continue;
 
                 tileIndices.Add(tile.Index);
-                if (representativeTowerInstanceId < 0)
-                    representativeTowerInstanceId = tile.Tower.InstanceId;
             }
 
-            if (representativeTowerInstanceId >= 0 && tileIndices.Count > 0)
-                yield return attackEffectPresenter.PlayAreaTiles(
-                    State, representativeTowerInstanceId, tileIndices);
+            if (tileIndices.Count > 0)
+                yield return towerPresenter.PlayOverUpgradeAnimation(tileIndices, element);
         }
 
         private IEnumerator ResolveEnemyTurnRoutine()
