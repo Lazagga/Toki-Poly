@@ -14375,6 +14375,10 @@ MonoBehaviour:
   areaTileScale: 1.166667
   projectileOffset: {x: 0, y: 0.32, z: 0}
   chainTileOffset: {x: 0, y: 0.2, z: 0}
+  illuminationFlashEnd: 0.18
+  illuminationHoldEnd: 0.58
+  illuminationStartScale: 0.96
+  illuminationPeakScale: 1.05
   useExperimentalAreaEffects: 0
   experimentalAreaDuration: 0.34
   experimentalEllipseWidth: 1.25
@@ -14382,6 +14386,20 @@ MonoBehaviour:
   experimentalFireColor: {r: 1, g: 0.18, b: 0.04, a: 1}
   experimentalIceColor: {r: 0.15, g: 0.65, b: 1, a: 1}
   experimentalElectricColor: {r: 0.65, g: 0.2, b: 1, a: 1}
+  experimentalFireRiseHeight: 0.72
+  experimentalFireSwayDistance: 0.07
+  experimentalIceGrowEnd: 0.68
+  experimentalIceShatterStart: 0.78
+  experimentalIceFragmentCount: 10
+  experimentalIceShatterDistance: 0.36
+  experimentalIceShatterRotation: 120
+  experimentalIceFragmentGravity: 0.18
+  experimentalElectricBoltWidth: 0.1
+  experimentalElectricGlowWidth: 2.4
+  experimentalElectricChainTileDuration: 0.23
+  experimentalElectricEndpointSize: 0.16
+  experimentalElectricJitter: 0.045
+  experimentalElectricChainResetDelay: 0.4
 --- !u!1 &1997222230
 GameObject:
   m_ObjectHideFlags: 0

@@ -896,7 +896,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (State.CurrentPhase != TurnPhase.CornerSelection || element == TowerElement.None) return;
             Session.AddPermanentTowerDamageRateBonus(element, cornerDamageRateBonus);
             HideTileInformation();
-            cornerActionMenu.Hide(); StartCoroutine(CompleteTileActionRoutine());
+            cornerActionMenu.Hide();
+            StartCoroutine(CompleteFullUpgradeRewardRoutine(element));
         }
 
         public void SelectTeleportDestination(int tileIndex)
