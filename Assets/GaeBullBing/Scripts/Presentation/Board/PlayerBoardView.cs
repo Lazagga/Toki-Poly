@@ -135,7 +135,11 @@ namespace GaeBullBing.Presentation.Board
             layoutRoutine = null;
         }
 
-        public IEnumerator MoveSteps(int startTileIndex, int distance)
+        public IEnumerator MoveSteps(
+            int startTileIndex,
+            int distance,
+            Action<int> stepStarted = null,
+            Func<int, IEnumerator> stepCompleted = null)
         {
             EnsureBoardView();
             isMoving = true;
@@ -148,6 +152,7 @@ namespace GaeBullBing.Presentation.Board
                 boardView.ReleasePlayerTile(fromIndex);
                 ApplyDirectionForDeparture(fromIndex);
                 TileMoveStarted?.Invoke(toIndex);
+                stepStarted?.Invoke(toIndex);
                 var elapsed = 0f;
                 var triggeredPress = false;
 
@@ -183,6 +188,12 @@ namespace GaeBullBing.Presentation.Board
                 CameraFollowPosition = GetCameraTilePosition(toIndex);
                 shadowGroundPosition = GetShadowGroundPosition(toIndex);
                 TileEntered?.Invoke(toIndex);
+                if (stepCompleted != null)
+                {
+                    var completionRoutine = stepCompleted(toIndex);
+                    if (completionRoutine != null)
+                        yield return completionRoutine;
+                }
             }
 
             isMoving = false;

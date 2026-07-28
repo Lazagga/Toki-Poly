@@ -6228,6 +6228,16 @@ MonoBehaviour:
   crowFlyingFrontSprite: {fileID: 21300000, guid: 7b92204cc4162e140860382d08dd9a87, type: 3}
   crowFlyingBackSprite: {fileID: 21300000, guid: 544dafb5c2c794743b899f8a80916930, type: 3}
   bossFeatherSprite: {fileID: 170912805055401693, guid: 03e79c321b8b5704bad285ac0b28b1ac, type: 3}
+  spawnLeafSprite: {fileID: 0}
+  spawnLeafCount: 7
+  spawnLeafBurstDuration: 0.1
+  spawnLeafSettleDuration: 0.5
+  spawnLeafBurstDistance: 0.62
+  spawnLeafFallDistance: 0.42
+  spawnLeafMinimumAngle: 15
+  spawnLeafMaximumAngle: 55
+  spawnLeafScale: 0.9
+  spawnLeafOriginOffset: {x: 0, y: 0.6, z: 0}
   playerView: {fileID: 1098699013}
 --- !u!4 &727827689
 Transform:
@@ -14315,6 +14325,7 @@ MonoBehaviour:
   turnTransitionBanner: {fileID: 890345594}
   diceRevealDelay: 0.35
   cornerDamageRateBonus: 0.2
+  lapEnhancementPause: 0.1
 --- !u!4 &1980705412
 Transform:
   m_ObjectHideFlags: 0

@@ -14,6 +14,9 @@ namespace GaeBullBing.Presentation.Monsters
         [SerializeField] private Vector3 positionOffset = new(0f, 0.22f, 0f);
         [SerializeField, Min(.05f)] private float spawnEntranceDuration = .45f;
         [SerializeField, Min(.5f)] private float spawnEntranceHeight = 3.2f;
+        [Header("Regular Spawn Entrance")]
+        [SerializeField, Min(.05f)] private float regularSpawnEntranceDuration = .38f;
+        [SerializeField, Min(0f)] private float regularSpawnHopHeight = .22f;
 
         private BoardTilemapView boardView;
         private SpriteRenderer spriteRenderer;
@@ -44,6 +47,7 @@ private SpriteRenderer healthFillRenderer;
             ? spriteRenderer.bounds.center
             : transform.position;
         public event Action<int, int> TileChanged;
+        public Vector3 RegularSpawnStartPosition { get; private set; }
 
         public void Initialize(
             int instanceId,
@@ -181,6 +185,68 @@ if (healthFillRenderer != null) healthFillRenderer.enabled = visible;
             ApplyBossDirection(CurrentTileIndex, false);
             transform.position = GetStandingPosition(CurrentTileIndex);
             shadowGroundPosition = GetShadowPosition(CurrentTileIndex);
+            isMoving = false;
+            SetSpawnDetailsVisible(true);
+        }
+
+        public void PrepareRegularSpawnEntrance()
+        {
+            if (isBoss || boardView == null)
+                return;
+
+            isMoving = true;
+            ApplyDirectionForDeparture(0);
+            SetSpawnDetailsVisible(false);
+
+            var tileZero = GetTileGroundPosition(0);
+            var tileOne = GetTileGroundPosition(1);
+            var virtualMinusOne = tileZero - (tileOne - tileZero);
+            RegularSpawnStartPosition = virtualMinusOne + positionOffset;
+            transform.position = RegularSpawnStartPosition;
+            shadowGroundPosition = virtualMinusOne + positionOffset - visualHeightOffset;
+
+            if (spriteRenderer != null)
+            {
+                var color = monsterBaseColor;
+                color.a = 0f;
+                spriteRenderer.color = color;
+            }
+        }
+
+        public IEnumerator PlayRegularSpawnEntrance()
+        {
+            if (isBoss || boardView == null)
+                yield break;
+
+            var start = RegularSpawnStartPosition;
+            var destination = GetStandingPosition(0);
+            for (var elapsed = 0f;
+                 elapsed < regularSpawnEntranceDuration;
+                 elapsed += Time.deltaTime)
+            {
+                var progress = Mathf.Clamp01(elapsed / regularSpawnEntranceDuration);
+                var eased = Mathf.SmoothStep(0f, 1f, progress);
+                var position = Vector3.Lerp(start, destination, eased);
+                position.y += Mathf.Sin(progress * Mathf.PI) * regularSpawnHopHeight;
+                transform.position = position;
+                shadowGroundPosition = Vector3.Lerp(
+                    start - visualHeightOffset,
+                    destination - visualHeightOffset,
+                    eased);
+
+                if (spriteRenderer != null)
+                {
+                    var color = monsterBaseColor;
+                    color.a = Mathf.Clamp01(progress * 2.5f);
+                    spriteRenderer.color = color;
+                }
+                yield return null;
+            }
+
+            transform.position = destination;
+            shadowGroundPosition = GetShadowPosition(0);
+            if (spriteRenderer != null)
+                spriteRenderer.color = monsterBaseColor;
             isMoving = false;
             SetSpawnDetailsVisible(true);
         }

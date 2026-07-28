@@ -26,6 +26,17 @@ namespace GaeBullBing.Presentation.Monsters
         [SerializeField] private Sprite crowFlyingFrontSprite;
         [SerializeField] private Sprite crowFlyingBackSprite;
         [SerializeField] private Sprite bossFeatherSprite;
+        [Header("Regular Spawn Leaves")]
+        [SerializeField] private Sprite spawnLeafSprite;
+        [SerializeField, Min(1)] private int spawnLeafCount = 7;
+        [SerializeField, Min(.01f)] private float spawnLeafBurstDuration = .1f;
+        [SerializeField, Min(.01f)] private float spawnLeafSettleDuration = .5f;
+        [SerializeField, Min(0f)] private float spawnLeafBurstDistance = .62f;
+        [SerializeField, Min(0f)] private float spawnLeafFallDistance = .42f;
+        [SerializeField, Range(0f, 90f)] private float spawnLeafMinimumAngle = 15f;
+        [SerializeField, Range(0f, 90f)] private float spawnLeafMaximumAngle = 55f;
+        [SerializeField, Min(.01f)] private float spawnLeafScale = .9f;
+        [SerializeField] private Vector3 spawnLeafOriginOffset = new(0f, .2f, 0f);
 
         private readonly Dictionary<int, MonsterBoardView> views = new();
         private readonly Dictionary<int, MonsterState> states = new();
@@ -102,8 +113,125 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
         public IEnumerator SpawnWithEntrance(MonsterState state)
         {
             Spawn(state);
-            if (state != null && state.IsBoss)
+            if (state == null || !views.TryGetValue(state.InstanceId, out var view))
+                yield break;
+
+            if (state.IsBoss)
                 yield return PlayBossSpawnEntrance(state.InstanceId);
+            else
+            {
+                view.PrepareRegularSpawnEntrance();
+                StartCoroutine(PlaySpawnLeaves(view.RegularSpawnStartPosition));
+                yield return view.PlayRegularSpawnEntrance();
+            }
+        }
+
+        private IEnumerator PlaySpawnLeaves(Vector3 origin)
+        {
+            origin += spawnLeafOriginOffset;
+            var leafSprite = spawnLeafSprite != null ? spawnLeafSprite : bossFeatherSprite;
+            if (leafSprite == null || boardView == null || spawnLeafCount <= 0)
+                yield break;
+
+            var forward = (boardView.GetWorldPosition(1) -
+                           boardView.GetWorldPosition(0)).normalized;
+            var leaves = new List<(Transform Transform, SpriteRenderer Renderer,
+                Vector3 Direction, float Distance, float Fall, float Sway,
+                float RotationSpeed)>();
+
+            for (var index = 0; index < spawnLeafCount; index++)
+            {
+                var leafObject = new GameObject("Monster Spawn Leaf");
+                leafObject.transform.SetParent(transform, false);
+                leafObject.transform.position = origin +
+                    new Vector3(Random.Range(-.05f, .05f), Random.Range(-.03f, .05f), 0f);
+                leafObject.transform.localScale = Vector3.one *
+                    spawnLeafScale * Random.Range(.8f, 1.1f);
+                leafObject.transform.rotation = Quaternion.Euler(
+                    0f, 0f, Random.Range(-35f, 35f));
+
+                var renderer = leafObject.AddComponent<SpriteRenderer>();
+                renderer.sprite = leafSprite;
+                renderer.color = Color.white;
+                renderer.sortingOrder = 32758;
+
+                float angle;
+                if (index == 0)
+                    angle = 0f;
+                else
+                {
+                    var side = index % 2 == 0 ? 1f : -1f;
+                    angle = side * Random.Range(
+                        spawnLeafMinimumAngle,
+                        Mathf.Max(spawnLeafMinimumAngle, spawnLeafMaximumAngle));
+                }
+
+                var direction = Quaternion.Euler(0f, 0f, angle) * forward;
+                leaves.Add((
+                    leafObject.transform,
+                    renderer,
+                    direction,
+                    spawnLeafBurstDistance * Random.Range(.75f, 1.15f),
+                    spawnLeafFallDistance * Random.Range(.75f, 1.2f),
+                    Random.Range(.025f, .08f),
+                    Random.Range(-220f, 220f)));
+            }
+
+            for (var elapsed = 0f;
+                 elapsed < spawnLeafBurstDuration;
+                 elapsed += Time.deltaTime)
+            {
+                var progress = Mathf.Clamp01(elapsed / spawnLeafBurstDuration);
+                var burst = 1f - Mathf.Pow(1f - progress, 3f);
+                foreach (var leaf in leaves)
+                {
+                    if (leaf.Transform == null)
+                        continue;
+                    leaf.Transform.position = origin +
+                        leaf.Direction * (leaf.Distance * burst);
+                    leaf.Transform.Rotate(
+                        0f, 0f, leaf.RotationSpeed * Time.deltaTime);
+                }
+                yield return null;
+            }
+
+            var settleStarts = new Vector3[leaves.Count];
+            for (var index = 0; index < leaves.Count; index++)
+                settleStarts[index] = leaves[index].Transform.position;
+
+            for (var elapsed = 0f;
+                 elapsed < spawnLeafSettleDuration;
+                 elapsed += Time.deltaTime)
+            {
+                var progress = Mathf.Clamp01(elapsed / spawnLeafSettleDuration);
+                var fall = progress * progress;
+                for (var index = 0; index < leaves.Count; index++)
+                {
+                    var leaf = leaves[index];
+                    if (leaf.Transform == null)
+                        continue;
+
+                    var perpendicular = new Vector3(
+                        -leaf.Direction.y,
+                        leaf.Direction.x,
+                        0f);
+                    leaf.Transform.position = settleStarts[index] +
+                        leaf.Direction * (.1f * progress) +
+                        perpendicular * (Mathf.Sin(progress * Mathf.PI * 2f) *
+                                         leaf.Sway) +
+                        Vector3.down * (leaf.Fall * fall);
+                    leaf.Transform.Rotate(
+                        0f, 0f, leaf.RotationSpeed * .45f * Time.deltaTime);
+
+                    var alpha = 1f - Mathf.InverseLerp(.55f, 1f, progress);
+                    leaf.Renderer.color = new Color(1f, 1f, 1f, alpha);
+                }
+                yield return null;
+            }
+
+            foreach (var leaf in leaves)
+                if (leaf.Transform != null)
+                    Destroy(leaf.Transform.gameObject);
         }
 
         private void GetMonsterSprites(string definitionId, out Sprite frontSprite, out Sprite backSprite,

@@ -36,6 +36,8 @@ namespace GaeBullBing.Presentation.Game
         [SerializeField] private TurnTransitionBannerView turnTransitionBanner;
         [SerializeField, Min(0f)] private float diceRevealDelay = 0.35f;
         [SerializeField, Range(0f, 1f)] private float cornerDamageRateBonus = .2f;
+        [Header("Lap Completion Presentation")]
+        [SerializeField, Min(0f)] private float lapEnhancementPause = .1f;
 
         private bool isBusy;
         private MonsterDatabase monsterDatabase;
@@ -828,8 +830,70 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             diceHud.SetResults(State.LastDiceResults[0], State.LastDiceResults[1]);
             yield return dice3DPresenter.Roll(State.Dice, State.LastDiceResults[0], State.LastDiceResults[1]);
             yield return cameraController.FocusOn(playerView);
-            yield return playerView.MoveSteps(startTileIndex, distance);
+            var completesLap = startTileIndex + distance >= State.Board.TileCount;
+            Coroutine lapOverviewRoutine = null;
+            yield return playerView.MoveSteps(
+                startTileIndex,
+                distance,
+                tileIndex =>
+                {
+                    if (completesLap && tileIndex == 0)
+                        lapOverviewRoutine = StartCoroutine(cameraController.ReturnToOverview());
+                },
+                tileIndex => completesLap && tileIndex == 0
+                    ? PlayLapCompletionPresentation(lapOverviewRoutine)
+                    : null);
             BeginCurrentTileAction();
+        }
+
+        private IEnumerator PlayLapCompletionPresentation(Coroutine overviewRoutine)
+        {
+            if (overviewRoutine != null)
+                yield return overviewRoutine;
+            if (lapEnhancementPause > 0f)
+                yield return new WaitForSeconds(lapEnhancementPause);
+
+            if (towerPresenter == null || State?.Board?.Tiles == null)
+            {
+                yield return cameraController.FocusOn(playerView);
+                yield break;
+            }
+
+            var tileIndices = new List<int>();
+            foreach (var tile in State.Board.Tiles)
+                if (tile.HasTower)
+                    tileIndices.Add(tile.Index);
+
+            Coroutine focusRoutine = null;
+            yield return towerPresenter.PlayAllTowerEnhancementAnimation(
+                tileIndices,
+                () => focusRoutine = StartCoroutine(cameraController.FocusOn(playerView)));
+
+            if (focusRoutine == null)
+                focusRoutine = StartCoroutine(cameraController.FocusOn(playerView));
+            yield return focusRoutine;
+        }
+
+        public void ApplyDiceRewardTowerBoost(System.Action completed)
+        {
+            Session.AddPermanentAllTowerDamageRateBonus(.05f);
+            StartCoroutine(PlayDiceRewardTowerBoostPresentation(completed));
+        }
+
+        private IEnumerator PlayDiceRewardTowerBoostPresentation(System.Action completed)
+        {
+            if (towerPresenter != null && State?.Board?.Tiles != null)
+            {
+                var tileIndices = new List<int>();
+                foreach (var tile in State.Board.Tiles)
+                    if (tile.HasTower)
+                        tileIndices.Add(tile.Index);
+
+                if (tileIndices.Count > 0)
+                    yield return towerPresenter.PlayAllTowerEnhancementAnimation(tileIndices);
+            }
+
+            completed?.Invoke();
         }
 
         private void BeginCurrentTileAction()
@@ -1262,7 +1326,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 if (spawnedMonster.IsBoss)
                     yield return monsterPresenter.SpawnWithEntrance(spawnedMonster);
                 else
-                    monsterPresenter.Spawn(spawnedMonster);
+                    yield return monsterPresenter.SpawnWithEntrance(spawnedMonster);
             }
 
             if (State.IsGameOver)

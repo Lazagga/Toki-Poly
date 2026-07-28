@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using GaeBullBing.Core;
 using GaeBullBing.Core.Data;
 using GaeBullBing.Presentation.Board;
@@ -83,12 +84,32 @@ namespace GaeBullBing.Presentation.Towers
             IReadOnlyList<int> tileIndices,
             TowerElement element)
         {
+            yield return PlayEnhancementAnimation(
+                tileIndices,
+                GetEnhancementColor(element),
+                null);
+        }
+
+        public IEnumerator PlayAllTowerEnhancementAnimation(
+            IReadOnlyList<int> tileIndices,
+            Action fadeOutStarted = null)
+        {
+            yield return PlayEnhancementAnimation(
+                tileIndices,
+                new Color(1f, 0.91f, 0.64f),
+                fadeOutStarted);
+        }
+
+        private IEnumerator PlayEnhancementAnimation(
+            IReadOnlyList<int> tileIndices,
+            Color flashColor,
+            Action fadeOutStarted)
+        {
             if (tileIndices == null || tileIndices.Count == 0)
                 yield break;
 
             var affectedTowers = new List<SpriteRenderer>();
             var flashes = new List<(int TileIndex, SpriteRenderer Renderer)>();
-            var flashColor = GetEnhancementColor(element);
 
             foreach (var tileIndex in tileIndices)
             {
@@ -107,10 +128,16 @@ namespace GaeBullBing.Presentation.Towers
             }
 
             var elapsed = 0f;
+            var fadeOutNotified = false;
             while (elapsed < overUpgradeEffectDuration)
             {
                 elapsed += Time.deltaTime;
                 var progress = Mathf.Clamp01(elapsed / overUpgradeEffectDuration);
+                if (!fadeOutNotified && progress >= .65f)
+                {
+                    fadeOutNotified = true;
+                    fadeOutStarted?.Invoke();
+                }
                 var easedProgress = progress * progress * (3f - 2f * progress);
                 var pulse = 1f +
                     Mathf.Sin(progress * Mathf.PI) *
@@ -136,6 +163,9 @@ namespace GaeBullBing.Presentation.Towers
 
                 yield return null;
             }
+
+            if (!fadeOutNotified)
+                fadeOutStarted?.Invoke();
 
             foreach (var towerRenderer in affectedTowers)
                 towerRenderer.transform.localScale = Vector3.one;

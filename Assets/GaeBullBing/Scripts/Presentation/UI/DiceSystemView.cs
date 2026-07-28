@@ -111,8 +111,8 @@ namespace GaeBullBing.Presentation.UI
             });
             towerBoostButton.onClick.AddListener(() =>
             {
-                controller.Session.AddPermanentAllTowerDamageRateBonus(.05f);
-                CloseReward(completed);
+                CloseReward(null);
+                controller.ApplyDiceRewardTowerBoost(completed);
             });
         }
 
