@@ -924,6 +924,25 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
         }
 
         [Test]
+        public void RollingStone_StillActivatesWhenWallUpgradeSetsRangeToZero()
+        {
+            var state = CreateCombatState();
+            var tower = state.Board.Tiles[5].Tower;
+            tower.AppliedEffectIds.Add("rolling_stone");
+            tower.AppliedEffectIds.Add("wall");
+            var stats = new System.Collections.Generic.Dictionary<int, GaeBullBing.Core.Towers.TowerCombatStats>
+            {
+                [tower.InstanceId] = new GaeBullBing.Core.Towers.TowerCombatStats(10, 0, 1)
+            };
+
+            new GaeBullBing.Core.Towers.TowerCombatService().ResolveByTower(state, stats);
+
+            Assert.That(tower.StoneActive, Is.True);
+            Assert.That(tower.StoneTileIndex, Is.EqualTo(5));
+            Assert.That(tower.StoneBaseDamage, Is.EqualTo(10f));
+        }
+
+        [Test]
         public void RollingStone_WithKnockbackPushesAndHitsAgainOnEveryFollowingTile()
         {
             var state = CreateCombatState();
@@ -1027,6 +1046,31 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
             Assert.That(state.Board.Tiles[5].FireTurnsRemaining, Is.GreaterThan(0));
             Assert.That(state.Board.Tiles[6].FireTurnsRemaining, Is.GreaterThan(0));
             Assert.That(state.Board.Tiles[7].FireTurnsRemaining, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void OpposingFields_RemainCleared_WhenSameAttackReportsTileMoreThanOnce()
+        {
+            var state = CreateCombatState();
+            var tower = state.Board.Tiles[5].Tower;
+            tower.AppliedEffectIds.Add("tile_burn");
+            state.Board.Tiles[6].IceTurnsRemaining =
+                GaeBullBing.Core.Board.TileState.OneTurnEffectDuration;
+            var repeatedMarkers = new[]
+            {
+                new GaeBullBing.Core.Towers.TowerAttackResult(
+                    1, -1, 0, false, targetTileIndex: 6,
+                    visualKind: GaeBullBing.Core.Towers.TowerAttackVisualKind.AreaTile),
+                new GaeBullBing.Core.Towers.TowerAttackResult(
+                    1, -1, 0, false, targetTileIndex: 6,
+                    visualKind: GaeBullBing.Core.Towers.TowerAttackVisualKind.AreaTile)
+            };
+
+            new GaeBullBing.Core.Towers.TowerEffectService()
+                .ResolveAfterAttacks(state, repeatedMarkers);
+
+            Assert.That(state.Board.Tiles[6].FireTurnsRemaining, Is.Zero);
+            Assert.That(state.Board.Tiles[6].IceTurnsRemaining, Is.Zero);
         }
 
 

@@ -6234,8 +6234,8 @@ MonoBehaviour:
   spawnLeafSettleDuration: 0.5
   spawnLeafBurstDistance: 0.62
   spawnLeafFallDistance: 0.42
-  spawnLeafMinimumAngle: 15
-  spawnLeafMaximumAngle: 55
+  spawnLeafMinimumAngle: 45
+  spawnLeafMaximumAngle: 90
   spawnLeafScale: 0.9
   spawnLeafOriginOffset: {x: 0, y: 0.6, z: 0}
   playerView: {fileID: 1098699013}

@@ -1427,16 +1427,30 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
 
                 var areaTowerId = attackResult.TowerInstanceId;
                 var areaTiles = new List<int>();
+                var areaResults = new List<TowerAttackResult>();
                 while (attackIndex < attackResults.Count &&
                        attackResults[attackIndex].VisualKind == TowerAttackVisualKind.AreaTile &&
                        attackResults[attackIndex].TowerInstanceId == areaTowerId)
                 {
-                    areaTiles.Add(attackResults[attackIndex].TargetTileIndex);
+                    var areaResult = attackResults[attackIndex];
+                    areaTiles.Add(areaResult.TargetTileIndex);
+                    areaResults.Add(areaResult);
                     attackIndex++;
                 }
                 attackIndex--;
                 if (attackEffectPresenter != null)
-                    yield return attackEffectPresenter.PlayAreaTiles(State, areaTowerId, areaTiles);
+                    yield return attackEffectPresenter.PlayAreaTiles(
+                        State,
+                        areaTowerId,
+                        areaTiles,
+                        () =>
+                        {
+                            foreach (var result in areaResults)
+                                ApplyAttackTileVisualChanges(result);
+                        });
+                else
+                    foreach (var result in areaResults)
+                        ApplyAttackTileVisualChanges(result);
             }
             foreach (var attackResult in attackResults)
                 if (attackResult.Killed) killedCount++;
@@ -1548,12 +1562,12 @@ private IEnumerator PlayAttackResult(
                 {
                     impactApplied = true;
                     monsterPresenter.ApplyAttackAtImpact(result);
-                    RefreshAttackTileEffects(result);
+                    ApplyAttackTileVisualChanges(result);
                 });
             if (!impactApplied)
             {
                 monsterPresenter.ApplyAttackAtImpact(result);
-                RefreshAttackTileEffects(result);
+                ApplyAttackTileVisualChanges(result);
             }
             yield return monsterPresenter.CompleteAttack(result);
         }
@@ -1569,44 +1583,31 @@ private IEnumerator PlayAttackResultsTogether(
                 {
                     impactApplied = true;
                     foreach (var result in results)
+                    {
                         monsterPresenter.ApplyAttackAtImpact(result);
-                    RefreshAttackTileEffects(results[0]);
+                        ApplyAttackTileVisualChanges(result);
+                    }
                 });
             if (!impactApplied)
             {
                 foreach (var result in results)
+                {
                     monsterPresenter.ApplyAttackAtImpact(result);
-                RefreshAttackTileEffects(results[0]);
+                    ApplyAttackTileVisualChanges(result);
+                }
             }
             foreach (var result in results)
                 yield return monsterPresenter.CompleteAttack(result);
         }
     
 
-private void RefreshAttackTileEffects(TowerAttackResult result)
+private void ApplyAttackTileVisualChanges(TowerAttackResult result)
         {
-            if (boardView == null || State?.Board == null) return;
-            if (result.VisualKind == TowerAttackVisualKind.ChainLine)
-            {
-                boardView.RefreshTileEffects(State.Board);
+            if (boardView == null || result.TileEffectVisualChanges == null)
                 return;
-            }
-            if (result.TargetTileIndex < 0) return;
 
-            var radius = 0;
-            foreach (var tile in State.Board.Tiles)
-                if (tile.HasTower && tile.Tower.InstanceId == result.TowerInstanceId &&
-                    tile.Tower.DefinitionId == "TOW_04")
-                {
-                    radius = 1 + Mathf.Max(0, Mathf.RoundToInt(
-                        tile.Tower.GetEffectValue(TowerEffectCatalog.SpreadRangeAdd, 0f)));
-                    break;
-                }
-            for (var offset = -radius; offset <= radius; offset++)
-            {
-                var tileIndex = (result.TargetTileIndex + offset + State.Board.TileCount) % State.Board.TileCount;
-                boardView.RefreshTileEffect(State.Board, tileIndex);
-            }
+            foreach (var change in result.TileEffectVisualChanges)
+                boardView.ApplyTileEffectVisual(change.TileIndex, change.Effect);
         }
 }
 }

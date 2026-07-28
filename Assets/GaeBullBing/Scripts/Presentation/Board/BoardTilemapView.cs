@@ -253,6 +253,28 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             RefreshIndividualTileRenderer(tileIndex);
         }
 
+        public void ApplyTileEffectVisual(
+            int tileIndex,
+            GaeBullBing.Core.Towers.TileEffectVisualKind effect)
+        {
+            if (tileIndex < 0 || tileIndex >= BoardLayout.Cells.Count)
+                return;
+
+            var tile = effect switch
+            {
+                GaeBullBing.Core.Towers.TileEffectVisualKind.Fire
+                    when igniteTile != null => igniteTile,
+                GaeBullBing.Core.Towers.TileEffectVisualKind.Ice
+                    when frozenTile != null => frozenTile,
+                _ => normalTile
+            };
+            var cell = GetCellPosition(tileIndex);
+            Tilemap.SetTile(cell, tile);
+            Tilemap.SetColor(cell, Color.white);
+            ApplyPressTransform(tileIndex);
+            RefreshIndividualTileRenderer(tileIndex);
+        }
+
 
         public Vector3Int GetCellPosition(int tileIndex)
         {
@@ -266,14 +288,20 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
         public void SetBossFeatherVisual(int tileIndex, bool active)
         {
             if (tileIndex < 0 || tileIndex >= BoardLayout.Cells.Count) return;
-            if (currentBoardState != null)
-            {
-                RefreshTileEffects(currentBoardState);
-                return;
-            }
             var cell = GetCellPosition(tileIndex);
             Tilemap.SetTileFlags(cell, TileFlags.None);
-            Tilemap.SetTile(cell, active && featherTile != null ? featherTile : normalTile);
+            var underlyingTile = normalTile;
+            if (!active && currentBoardState != null)
+            {
+                var state = currentBoardState.Tiles[tileIndex];
+                underlyingTile = state.FireTurnsRemaining > 0 && igniteTile != null
+                    ? igniteTile
+                    : state.IceTurnsRemaining > 0 && frozenTile != null
+                        ? frozenTile
+                        : normalTile;
+            }
+            Tilemap.SetTile(cell,
+                active && featherTile != null ? featherTile : underlyingTile);
             Tilemap.SetColor(cell, Color.white);
             ApplyPressTransform(tileIndex);
             RefreshIndividualTileRenderer(tileIndex);

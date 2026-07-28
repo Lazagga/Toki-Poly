@@ -383,7 +383,12 @@ namespace GaeBullBing.Core.Game
         private System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveAttackEffects(
             System.Collections.Generic.IReadOnlyList<TowerAttackResult> attacks)
         {
-            var effects = towerEffectService.ResolveAfterAttacks(State, attacks);
+            var tileVisualChanges =
+                new System.Collections.Generic.List<TileEffectVisualChange>();
+            var effects = towerEffectService.ResolveAfterAttacks(
+                State,
+                attacks,
+                tileVisualChanges);
             var combined = new System.Collections.Generic.List<TowerAttackResult>();
             var consumedEffects = new System.Collections.Generic.HashSet<int>();
             foreach (var attack in attacks)
@@ -403,7 +408,58 @@ namespace GaeBullBing.Core.Game
             }
             for (var index = 0; index < effects.Count; index++)
                 if (!consumedEffects.Contains(index)) combined.Add(effects[index]);
+
+            AttachTileEffectVisualChanges(combined, tileVisualChanges);
             return combined;
+        }
+
+        private static void AttachTileEffectVisualChanges(
+            System.Collections.Generic.IList<TowerAttackResult> results,
+            System.Collections.Generic.IReadOnlyList<TileEffectVisualChange> changes)
+        {
+            if (results == null || changes == null || changes.Count == 0)
+                return;
+
+            var assigned =
+                new System.Collections.Generic.Dictionary<int,
+                    System.Collections.Generic.List<TileEffectVisualChange>>();
+            foreach (var change in changes)
+            {
+                var resultIndex = -1;
+                for (var index = 0; index < results.Count; index++)
+                {
+                    var result = results[index];
+                    if (result.TowerInstanceId != change.TowerInstanceId ||
+                        result.VisualKind != change.TriggerVisualKind)
+                        continue;
+                    if (change.TriggerTileIndex >= 0 &&
+                        result.TargetTileIndex != change.TriggerTileIndex)
+                        continue;
+                    resultIndex = index;
+                    break;
+                }
+
+                if (resultIndex < 0)
+                    for (var index = 0; index < results.Count; index++)
+                        if (results[index].TowerInstanceId == change.TowerInstanceId)
+                        {
+                            resultIndex = index;
+                            break;
+                        }
+                if (resultIndex < 0)
+                    continue;
+
+                if (!assigned.TryGetValue(resultIndex, out var list))
+                {
+                    list = new System.Collections.Generic.List<TileEffectVisualChange>();
+                    assigned[resultIndex] = list;
+                }
+                list.Add(change);
+            }
+
+            foreach (var pair in assigned)
+                results[pair.Key] =
+                    results[pair.Key].WithTileEffectVisualChanges(pair.Value);
         }
 
         public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveMonsterTurnEndEffects()

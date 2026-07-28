@@ -16,6 +16,36 @@ namespace GaeBullBing.Core.Towers
         RollingStone
     }
 
+    public enum TileEffectVisualKind
+    {
+        Normal,
+        Fire,
+        Ice
+    }
+
+    public readonly struct TileEffectVisualChange
+    {
+        public TileEffectVisualChange(
+            int towerInstanceId,
+            int tileIndex,
+            TileEffectVisualKind effect,
+            int triggerTileIndex,
+            TowerAttackVisualKind triggerVisualKind)
+        {
+            TowerInstanceId = towerInstanceId;
+            TileIndex = tileIndex;
+            Effect = effect;
+            TriggerTileIndex = triggerTileIndex;
+            TriggerVisualKind = triggerVisualKind;
+        }
+
+        public int TowerInstanceId { get; }
+        public int TileIndex { get; }
+        public TileEffectVisualKind Effect { get; }
+        public int TriggerTileIndex { get; }
+        public TowerAttackVisualKind TriggerVisualKind { get; }
+    }
+
     public readonly struct TowerCombatStats
     {
         public TowerCombatStats(int damage, int range, int targetCount, int attackCount = 1)
@@ -36,7 +66,8 @@ namespace GaeBullBing.Core.Towers
     {
         public TowerAttackResult(int towerInstanceId, int targetInstanceId, float damage, bool killed,
             bool knockbackApplied = false, int knockbackFromTile = -1, int knockbackToTile = -1,
-            int targetTileIndex = -1, TowerAttackVisualKind visualKind = TowerAttackVisualKind.None)
+            int targetTileIndex = -1, TowerAttackVisualKind visualKind = TowerAttackVisualKind.None,
+            IReadOnlyList<TileEffectVisualChange> tileEffectVisualChanges = null)
         {
             TowerInstanceId = towerInstanceId;
             TargetInstanceId = targetInstanceId;
@@ -47,6 +78,7 @@ namespace GaeBullBing.Core.Towers
             KnockbackToTile = knockbackToTile;
             TargetTileIndex = targetTileIndex;
             VisualKind = visualKind;
+            TileEffectVisualChanges = tileEffectVisualChanges ?? Array.Empty<TileEffectVisualChange>();
         }
 
         public int TowerInstanceId { get; }
@@ -58,9 +90,14 @@ namespace GaeBullBing.Core.Towers
         public int KnockbackToTile { get; }
         public int TargetTileIndex { get; }
         public TowerAttackVisualKind VisualKind { get; }
+        public IReadOnlyList<TileEffectVisualChange> TileEffectVisualChanges { get; }
         public TowerAttackResult WithKnockback(int fromTile, int toTile) =>
             new(TowerInstanceId, TargetInstanceId, Damage, Killed, true, fromTile, toTile,
-                TargetTileIndex, VisualKind);
+                TargetTileIndex, VisualKind, TileEffectVisualChanges);
+        public TowerAttackResult WithTileEffectVisualChanges(
+            IReadOnlyList<TileEffectVisualChange> changes) =>
+            new(TowerInstanceId, TargetInstanceId, Damage, Killed, KnockbackApplied,
+                KnockbackFromTile, KnockbackToTile, TargetTileIndex, VisualKind, changes);
     }
 
     public sealed class TowerCombatService
@@ -106,9 +143,6 @@ namespace GaeBullBing.Core.Towers
                 var cooldownBlocked = tower.AttackCooldownRounds > 0;
                 if (cooldownBlocked) tower.AttackCooldownRounds--;
                 if (tower.IsFeatherSealed || cooldownBlocked) continue;
-                if (HasEffect(tower, TowerEffectCatalog.Wall) ||
-                    HasEffect(tower, TowerEffectCatalog.LineTowerBuff))
-                    continue;
                 if (HasEffect(tower, TowerEffectCatalog.RollingStone) && !tower.StoneActive)
                 {
                     tower.StoneActive = true;
@@ -120,6 +154,9 @@ namespace GaeBullBing.Core.Towers
                     FinishTowerAttack(tower);
                     continue;
                 }
+                if (HasEffect(tower, TowerEffectCatalog.Wall) ||
+                    HasEffect(tower, TowerEffectCatalog.LineTowerBuff))
+                    continue;
                 if (HasEffect(tower, TowerEffectCatalog.ChainLine))
                 {
                     var resultCountBeforeAttack = results.Count;

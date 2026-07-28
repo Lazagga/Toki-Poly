@@ -7,19 +7,32 @@ namespace GaeBullBing.Core.Towers
 {
     public sealed class TowerEffectService
     {
+        private ICollection<TileEffectVisualChange> activeVisualChanges;
+        private HashSet<int> activeFieldCollisionTiles;
+        private int activeTriggerTileIndex = -1;
+        private TowerAttackVisualKind activeTriggerVisualKind = TowerAttackVisualKind.None;
+
         public IReadOnlyList<TowerAttackResult> PlaceFireField(GameState state, int tileIndex, int sourceTowerInstanceId = 0) =>
             PlaceTileField(state, tileIndex, true, sourceTowerInstanceId);
 
         public IReadOnlyList<TowerAttackResult> PlaceIceField(GameState state, int tileIndex, int sourceTowerInstanceId = 0) =>
             PlaceTileField(state, tileIndex, false, sourceTowerInstanceId);
 
-        public IReadOnlyList<TowerAttackResult> ResolveAfterAttacks(GameState state, IReadOnlyList<TowerAttackResult> attacks)
+        public IReadOnlyList<TowerAttackResult> ResolveAfterAttacks(
+            GameState state,
+            IReadOnlyList<TowerAttackResult> attacks,
+            ICollection<TileEffectVisualChange> visualChanges = null)
         {
-            
+            activeVisualChanges = visualChanges;
+            activeFieldCollisionTiles = new HashSet<int>();
             var extra = new List<TowerAttackResult>();
+            activeTriggerTileIndex = -1;
+            activeTriggerVisualKind = TowerAttackVisualKind.ChainLine;
             SpreadChainLineFieldsFromSnapshot(state, attacks, extra);
             foreach (var attack in attacks)
             {
+                activeTriggerTileIndex = attack.TargetTileIndex;
+                activeTriggerVisualKind = attack.VisualKind;
                 // Area markers carry every tile covered by an area attack. They do not deal
                 // damage again, but tile-field traits must use the same attacked tile set.
                 if (attack.VisualKind == TowerAttackVisualKind.AreaTile)
@@ -83,7 +96,8 @@ namespace GaeBullBing.Core.Towers
                     {
                         var chainedTile = (attackTileIndex - distance + state.Board.TileCount) % state.Board.TileCount;
                         attackedTiles.Add(chainedTile);
-                        
+                        activeTriggerTileIndex = chainedTile;
+                        activeTriggerVisualKind = TowerAttackVisualKind.ChainTile;
                         if (tower.DefinitionId == "TOW_04")
                             SpreadTileField(state, chainedTile,
                                 1 + Math.Max(0, (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.SpreadRangeAdd, 0f))),
@@ -96,10 +110,12 @@ namespace GaeBullBing.Core.Towers
                                 targetTileIndex: chainedTile, visualKind: TowerAttackVisualKind.ChainTile));
                     }
                 }
+                activeTriggerTileIndex = attackTileIndex;
+                activeTriggerVisualKind = attack.VisualKind;
                 if (HasEffect(tower, TowerEffectCatalog.TileBurn))
-                    PlaceFields(state, attackedTiles, true, attack.TowerInstanceId, extra);
+                    PlaceAttackFields(state, attackedTiles, true, attack, tower, extra);
                 if (HasEffect(tower, TowerEffectCatalog.TileFreeze))
-                    PlaceFields(state, attackedTiles, false, attack.TowerInstanceId, extra);
+                    PlaceAttackFields(state, attackedTiles, false, attack, tower, extra);
                 if (target == null || target.IsDead) continue;
                 if (HasEffect(tower, TowerEffectCatalog.SpreadDebuff))
                     SpreadStatuses(state, target, 1);
@@ -121,7 +137,39 @@ namespace GaeBullBing.Core.Towers
                         tower.GetEffectValue(TowerEffectCatalog.BurnDamage, .2f) * target.BurnStacks,
                         attack.TowerInstanceId, extra);
             }
-            state.Monsters.RemoveAll(m => m.IsDead); return extra;
+            state.Monsters.RemoveAll(m => m.IsDead);
+            activeVisualChanges = null;
+            activeFieldCollisionTiles = null;
+            return extra;
+        }
+
+        private void PlaceAttackFields(
+            GameState state,
+            IEnumerable<int> attackedTiles,
+            bool placeFire,
+            TowerAttackResult attack,
+            TowerState tower,
+            ICollection<TowerAttackResult> results)
+        {
+            var tiles = new List<int>(attackedTiles);
+            var revealIndividually = HasEffect(tower, TowerEffectCatalog.ChainTile);
+            var revealAsArea = !revealIndividually && tiles.Count > 1;
+            foreach (var tileIndex in tiles)
+            {
+                activeTriggerTileIndex = revealIndividually || revealAsArea
+                    ? tileIndex
+                    : attack.TargetTileIndex;
+                activeTriggerVisualKind = revealIndividually
+                    ? TowerAttackVisualKind.ChainTile
+                    : revealAsArea
+                        ? TowerAttackVisualKind.AreaTile
+                        : attack.VisualKind;
+                var fieldResults = placeFire
+                    ? PlaceFireField(state, tileIndex, attack.TowerInstanceId)
+                    : PlaceIceField(state, tileIndex, attack.TowerInstanceId);
+                foreach (var result in fieldResults)
+                    results.Add(result);
+            }
         }
 
         public IReadOnlyList<TowerAttackResult> ResolveMonsterTurnEnd(GameState state)
@@ -217,15 +265,33 @@ private void SpreadTileField(
                 sourceTowerInstanceId, results);
         }
 
-        private static IReadOnlyList<TowerAttackResult> PlaceTileField(GameState state, int tileIndex, bool placeFire, int sourceTowerInstanceId)
+        private IReadOnlyList<TowerAttackResult> PlaceTileField(
+            GameState state,
+            int tileIndex,
+            bool placeFire,
+            int sourceTowerInstanceId)
         {
             var results = new List<TowerAttackResult>();
             var tile = state.Board.Tiles[tileIndex];
+            if (activeFieldCollisionTiles != null &&
+                activeFieldCollisionTiles.Contains(tileIndex))
+            {
+                RecordTileVisualChange(
+                    sourceTowerInstanceId,
+                    tileIndex,
+                    TileEffectVisualKind.Normal);
+                return results;
+            }
             var collides = placeFire ? tile.IceTurnsRemaining > 0 : tile.FireTurnsRemaining > 0;
             if (collides)
             {
                 tile.FireTurnsRemaining = 0;
                 tile.IceTurnsRemaining = 0;
+                activeFieldCollisionTiles?.Add(tileIndex);
+                RecordTileVisualChange(
+                    sourceTowerInstanceId,
+                    tileIndex,
+                    TileEffectVisualKind.Normal);
                 DamageTile(state, tileIndex, 15 + state.Difficulty.Level * 14, sourceTowerInstanceId, results);
                 state.Monsters.RemoveAll(monster => monster.IsDead);
                 return results;
@@ -233,7 +299,24 @@ private void SpreadTileField(
 
             if (placeFire) tile.FireTurnsRemaining = Board.TileState.OneTurnEffectDuration;
             else tile.IceTurnsRemaining = Board.TileState.OneTurnEffectDuration;
+            RecordTileVisualChange(
+                sourceTowerInstanceId,
+                tileIndex,
+                placeFire ? TileEffectVisualKind.Fire : TileEffectVisualKind.Ice);
             return results;
+        }
+
+        private void RecordTileVisualChange(
+            int towerInstanceId,
+            int tileIndex,
+            TileEffectVisualKind effect)
+        {
+            activeVisualChanges?.Add(new TileEffectVisualChange(
+                towerInstanceId,
+                tileIndex,
+                effect,
+                activeTriggerTileIndex,
+                activeTriggerVisualKind));
         }
         private static void ApplyDamage(GameState state, MonsterState monster, float damage, int tower, ICollection<TowerAttackResult> results,
             TowerAttackVisualKind visualKind = TowerAttackVisualKind.Projectile)
