@@ -6234,10 +6234,10 @@ MonoBehaviour:
   spawnLeafSettleDuration: 0.5
   spawnLeafBurstDistance: 0.62
   spawnLeafFallDistance: 0.42
-  spawnLeafMinimumAngle: 15
-  spawnLeafMaximumAngle: 55
+  spawnLeafMinimumAngle: 45
+  spawnLeafMaximumAngle: 90
   spawnLeafScale: 0.9
-  spawnLeafOriginOffset: {x: 0, y: 0.6, z: 0}
+  spawnLeafOriginOffset: {x: 0, y: 1, z: 0}
   playerView: {fileID: 1098699013}
 --- !u!4 &727827689
 Transform:
@@ -10743,7 +10743,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.40784314, g: 0.32156864, b: 0.2627451, a: 0.96}
+  m_Color: {r: 0.40784314, g: 0.32156864, b: 0.2627451, a: 0.58431375}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

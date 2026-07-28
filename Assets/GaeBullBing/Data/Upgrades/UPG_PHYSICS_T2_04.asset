@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "TOW_03_\uBB3C\uB9AC_T2_04"
   description: "\uC55E\uC73C\uB85C \uC774 \uD0C0\uC77C\uC744 \uBC1F\uC744 \uB54C\uB9C8\uB2E4
     \uC774 \uB77C\uC778\uC758 \uBAA8\uB4E0 \uD0C0\uC6CC \uD53C\uD574\uB7C9\uC774
-    10% \uC99D\uAC00\uD569\uB2C8\uB2E4."
+    15% \uC99D\uAC00\uD569\uB2C8\uB2E4."
   element: 3
   tier: 2
   weight: 1
@@ -26,4 +26,4 @@ MonoBehaviour:
     Value: 20
   effects:
   - Id: tile_step_line_buff
-    Value: 10
+    Value: 15

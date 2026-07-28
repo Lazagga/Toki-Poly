@@ -324,12 +324,12 @@
       "element": "Physics",
       "tier": 2,
       "weight": 1,
-      "description": "앞으로 이 타일을 밟을 때마다 이 라인의 모든 타워 피해량이 10% 증가합니다.",
+      "description": "앞으로 이 타일을 밟을 때마다 이 라인의 모든 타워 피해량이 15% 증가합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
       "effect_ids": [
-        { "id": "tile_step_line_buff", "value": 10 }
+        { "id": "tile_step_line_buff", "value": 15 }
       ]
     },
     {
