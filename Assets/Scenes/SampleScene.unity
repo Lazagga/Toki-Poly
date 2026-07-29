@@ -8195,7 +8195,7 @@ MonoBehaviour:
   crowFlyingFrontSprite: {fileID: 21300000, guid: 7b92204cc4162e140860382d08dd9a87, type: 3}
   crowFlyingBackSprite: {fileID: 21300000, guid: 544dafb5c2c794743b899f8a80916930, type: 3}
   bossFeatherSprite: {fileID: 170912805055401693, guid: 03e79c321b8b5704bad285ac0b28b1ac, type: 3}
-  spawnLeafSprite: {fileID: 0}
+  spawnLeafSprite: {fileID: 3664983861114067704, guid: ea1b8ac817c215b49974d42ae1f5e701, type: 3}
   spawnLeafCount: 7
   spawnLeafBurstDuration: 0.1
   spawnLeafSettleDuration: 0.5
@@ -8203,7 +8203,7 @@ MonoBehaviour:
   spawnLeafFallDistance: 0.42
   spawnLeafMinimumAngle: 45
   spawnLeafMaximumAngle: 90
-  spawnLeafScale: 0.9
+  spawnLeafScale: 0.2
   spawnLeafOriginOffset: {x: 0, y: 1, z: 0}
   playerView: {fileID: 1098699013}
 --- !u!4 &727827689
@@ -9570,7 +9570,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 1
     m_MinSize: 14
-    m_MaxSize: 26
+    m_MaxSize: 28
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -11958,7 +11958,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 1
     m_MinSize: 14
-    m_MaxSize: 26
+    m_MaxSize: 28
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -20278,7 +20278,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 1
     m_MinSize: 14
-    m_MaxSize: 26
+    m_MaxSize: 28
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
