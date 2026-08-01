@@ -614,6 +614,35 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             else StartCoroutine(RollAndMoveRoutine());
         }
 
+        public void RefreshDiceDestinationHighlights()
+        {
+            if (boardView == null || State?.Board == null || State.Dice == null ||
+                State.Dice.Count != DiceInventoryState.EquippedCount)
+                return;
+
+            var destinations = new HashSet<int>();
+            var first = State.Dice[0];
+            var second = State.Dice[1];
+            if (first == null || second == null) return;
+
+            for (var firstFace = 0; firstFace < first.Faces.Length; firstFace++)
+            {
+                if (firstFace >= first.Weights.Length || first.Weights[firstFace] <= 0)
+                    continue;
+                for (var secondFace = 0; secondFace < second.Faces.Length; secondFace++)
+                {
+                    if (secondFace >= second.Weights.Length || second.Weights[secondFace] <= 0)
+                        continue;
+                    var distance = first.Faces[firstFace] + second.Faces[secondFace];
+                    destinations.Add((State.Player.CurrentTileIndex + distance) % State.Board.TileCount);
+                }
+            }
+            boardView.SetSelectionHighlights(destinations);
+        }
+
+        public void ClearTileSelectionHighlights() =>
+            boardView?.ClearSelectionHighlights();
+
         private IEnumerator CloseTileInformationThenRoll()
         {
             isBusy = true;
@@ -841,12 +870,18 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 tileIndex =>
                 {
                     if (completesLap && tileIndex == 0)
-                        lapOverviewRoutine = StartCoroutine(cameraController.ReturnToOverview());
+                        lapOverviewRoutine = StartCoroutine(ReturnToOverviewAfterPress(tileIndex));
                 },
                 tileIndex => completesLap && tileIndex == 0
                     ? PlayLapCompletionPresentation(lapOverviewRoutine)
                     : null);
             BeginCurrentTileAction();
+        }
+
+        private IEnumerator ReturnToOverviewAfterPress(int tileIndex)
+        {
+            yield return boardView.WaitForPressCompletion(tileIndex);
+            yield return cameraController.ReturnToOverview();
         }
 
         private IEnumerator PlayLapCompletionPresentation(Coroutine overviewRoutine)
@@ -949,8 +984,14 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         private IEnumerator PrepareTileSelectionRoutine()
         {
-            yield return cameraController.ReturnToOverview();
             var sourceTileIndex = State.Player.CurrentTileIndex;
+            yield return boardView.WaitForPressCompletion(sourceTileIndex);
+            var destinations = new List<int>(State.Board.TileCount - 1);
+            for (var tileIndex = 0; tileIndex < State.Board.TileCount; tileIndex++)
+                if (tileIndex != sourceTileIndex)
+                    destinations.Add(tileIndex);
+            boardView.SetSelectionHighlights(destinations);
+            yield return cameraController.ReturnToOverview();
             tileSelectionView.BeginSelection(
                 SelectTeleportDestination,
                 tileIndex => ShowTileInformation(tileIndex, false),
@@ -971,6 +1012,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         {
             if (State.CurrentPhase != TurnPhase.CornerSelection || tileIndex < 0 ||
                 tileIndex >= State.Board.TileCount || tileIndex == State.Player.CurrentTileIndex) return;
+            ClearTileSelectionHighlights();
             HideTileInformation();
             StartCoroutine(MoveToSelectedTileRoutine(tileIndex));
         }

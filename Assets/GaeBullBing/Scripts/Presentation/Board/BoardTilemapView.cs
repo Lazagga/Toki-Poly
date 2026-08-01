@@ -32,15 +32,21 @@ namespace GaeBullBing.Presentation.Board
         [SerializeField] private bool buildOnAwake = true;
         [SerializeField, Min(0f)] private float playerPressDepth = 0.1f;
         [SerializeField, Min(0.01f)] private float playerPressDuration = 0.07f;
+        [Header("Selection Highlight")]
+        [SerializeField, Min(0f)] private float selectionLiftHeight = 0.16f;
+        [SerializeField, Min(0.01f)] private float selectionLiftDuration = 0.14f;
 
         private Tilemap tilemap;
         private readonly Dictionary<int, Coroutine> pressRoutines = new();
         private readonly float[] pressAmounts = new float[BoardState.DefaultTileCount];
         private readonly float[] transitionOffsets = new float[BoardState.DefaultTileCount];
+        private readonly float[] selectionLiftAmounts = new float[BoardState.DefaultTileCount];
+        private readonly bool[] selectionLiftTargets = new bool[BoardState.DefaultTileCount];
         private readonly Dictionary<int, SpriteRenderer> individualTileRenderers = new();
         private readonly Dictionary<int, SpriteRenderer> buildElementOverlayRenderers = new();
         private readonly Dictionary<int, SpriteRenderer> bonusTileBorderRenderers = new();
         private BoardState currentBoardState;
+        private Coroutine selectionLiftRoutine;
 
         public Tilemap Tilemap => tilemap != null ? tilemap : tilemap = GetComponent<Tilemap>();
         public float PressPulseDuration => playerPressDuration * 2f;
@@ -332,9 +338,86 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
         {
             if (tileIndex < 0 || tileIndex >= pressAmounts.Length)
                 return Vector3.zero;
-            var localOffset = Vector3.up * transitionOffsets[tileIndex] +
+            var localOffset = Vector3.up *
+                (transitionOffsets[tileIndex] + selectionLiftAmounts[tileIndex]) +
                 Vector3.down * (playerPressDepth * pressAmounts[tileIndex]);
             return Tilemap.transform.TransformVector(localOffset);
+        }
+
+        public void SetSelectionHighlights(IEnumerable<int> tileIndices)
+        {
+            var nextTargets = new bool[selectionLiftTargets.Length];
+            if (tileIndices != null)
+                foreach (var tileIndex in tileIndices)
+                    if (tileIndex >= 0 && tileIndex < nextTargets.Length)
+                        nextTargets[tileIndex] = true;
+
+            var changed = false;
+            for (var index = 0; index < selectionLiftTargets.Length; index++)
+            {
+                if (selectionLiftTargets[index] == nextTargets[index]) continue;
+                selectionLiftTargets[index] = nextTargets[index];
+                changed = true;
+            }
+            if (!changed) return;
+
+            if (selectionLiftRoutine != null)
+                StopCoroutine(selectionLiftRoutine);
+            selectionLiftRoutine = StartCoroutine(AnimateSelectionLift());
+        }
+
+        public void ClearSelectionHighlights(bool instant = false)
+        {
+            var changed = false;
+            for (var index = 0; index < selectionLiftTargets.Length; index++)
+            {
+                if (!selectionLiftTargets[index] && selectionLiftAmounts[index] <= 0f)
+                    continue;
+                selectionLiftTargets[index] = false;
+                changed = true;
+            }
+            if (!changed) return;
+
+            if (selectionLiftRoutine != null)
+            {
+                StopCoroutine(selectionLiftRoutine);
+                selectionLiftRoutine = null;
+            }
+            if (instant)
+            {
+                for (var index = 0; index < selectionLiftAmounts.Length; index++)
+                {
+                    selectionLiftAmounts[index] = 0f;
+                    ApplyPressTransform(index);
+                }
+                return;
+            }
+            selectionLiftRoutine = StartCoroutine(AnimateSelectionLift());
+        }
+
+        private IEnumerator AnimateSelectionLift()
+        {
+            var starts = (float[])selectionLiftAmounts.Clone();
+            var duration = Mathf.Max(0.01f, selectionLiftDuration);
+            for (var elapsed = 0f; elapsed < duration; elapsed += Time.deltaTime)
+            {
+                var progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                for (var index = 0; index < selectionLiftAmounts.Length; index++)
+                {
+                    var target = selectionLiftTargets[index] ? selectionLiftHeight : 0f;
+                    selectionLiftAmounts[index] = Mathf.Lerp(starts[index], target, progress);
+                    ApplyPressTransform(index);
+                }
+                yield return null;
+            }
+
+            for (var index = 0; index < selectionLiftAmounts.Length; index++)
+            {
+                selectionLiftAmounts[index] =
+                    selectionLiftTargets[index] ? selectionLiftHeight : 0f;
+                ApplyPressTransform(index);
+            }
+            selectionLiftRoutine = null;
         }
 
         public void SetTransitionOffset(int tileIndex, float localYOffset)
@@ -398,6 +481,14 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             pressRoutines[tileIndex] = StartCoroutine(AnimatePressPulse(tileIndex));
         }
 
+        public IEnumerator WaitForPressCompletion(int tileIndex)
+        {
+            if (tileIndex < 0 || tileIndex >= pressAmounts.Length)
+                yield break;
+            while (pressRoutines.ContainsKey(tileIndex))
+                yield return null;
+        }
+
         private void SetPressAmount(int tileIndex, float target, bool instant)
         {
             if (tileIndex < 0 || tileIndex >= pressAmounts.Length)
@@ -450,7 +541,8 @@ public void RefreshTileEffect(BoardState board, int tileIndex)
             var cell = GetCellPosition(tileIndex);
             Tilemap.SetTileFlags(cell, TileFlags.None);
             Tilemap.SetTransformMatrix(cell, Matrix4x4.TRS(
-                Vector3.up * transitionOffsets[tileIndex] +
+                Vector3.up *
+                (transitionOffsets[tileIndex] + selectionLiftAmounts[tileIndex]) +
                 Vector3.down * (playerPressDepth * pressAmounts[tileIndex]),
                 Quaternion.identity,
                 Vector3.one));

@@ -191,6 +191,7 @@ namespace GaeBullBing.Presentation.UI
                 CloseDropdown();
                 hud.RefreshRollAvailability();
                 hud.RefreshDiceFaces();
+                controller.RefreshDiceDestinationHighlights();
             });
         }
 

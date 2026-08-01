@@ -1,10 +1,10 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace GaeBullBing.Presentation.UI
 {
-    public sealed class TileInfoPanelView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public sealed class TileInfoPanelView : MonoBehaviour
     {
         [SerializeField] private GameObject panelRoot;
         [SerializeField] private Text titleText;
@@ -12,8 +12,12 @@ namespace GaeBullBing.Presentation.UI
         [SerializeField] private Text monsterText;
         [SerializeField] private ScrollRect informationScroll;
         [SerializeField, Range(0f, 1f)] private float pointerHoverAlpha = .55f;
+        [SerializeField, Min(0f)] private float pointerHoverFadeDuration = .1f;
 
         private CanvasGroup panelCanvasGroup;
+        private RectTransform panelRect;
+        private Canvas panelCanvas;
+        private float targetPanelAlpha = 1f;
 
         public bool IsVisible => panelRoot != null && panelRoot.activeSelf;
 
@@ -26,6 +30,7 @@ namespace GaeBullBing.Presentation.UI
                 monsterText.text = monsterDescription;
             }
             if (panelRoot != null) panelRoot.SetActive(true);
+            targetPanelAlpha = 1f;
             SetPanelAlpha(1f);
             Canvas.ForceUpdateCanvases();
             if (informationScroll != null)
@@ -43,24 +48,46 @@ namespace GaeBullBing.Presentation.UI
                 panelCanvasGroup = panelRoot.GetComponent<CanvasGroup>();
                 if (panelCanvasGroup == null)
                     panelCanvasGroup = panelRoot.AddComponent<CanvasGroup>();
+                panelRect = panelRoot.GetComponent<RectTransform>();
+                panelCanvas = panelRoot.GetComponentInParent<Canvas>();
             }
+        }
+
+        private void Update()
+        {
+            if (panelCanvasGroup == null)
+                return;
+
+            var pointerInside = false;
+            if (IsVisible && panelRect != null && Mouse.current != null)
+            {
+                UnityEngine.Camera eventCamera = null;
+                if (panelCanvas != null && panelCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                    eventCamera = panelCanvas.worldCamera;
+                pointerInside = RectTransformUtility.RectangleContainsScreenPoint(
+                    panelRect,
+                    Mouse.current.position.ReadValue(),
+                    eventCamera);
+            }
+
+            targetPanelAlpha = pointerInside ? pointerHoverAlpha : 1f;
+            if (pointerHoverFadeDuration <= 0f)
+            {
+                SetPanelAlpha(targetPanelAlpha);
+                return;
+            }
+
+            panelCanvasGroup.alpha = Mathf.MoveTowards(
+                panelCanvasGroup.alpha,
+                targetPanelAlpha,
+                Time.unscaledDeltaTime / pointerHoverFadeDuration);
         }
 
         public void Hide()
         {
+            targetPanelAlpha = 1f;
             SetPanelAlpha(1f);
             if (panelRoot != null) panelRoot.SetActive(false);
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (IsVisible)
-                SetPanelAlpha(pointerHoverAlpha);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            SetPanelAlpha(1f);
         }
 
         private void SetPanelAlpha(float alpha)
