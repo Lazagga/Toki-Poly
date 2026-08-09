@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System;
 using GaeBullBing.Core;
 using GaeBullBing.Core.Game;
+using GaeBullBing.Core.Data;
 using GaeBullBing.Core.Monsters;
 using GaeBullBing.Core.Towers;
 using GaeBullBing.Presentation.Board;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 
 namespace GaeBullBing.Presentation.Towers
@@ -71,10 +73,17 @@ namespace GaeBullBing.Presentation.Towers
         private static Sprite proceduralLightningSprite;
         private static Sprite proceduralEllipseFillSprite;
         private readonly Dictionary<int, ElectricChainState> electricChainStates = new();
+        private IReadOnlyList<TowerDefinition> towerDefinitions;
 
         public Sprite PhysicsAttackSprite => physicsAttackSprite;
 
-        public void Initialize(BoardTilemapView view) => boardView = view;
+        public void Initialize(
+            BoardTilemapView view,
+            IReadOnlyList<TowerDefinition> definitions = null)
+        {
+            boardView = view;
+            towerDefinitions = definitions;
+        }
 
         public IEnumerator Play(
             GameState state,
@@ -101,6 +110,7 @@ namespace GaeBullBing.Presentation.Towers
                     onImpact?.Invoke();
                     yield break;
                 }
+                PlayAttackSound(definitionId, towerTileIndex);
                 if (useExperimentalAreaEffects)
                 {
                     electricChainStates.Remove(result.TowerInstanceId);
@@ -116,6 +126,7 @@ namespace GaeBullBing.Presentation.Towers
 
             if (result.VisualKind == TowerAttackVisualKind.ChainTile && result.TargetTileIndex >= 0)
             {
+                PlayAttackSound(definitionId, towerTileIndex);
                 if (useExperimentalAreaEffects && definitionId == "TOW_04")
                 {
                     yield return PlayExperimentalAreaEffect(
@@ -139,7 +150,7 @@ namespace GaeBullBing.Presentation.Towers
 if (result.VisualKind == TowerAttackVisualKind.AreaTile && result.TargetTileIndex >= 0)
             {
                 yield return PlayAreaTiles(state, result.TowerInstanceId,
-                    new[] { result.TargetTileIndex }, onImpact);
+                    new[] { result.TargetTileIndex }, onImpact, false);
                 yield break;
             }
 
@@ -150,6 +161,7 @@ if (result.VisualKind == TowerAttackVisualKind.AreaTile && result.TargetTileInde
             }
 
             var sprite = GetAttackSprite(definitionId);
+            PlayAttackSound(definitionId, towerTileIndex);
             if (sprite != null)
                 yield return PlayProjectile(sprite, towerTileIndex, result.TargetTileIndex,
                     definitionId == "TOW_03" ? physicsProjectileScale : 1f, onImpact);
@@ -220,7 +232,8 @@ if (result.VisualKind == TowerAttackVisualKind.AreaTile && result.TargetTileInde
             GameState state,
             int towerInstanceId,
             IReadOnlyList<int> tileIndices,
-            Action onImpact = null)
+            Action onImpact = null,
+            bool playSound = true)
         {
             if (state == null || tileIndices == null || tileIndices.Count == 0)
             {
@@ -232,6 +245,8 @@ if (result.VisualKind == TowerAttackVisualKind.AreaTile && result.TargetTileInde
                 onImpact?.Invoke();
                 yield break;
             }
+            if (playSound && TryFindTower(state, towerInstanceId, out var towerTileIndex, out _))
+                PlayAttackSound(definitionId, towerTileIndex);
             var sprite = GetAreaTileSprite(definitionId);
             if (useExperimentalAreaEffects &&
                 TryGetExperimentalAreaKind(definitionId, out var areaKind))
@@ -1098,6 +1113,35 @@ if (result.VisualKind == TowerAttackVisualKind.AreaTile && result.TargetTileInde
             tileIndex = -1;
             definitionId = null;
             return false;
+        }
+
+        private void PlayAttackSound(string definitionId, int towerTileIndex)
+        {
+            if (towerDefinitions == null || boardView == null)
+                return;
+            TowerDefinition definition = null;
+            for (var index = 0; index < towerDefinitions.Count; index++)
+                if (towerDefinitions[index] != null &&
+                    towerDefinitions[index].Id == definitionId)
+                {
+                    definition = towerDefinitions[index];
+                    break;
+                }
+            if (definition == null)
+                return;
+
+            var audio = AudioManager.Instance;
+            if (audio == null)
+                return;
+            var clip = definition.Element switch
+            {
+                TowerElement.Fire => audio.Tower.FireAttack,
+                TowerElement.Ice => audio.Tower.IceAttack,
+                TowerElement.Electric => audio.Tower.ElectricAttack,
+                TowerElement.Physics => audio.Tower.PhysicsAttack,
+                _ => null
+            };
+            audio.PlayAt(clip, boardView.GetWorldPosition(towerTileIndex));
         }
     }
 }

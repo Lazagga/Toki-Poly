@@ -4,6 +4,7 @@ using System;
 using GaeBullBing.Core;
 using GaeBullBing.Core.Data;
 using GaeBullBing.Presentation.Board;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 
 namespace GaeBullBing.Presentation.Towers
@@ -60,6 +61,8 @@ namespace GaeBullBing.Presentation.Towers
             var renderer = GetOrCreateTowerView(tileIndex);
             ApplyTowerVisual(tileIndex, renderer, definition, tier);
             renderer.transform.localScale = Vector3.zero;
+            var audio = AudioManager.Instance;
+            audio?.PlayAt(audio.Tower.Build, boardView.GetWorldPosition(tileIndex));
 
             yield return ScaleTower(
                 tileIndex,
@@ -84,6 +87,10 @@ namespace GaeBullBing.Presentation.Towers
             IReadOnlyList<int> tileIndices,
             TowerElement element)
         {
+            var audio = AudioManager.Instance;
+            if (tileIndices != null && tileIndices.Count > 0)
+                audio?.PlayAt(audio.Tower.OverUpgrade,
+                    boardView.GetWorldPosition(tileIndices[0]));
             yield return PlayEnhancementAnimation(
                 tileIndices,
                 GetEnhancementColor(element),
@@ -186,6 +193,9 @@ namespace GaeBullBing.Presentation.Towers
                 yield return PlayBuildAnimation(tileIndex, definition, tier);
                 yield break;
             }
+
+            var audio = AudioManager.Instance;
+            audio?.PlayAt(audio.Tower.Upgrade, boardView.GetWorldPosition(tileIndex));
 
             yield return ScaleTower(
                 tileIndex,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using GaeBullBing.Core.Dice;
 using GaeBullBing.Presentation.Game;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -110,7 +111,12 @@ namespace GaeBullBing.Presentation.UI
             towerBoostButton.onClick.RemoveAllListeners();
             acquireButton.onClick.AddListener(() =>
             {
-                if (controller.Session.StoreDiceReward(pendingReward)) CloseReward(completed);
+                if (controller.Session.StoreDiceReward(pendingReward))
+                {
+                    var audio = AudioManager.Instance;
+                    audio?.PlayUi(audio.Dice.Reward);
+                    CloseReward(completed);
+                }
                 else ShowReplacement(completed);
             });
             towerBoostButton.onClick.AddListener(() =>
@@ -144,6 +150,8 @@ namespace GaeBullBing.Presentation.UI
                 button.onClick.AddListener(() =>
                 {
                     controller.Session.ReplaceReserveDice(inventoryIndex, pendingReward);
+                    var audio = AudioManager.Instance;
+                    audio?.PlayUi(audio.Dice.Reward);
                     CloseReward(completed);
                 });
             }
@@ -153,6 +161,8 @@ namespace GaeBullBing.Presentation.UI
         {
             if (slot < 0 || slot >= slotButtons.Length) return;
             selectedSlot = slot;
+            var audio = AudioManager.Instance;
+            audio?.PlayUi(audio.Dice.Select);
             SetSelectedSlot(slot);
             dropdown.gameObject.SetActive(true);
             hud.SetDiceSelectionOpen(true);
@@ -188,6 +198,8 @@ namespace GaeBullBing.Presentation.UI
             button.onClick.AddListener(() =>
             {
                 controller.Session.QueueDiceEquip(selectedSlot, inventoryIndex);
+                var audio = AudioManager.Instance;
+                audio?.PlayUi(audio.Dice.Equip);
                 CloseDropdown();
                 hud.RefreshRollAvailability();
                 hud.RefreshDiceFaces();

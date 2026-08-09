@@ -4,6 +4,7 @@ using GaeBullBing.Core.Monsters;
 using GaeBullBing.Core.Towers;
 using GaeBullBing.Core.Data;
 using GaeBullBing.Presentation.Board;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -115,6 +116,11 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
             Spawn(state);
             if (state == null || !views.TryGetValue(state.InstanceId, out var view))
                 yield break;
+
+            var audio = AudioManager.Instance;
+            audio?.PlayAt(
+                state.IsBoss ? audio.Monster.BossSpawn : audio.Monster.Spawn,
+                view.transform.position);
 
             if (state.IsBoss)
                 yield return PlayBossSpawnEntrance(state.InstanceId);
@@ -273,6 +279,10 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
             if (!views.TryGetValue(result.InstanceId, out var view))
                 yield break;
 
+            var audio = AudioManager.Instance;
+            if (result.Distance > 0)
+                audio?.PlayAt(audio.Monster.Move, view.transform.position);
+
             if (states.TryGetValue(result.InstanceId, out var movingState))
                 view.UpdateStatus(movingState);
 
@@ -293,6 +303,7 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
             {
                 if (result.IsBoss)
                     yield return view.PlayGoalArrival();
+                audio?.PlayAt(audio.Monster.Escape, view.transform.position);
                 view.TileChanged -= OnMonsterTileChanged;
                 views.Remove(result.InstanceId);
                 states.Remove(result.InstanceId);
@@ -304,6 +315,8 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
         private IEnumerator PlayFeatherEvent(BossFeatherEvent featherEvent, MonsterBoardView bossView)
         {
             var target = boardView.GetWorldPosition(featherEvent.TileIndex) + new Vector3(0f, .12f, 0f);
+            var audio = AudioManager.Instance;
+            audio?.PlayAt(audio.Monster.BossFeather, target);
             var feather = new GameObject(featherEvent.Type == BossFeatherEventType.Drop
                 ? "Boss Feather Drop"
                 : "Boss Feather Recover");
@@ -367,6 +380,11 @@ public void RefreshStatuses()
 view.UpdateHealth(health, state.MaxHealth);
             }
             if (result.Damage > 0) StartCoroutine(view.PlayHit());
+            if (result.Damage > 0 && !result.Killed)
+            {
+                var audio = AudioManager.Instance;
+                audio?.PlayAt(audio.Monster.Hit, view.transform.position);
+            }
         }
 
         public IEnumerator CompleteAttack(TowerAttackResult result)
@@ -375,10 +393,16 @@ view.UpdateHealth(health, state.MaxHealth);
                 yield break;
 
             if (result.KnockbackApplied && result.KnockbackFromTile != result.KnockbackToTile)
+            {
+                var audio = AudioManager.Instance;
+                audio?.PlayAt(audio.Status.Knockback, view.transform.position);
                 yield return view.PlayKnockback(result.KnockbackFromTile, result.KnockbackToTile);
+            }
             if (result.Killed)
             {
                 var tile = view.CurrentTileIndex;
+                var audio = AudioManager.Instance;
+                audio?.PlayAt(audio.Monster.Capture, view.transform.position);
                 view.TileChanged -= OnMonsterTileChanged;
                 views.Remove(result.TargetInstanceId);
                 states.Remove(result.TargetInstanceId);

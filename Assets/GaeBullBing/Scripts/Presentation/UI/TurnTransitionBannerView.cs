@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using GaeBullBing.Presentation.Audio;
 
 namespace GaeBullBing.Presentation.UI
 {
@@ -84,9 +85,19 @@ namespace GaeBullBing.Presentation.UI
             ropeRect.anchoredPosition = position;
         }
 
-        public IEnumerator PlayPlayerTurn() => Play(playerTurnSprite);
+        public IEnumerator PlayPlayerTurn()
+        {
+            var audio = AudioManager.Instance;
+            audio?.PlayUi(audio.GameFlow.PlayerTurn);
+            yield return Play(playerTurnSprite);
+        }
 
-        public IEnumerator PlayEnemyTurn() => Play(enemyTurnSprite);
+        public IEnumerator PlayEnemyTurn()
+        {
+            var audio = AudioManager.Instance;
+            audio?.PlayUi(audio.GameFlow.EnemyTurn);
+            yield return Play(enemyTurnSprite);
+        }
 
         private IEnumerator Play(Sprite sprite)
         {

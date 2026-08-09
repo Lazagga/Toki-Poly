@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GaeBullBing.Core.Game;
 using GaeBullBing.Core.Towers;
 using GaeBullBing.Presentation.Board;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 
 namespace GaeBullBing.Presentation.Towers
@@ -76,6 +77,9 @@ namespace GaeBullBing.Presentation.Towers
                     onlyTowerInstanceId > 0 && tile.Tower.InstanceId != onlyTowerInstanceId) continue;
                 var tower = tile.Tower;
                 if (!views.TryGetValue(tower.InstanceId, out var renderer)) continue;
+
+                var audio = AudioManager.Instance;
+                audio?.PlayAt(audio.Tower.RollingStone, boardView.GetWorldPosition(tile.Index));
 
                 try
                 {

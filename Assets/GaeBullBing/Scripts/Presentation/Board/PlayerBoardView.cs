@@ -1,5 +1,6 @@
 using System.Collections;
 using System;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 
 namespace GaeBullBing.Presentation.Board
@@ -151,6 +152,8 @@ namespace GaeBullBing.Presentation.Board
                 var from = boardView.GetPlayerStandWorldPosition(fromIndex);
                 boardView.ReleasePlayerTile(fromIndex);
                 ApplyDirectionForDeparture(fromIndex);
+                var audio = AudioManager.Instance;
+                audio?.PlayAt(audio.Player.Step, transform.position);
                 TileMoveStarted?.Invoke(toIndex);
                 stepStarted?.Invoke(toIndex);
                 var elapsed = 0f;
@@ -187,6 +190,7 @@ namespace GaeBullBing.Presentation.Board
                 transform.position = boardView.GetPlayerStandWorldPosition(toIndex) + positionOffset + transitionOffset;
                 CameraFollowPosition = GetCameraTilePosition(toIndex);
                 shadowGroundPosition = GetShadowGroundPosition(toIndex);
+                audio?.PlayAt(audio.Player.Land, transform.position);
                 TileEntered?.Invoke(toIndex);
                 if (stepCompleted != null)
                 {

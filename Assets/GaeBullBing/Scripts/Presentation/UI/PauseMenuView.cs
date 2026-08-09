@@ -1,4 +1,5 @@
 using System.Collections;
+using GaeBullBing.Presentation.Audio;
 using GaeBullBing.Presentation.Game;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,6 +16,8 @@ namespace GaeBullBing.Presentation.UI
         [SerializeField] private Button restartButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button titleButton;
+        [SerializeField] private GameObject mainOptionsRoot;
+        [SerializeField] private AudioSettingsView audioSettingsView;
 
         [Header("Background Fade")]
         [SerializeField, Range(0f, 1f)] private float backgroundDimAlpha = .32f;
@@ -58,6 +61,8 @@ namespace GaeBullBing.Presentation.UI
             Bind(restartButton, Restart);
             Bind(settingsButton, OpenSettings);
             Bind(titleButton, ReturnToTitle);
+            if (audioSettingsView == null)
+                audioSettingsView = GetComponentInChildren<AudioSettingsView>(true);
         }
 
         private void Update()
@@ -68,6 +73,11 @@ namespace GaeBullBing.Presentation.UI
 
             if (isOpen)
             {
+                if (audioSettingsView != null && audioSettingsView.IsOpen)
+                {
+                    CloseSettings();
+                    return;
+                }
                 if (!isAnimating)
                     Close();
                 return;
@@ -91,6 +101,8 @@ namespace GaeBullBing.Presentation.UI
             Time.timeScale = 0f;
             isOpen = true;
             menuRoot.SetActive(true);
+            if (mainOptionsRoot != null) mainOptionsRoot.SetActive(true);
+            audioSettingsView?.Hide();
             SetBackgroundDimAlpha(0f);
             SetButtonsInteractable(false);
             StartAnimation(AnimateOpen());
@@ -162,6 +174,8 @@ namespace GaeBullBing.Presentation.UI
             hangingPanel.localRotation = Quaternion.identity;
             SetBackgroundDimAlpha(0f);
             menuRoot.SetActive(false);
+            if (mainOptionsRoot != null) mainOptionsRoot.SetActive(true);
+            audioSettingsView?.Hide();
             Time.timeScale = previousTimeScale;
             isOpen = false;
             isAnimating = false;
@@ -182,7 +196,16 @@ namespace GaeBullBing.Presentation.UI
 
         private void OpenSettings()
         {
-            // 설정 화면의 세부 내용이 정해지면 이 버튼에서 전환합니다.
+            if (isAnimating || audioSettingsView == null)
+                return;
+            if (mainOptionsRoot != null) mainOptionsRoot.SetActive(false);
+            audioSettingsView.Show();
+        }
+
+        private void CloseSettings()
+        {
+            audioSettingsView?.Hide();
+            if (mainOptionsRoot != null) mainOptionsRoot.SetActive(true);
         }
 
         private void RestoreTimeScale()

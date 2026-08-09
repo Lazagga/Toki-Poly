@@ -8,6 +8,7 @@ using GaeBullBing.Core.Data;
 using GaeBullBing.Core.Monsters;
 using GaeBullBing.Core.Towers;
 using GaeBullBing.Presentation.Board;
+using GaeBullBing.Presentation.Audio;
 using GaeBullBing.Presentation.Camera;
 using GaeBullBing.Presentation.Dice;
 using GaeBullBing.Presentation.Monsters;
@@ -447,7 +448,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             attackEffectPresenter = GetComponent<TowerAttackEffectPresenter>();
             if (attackEffectPresenter == null)
                 attackEffectPresenter = gameObject.AddComponent<TowerAttackEffectPresenter>();
-            attackEffectPresenter.Initialize(boardView);
+            attackEffectPresenter.Initialize(boardView, towerDefinitions);
             stonePresenter = GetComponent<StonePresenter>();
             if (stonePresenter == null)
                 stonePresenter = gameObject.AddComponent<StonePresenter>();
@@ -545,10 +546,14 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 fadeTitleAfterReload = false;
                 gameFlowView?.ShowTitle(fadePortraits);
             }
+            var audio = AudioManager.Instance;
+            audio?.PlayBgm(audio.Bgm.Title);
         }
 
         public void StartGameFromTitle()
         {
+            var audio = AudioManager.Instance;
+            audio?.PlayBgm(audio.Bgm.Gameplay);
             HasGameplayStarted = true;
             gameFlowView?.HideAll();
             isBusy = true;
@@ -890,6 +895,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 yield return overviewRoutine;
             if (lapEnhancementPause > 0f)
                 yield return new WaitForSeconds(lapEnhancementPause);
+            var audio = AudioManager.Instance;
+            audio?.PlaySfx(audio.GameFlow.LapReward);
 
             if (towerPresenter == null || State?.Board?.Tiles == null)
             {
@@ -920,6 +927,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         private IEnumerator PlayDiceRewardTowerBoostPresentation(System.Action completed)
         {
+            var audio = AudioManager.Instance;
+            audio?.PlaySfx(audio.GameFlow.LapReward);
             if (towerPresenter != null && State?.Board?.Tiles != null)
             {
                 var tileIndices = new List<int>();
@@ -1019,6 +1028,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         private IEnumerator MoveToSelectedTileRoutine(int tileIndex)
         {
+            var audio = AudioManager.Instance;
+            audio?.PlaySfx(audio.Player.Teleport);
             var start = State.Player.CurrentTileIndex;
             var distance = (tileIndex - start + State.Board.TileCount) % State.Board.TileCount;
             if (start == 0 || distance > 0 && start + distance >= State.Board.TileCount)
@@ -1354,6 +1365,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     else
                     {
                         var boss = Session.SpawnMonster(bossDefinition, 1f);
+                        var audio = AudioManager.Instance;
+                        audio?.PlayBgm(audio.Bgm.Boss);
                         yield return monsterPresenter.SpawnWithEntrance(boss);
                     }
                 }
@@ -1581,6 +1594,9 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
 
         private IEnumerator FinishVictoryRoutine()
         {
+            var audio = AudioManager.Instance;
+            audio?.PlaySfx(audio.GameFlow.Victory);
+            audio?.PlayBgm(audio.Bgm.Victory);
             if (gameFlowView != null)
                 yield return gameFlowView.PlayOutro();
             diceHud.ShowGameClear();
@@ -1590,6 +1606,9 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
 
         private IEnumerator FinishDefeatRoutine()
         {
+            var audio = AudioManager.Instance;
+            audio?.PlaySfx(audio.GameFlow.Defeat);
+            audio?.PlayBgm(audio.Bgm.Defeat);
             if (gameFlowView != null)
                 yield return gameFlowView.PlayOutro();
             diceHud.ShowGameOver(State.EscapedMonsterCount, State.EscapeLimit);
@@ -1652,7 +1671,19 @@ private void ApplyAttackTileVisualChanges(TowerAttackResult result)
                 return;
 
             foreach (var change in result.TileEffectVisualChanges)
+            {
                 boardView.ApplyTileEffectVisual(change.TileIndex, change.Effect);
+                var audio = AudioManager.Instance;
+                if (audio == null) continue;
+                var clip = change.Effect switch
+                {
+                    TileEffectVisualKind.Fire => audio.Status.FireTile,
+                    TileEffectVisualKind.Ice => audio.Status.IceTile,
+                    TileEffectVisualKind.Normal => audio.Status.TileCancel,
+                    _ => null
+                };
+                audio.PlayAt(clip, boardView.GetWorldPosition(change.TileIndex));
+            }
         }
 }
 }

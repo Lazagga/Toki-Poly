@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using GaeBullBing.Core.Dice;
 using GaeBullBing.Presentation.Board;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,6 +41,8 @@ namespace GaeBullBing.Presentation.Dice
 
         public IEnumerator Roll(IReadOnlyList<DiceState> diceStates, int firstResult, int secondResult)
         {
+            var audio = AudioManager.Instance;
+            audio?.PlaySfx(audio.Dice.Roll);
             ApplyAppearance(first, firstDiceMaterial, diceStates[0]);
             ApplyAppearance(second, secondDiceMaterial, diceStates[1]);
 
@@ -59,6 +62,7 @@ namespace GaeBullBing.Presentation.Dice
 
             SetFinalPose(first, ProjectToBoard(firstTarget), firstResult);
             SetFinalPose(second, ProjectToBoard(secondTarget), secondResult);
+            audio?.PlaySfx(audio.Dice.Land);
             if (resultHoldDuration > 0f)
                 yield return new WaitForSeconds(resultHoldDuration);
 
