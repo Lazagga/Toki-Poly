@@ -3063,7 +3063,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
-  clickSound: {fileID: 0}
   volume: 1
 --- !u!1 &256295368
 GameObject:
@@ -4193,7 +4192,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
-  clickSound: {fileID: 0}
   volume: 1
 --- !u!114 &327086053
 MonoBehaviour:
@@ -7010,7 +7008,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
-  clickSound: {fileID: 0}
   volume: 1
 --- !u!114 &598720618
 MonoBehaviour:
@@ -9462,6 +9459,61 @@ MonoBehaviour:
   bgmMixerGroup: {fileID: 0}
   sfxMixerGroup: {fileID: 0}
   uiMixerGroup: {fileID: 0}
+  bgm:
+    Title: {fileID: 8300000, guid: f855a9ee0648d494dae560820205426a, type: 3}
+    Gameplay: {fileID: 8300000, guid: 0cb360dd3c85a7249820f89cda6033bb, type: 3}
+    Boss: {fileID: 8300000, guid: 78601d1d58559fa4db096edae503d2a1, type: 3}
+    Victory: {fileID: 0}
+    Defeat: {fileID: 0}
+  ui:
+    ButtonClick: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
+    PanelOpen: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
+    PanelClose: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
+    Selection: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
+    Cancel: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
+  dice:
+    Select: {fileID: 0}
+    Equip: {fileID: 0}
+    Roll: {fileID: 0}
+    Land: {fileID: 0}
+    Reward: {fileID: 0}
+  player:
+    Step: {fileID: 0}
+    Land: {fileID: 0}
+    LapComplete: {fileID: 0}
+    Teleport: {fileID: 0}
+  tower:
+    Build: {fileID: 8300000, guid: 6cb3764e2b58da349b5cc4317a37798f, type: 3}
+    Upgrade: {fileID: 8300000, guid: 6cb3764e2b58da349b5cc4317a37798f, type: 3}
+    OverUpgrade: {fileID: 0}
+    FireAttack: {fileID: 8300000, guid: f08f37c932a1b494db907c5ed377ab3a, type: 3}
+    IceAttack: {fileID: 8300000, guid: 9ae21283752e8e0409b0e1046f97ca9c, type: 3}
+    ElectricAttack: {fileID: 0}
+    PhysicsAttack: {fileID: 0}
+    RollingStone: {fileID: 0}
+    ProjectileHit: {fileID: 0}
+  monster:
+    Spawn: {fileID: 8300000, guid: d2595028c0d014f43a0a3d78f81d1ea1, type: 3}
+    Move: {fileID: 0}
+    Hit: {fileID: 0}
+    Capture: {fileID: 0}
+    Escape: {fileID: 0}
+    BossSpawn: {fileID: 0}
+    BossFeather: {fileID: 0}
+  status:
+    Burn: {fileID: 0}
+    Freeze: {fileID: 0}
+    ElectricShock: {fileID: 0}
+    Knockback: {fileID: 0}
+    FireTile: {fileID: 0}
+    IceTile: {fileID: 0}
+    TileCancel: {fileID: 0}
+  gameFlow:
+    PlayerTurn: {fileID: 0}
+    EnemyTurn: {fileID: 0}
+    LapReward: {fileID: 0}
+    Victory: {fileID: 0}
+    Defeat: {fileID: 0}
   initialPoolSize: 12
   maximumPoolSize: 32
   worldSpatialBlend: 0
@@ -14757,7 +14809,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
-  clickSound: {fileID: 0}
   volume: 1
 --- !u!1 &1355693729
 GameObject:
@@ -15116,7 +15167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
-  clickSound: {fileID: 0}
   volume: 1
 --- !u!1 &1366624288
 GameObject:
