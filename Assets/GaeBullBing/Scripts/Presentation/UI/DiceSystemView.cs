@@ -312,7 +312,10 @@ namespace GaeBullBing.Presentation.UI
         private static void InvokeButton(Button button)
         {
             if (button != null && button.gameObject.activeInHierarchy && button.interactable)
+            {
+                UIButtonSound.PlayFor(button);
                 button.onClick.Invoke();
+            }
         }
 
         private static void ClearEventSelection()

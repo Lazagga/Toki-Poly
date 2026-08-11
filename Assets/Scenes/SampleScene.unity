@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 12094186}
   - component: {fileID: 12094185}
   - component: {fileID: 12094184}
+  - component: {fileID: 12094187}
   m_Layer: 0
   m_Name: Start Button
   m_TagString: Untagged
@@ -240,6 +241,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 12094182}
   m_CullTransparentMesh: 1
+--- !u!114 &12094187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 12094182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &14254179
 GameObject:
   m_ObjectHideFlags: 0
@@ -618,6 +632,7 @@ GameObject:
   - component: {fileID: 56893335}
   - component: {fileID: 56893334}
   - component: {fileID: 56893337}
+  - component: {fileID: 56893338}
   m_Layer: 0
   m_Name: Inventory Choice 2
   m_TagString: Untagged
@@ -757,6 +772,19 @@ MonoBehaviour:
   - {fileID: 1355693731}
   emptyName: "\uC8FC\uC0AC\uC704 \uC120\uD0DD"
   useDiceTextContrast: 1
+--- !u!114 &56893338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56893332}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &58978451
 GameObject:
   m_ObjectHideFlags: 0
@@ -1017,6 +1045,7 @@ GameObject:
   - component: {fileID: 73973077}
   - component: {fileID: 73973076}
   - component: {fileID: 73973079}
+  - component: {fileID: 73973080}
   m_Layer: 0
   m_Name: Inventory Choice 4
   m_TagString: Untagged
@@ -1156,6 +1185,19 @@ MonoBehaviour:
   - {fileID: 1031209380}
   emptyName: "\uC8FC\uC0AC\uC704 \uC120\uD0DD"
   useDiceTextContrast: 1
+--- !u!114 &73973080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73973074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &77515742
 GameObject:
   m_ObjectHideFlags: 0
@@ -1433,6 +1475,7 @@ GameObject:
   - component: {fileID: 97279490}
   - component: {fileID: 97279489}
   - component: {fileID: 97279488}
+  - component: {fileID: 97279491}
   m_Layer: 0
   m_Name: Ice Button
   m_TagString: Untagged
@@ -1542,6 +1585,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 97279486}
   m_CullTransparentMesh: 1
+--- !u!114 &97279491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97279486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &102232316
 GameObject:
   m_ObjectHideFlags: 0
@@ -2623,6 +2679,7 @@ GameObject:
   - component: {fileID: 207733359}
   - component: {fileID: 207733358}
   - component: {fileID: 207733361}
+  - component: {fileID: 207733362}
   m_Layer: 0
   m_Name: Inventory Choice 3
   m_TagString: Untagged
@@ -2762,6 +2819,19 @@ MonoBehaviour:
   - {fileID: 1487793469}
   emptyName: "\uC8FC\uC0AC\uC704 \uC120\uD0DD"
   useDiceTextContrast: 1
+--- !u!114 &207733362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 207733356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &235352689
 GameObject:
   m_ObjectHideFlags: 0
@@ -3873,6 +3943,7 @@ GameObject:
   - component: {fileID: 289050433}
   - component: {fileID: 289050432}
   - component: {fileID: 289050431}
+  - component: {fileID: 289050435}
   m_Layer: 5
   m_Name: White Dice Button
   m_TagString: Untagged
@@ -3996,6 +4067,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 289050429}
   m_CullTransparentMesh: 1
+--- !u!114 &289050435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289050429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &301350612
 GameObject:
   m_ObjectHideFlags: 0
@@ -4694,6 +4778,7 @@ GameObject:
   - component: {fileID: 353474105}
   - component: {fileID: 353474104}
   - component: {fileID: 353474103}
+  - component: {fileID: 353474106}
   m_Layer: 0
   m_Name: Upgrade Choice 2
   m_TagString: Untagged
@@ -4803,6 +4888,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 353474101}
   m_CullTransparentMesh: 1
+--- !u!114 &353474106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 353474101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &357045416
 GameObject:
   m_ObjectHideFlags: 0
@@ -4894,6 +4992,7 @@ GameObject:
   - component: {fileID: 357487797}
   - component: {fileID: 357487796}
   - component: {fileID: 357487795}
+  - component: {fileID: 357487798}
   m_Layer: 0
   m_Name: Close Button
   m_TagString: Untagged
@@ -5003,6 +5102,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 357487793}
   m_CullTransparentMesh: 1
+--- !u!114 &357487798
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 357487793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &362251427
 GameObject:
   m_ObjectHideFlags: 0
@@ -5441,6 +5553,7 @@ GameObject:
   - component: {fileID: 445423561}
   - component: {fileID: 445423560}
   - component: {fileID: 445423559}
+  - component: {fileID: 445423562}
   m_Layer: 0
   m_Name: Restart Button
   m_TagString: Untagged
@@ -5550,6 +5663,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 445423557}
   m_CullTransparentMesh: 1
+--- !u!114 &445423562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 445423557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &459104731
 GameObject:
   m_ObjectHideFlags: 0
@@ -5562,6 +5688,7 @@ GameObject:
   - component: {fileID: 459104735}
   - component: {fileID: 459104734}
   - component: {fileID: 459104733}
+  - component: {fileID: 459104736}
   m_Layer: 0
   m_Name: Tower Boost
   m_TagString: Untagged
@@ -5671,6 +5798,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 459104731}
   m_CullTransparentMesh: 1
+--- !u!114 &459104736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459104731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &491927527
 GameObject:
   m_ObjectHideFlags: 0
@@ -8197,6 +8337,7 @@ GameObject:
   - component: {fileID: 678514321}
   - component: {fileID: 678514320}
   - component: {fileID: 678514319}
+  - component: {fileID: 678514322}
   m_Layer: 0
   m_Name: Physics Button
   m_TagString: Untagged
@@ -8306,6 +8447,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 678514317}
   m_CullTransparentMesh: 1
+--- !u!114 &678514322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 678514317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &678842618
 GameObject:
   m_ObjectHideFlags: 0
@@ -8815,6 +8969,7 @@ GameObject:
   - component: {fileID: 709394730}
   - component: {fileID: 709394729}
   - component: {fileID: 709394728}
+  - component: {fileID: 709394732}
   m_Layer: 5
   m_Name: Black Dice Button
   m_TagString: Untagged
@@ -8938,6 +9093,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 709394726}
   m_CullTransparentMesh: 1
+--- !u!114 &709394732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 709394726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &710225583
 GameObject:
   m_ObjectHideFlags: 0
@@ -10309,6 +10477,7 @@ GameObject:
   - component: {fileID: 882705166}
   - component: {fileID: 882705165}
   - component: {fileID: 882705168}
+  - component: {fileID: 882705169}
   m_Layer: 0
   m_Name: Replacement 2
   m_TagString: Untagged
@@ -10438,6 +10607,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &882705169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 882705163}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &890345592
 GameObject:
   m_ObjectHideFlags: 0
@@ -12716,6 +12898,7 @@ GameObject:
   - component: {fileID: 1176195838}
   - component: {fileID: 1176195837}
   - component: {fileID: 1176195840}
+  - component: {fileID: 1176195841}
   m_Layer: 0
   m_Name: Replacement 1
   m_TagString: Untagged
@@ -12845,6 +13028,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &1176195841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1176195835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1176674983
 GameObject:
   m_ObjectHideFlags: 0
@@ -12936,6 +13132,7 @@ GameObject:
   - component: {fileID: 1191408658}
   - component: {fileID: 1191408657}
   - component: {fileID: 1191408656}
+  - component: {fileID: 1191408660}
   m_Layer: 5
   m_Name: Roll Button
   m_TagString: Untagged
@@ -13044,6 +13241,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 2.5}
   m_SizeDelta: {x: 200, y: 97.5}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1191408660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1191408655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1191491435
 GameObject:
   m_ObjectHideFlags: 0
@@ -13992,6 +14202,7 @@ GameObject:
   - component: {fileID: 1273245029}
   - component: {fileID: 1273245028}
   - component: {fileID: 1273245027}
+  - component: {fileID: 1273245030}
   m_Layer: 0
   m_Name: Upgrade Choice 1
   m_TagString: Untagged
@@ -14101,6 +14312,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1273245025}
   m_CullTransparentMesh: 1
+--- !u!114 &1273245030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1273245025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1281744025
 GameObject:
   m_ObjectHideFlags: 0
@@ -14114,6 +14338,7 @@ GameObject:
   - component: {fileID: 1281744028}
   - component: {fileID: 1281744027}
   - component: {fileID: 1281744030}
+  - component: {fileID: 1281744031}
   m_Layer: 0
   m_Name: Replacement 3
   m_TagString: Untagged
@@ -14243,6 +14468,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &1281744031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1281744025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1292055798
 GameObject:
   m_ObjectHideFlags: 0
@@ -14255,6 +14493,7 @@ GameObject:
   - component: {fileID: 1292055802}
   - component: {fileID: 1292055801}
   - component: {fileID: 1292055800}
+  - component: {fileID: 1292055803}
   m_Layer: 0
   m_Name: Electric Button
   m_TagString: Untagged
@@ -14364,6 +14603,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1292055798}
   m_CullTransparentMesh: 1
+--- !u!114 &1292055803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292055798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1338049345
 GameObject:
   m_ObjectHideFlags: 0
@@ -14530,6 +14782,7 @@ GameObject:
   - component: {fileID: 1343577641}
   - component: {fileID: 1343577640}
   - component: {fileID: 1343577639}
+  - component: {fileID: 1343577642}
   m_Layer: 0
   m_Name: Title Button
   m_TagString: Untagged
@@ -14639,6 +14892,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1343577637}
   m_CullTransparentMesh: 1
+--- !u!114 &1343577642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1343577637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1346560655
 GameObject:
   m_ObjectHideFlags: 0
@@ -15779,6 +16045,7 @@ GameObject:
   - component: {fileID: 1459837490}
   - component: {fileID: 1459837489}
   - component: {fileID: 1459837488}
+  - component: {fileID: 1459837491}
   m_Layer: 0
   m_Name: Submit
   m_TagString: Untagged
@@ -15888,6 +16155,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1459837486}
   m_CullTransparentMesh: 1
+--- !u!114 &1459837491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1459837486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1472353594
 GameObject:
   m_ObjectHideFlags: 0
@@ -16736,6 +17016,7 @@ GameObject:
   - component: {fileID: 1560750732}
   - component: {fileID: 1560750731}
   - component: {fileID: 1560750730}
+  - component: {fileID: 1560750733}
   m_Layer: 0
   m_Name: Title Button
   m_TagString: Untagged
@@ -16845,6 +17126,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1560750728}
   m_CullTransparentMesh: 1
+--- !u!114 &1560750733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560750728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1567366768
 GameObject:
   m_ObjectHideFlags: 0
@@ -17190,6 +17484,7 @@ GameObject:
   - component: {fileID: 1594139015}
   - component: {fileID: 1594139014}
   - component: {fileID: 1594139017}
+  - component: {fileID: 1594139018}
   m_Layer: 0
   m_Name: Inventory Choice 1
   m_TagString: Untagged
@@ -17329,6 +17624,19 @@ MonoBehaviour:
   - {fileID: 522269953}
   emptyName: "\uC8FC\uC0AC\uC704 \uC120\uD0DD"
   useDiceTextContrast: 1
+--- !u!114 &1594139018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1594139012}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1598840802
 GameObject:
   m_ObjectHideFlags: 0
@@ -17724,6 +18032,7 @@ GameObject:
   - component: {fileID: 1625535985}
   - component: {fileID: 1625535984}
   - component: {fileID: 1625535983}
+  - component: {fileID: 1625535986}
   m_Layer: 0
   m_Name: Upgrade Choice 3
   m_TagString: Untagged
@@ -17833,6 +18142,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1625535981}
   m_CullTransparentMesh: 1
+--- !u!114 &1625535986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625535981}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1637543460
 GameObject:
   m_ObjectHideFlags: 0
@@ -18654,6 +18976,7 @@ GameObject:
   - component: {fileID: 1707644828}
   - component: {fileID: 1707644827}
   - component: {fileID: 1707644826}
+  - component: {fileID: 1707644829}
   m_Layer: 0
   m_Name: Acquire
   m_TagString: Untagged
@@ -18763,6 +19086,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1707644824}
   m_CullTransparentMesh: 1
+--- !u!114 &1707644829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1707644824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1717386345
 GameObject:
   m_ObjectHideFlags: 0
@@ -19241,6 +19577,7 @@ GameObject:
   - component: {fileID: 1789659023}
   - component: {fileID: 1789659022}
   - component: {fileID: 1789659025}
+  - component: {fileID: 1789659026}
   m_Layer: 0
   m_Name: Replacement 4
   m_TagString: Untagged
@@ -19370,6 +19707,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &1789659026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789659020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1810937108
 GameObject:
   m_ObjectHideFlags: 0
@@ -19924,6 +20274,7 @@ GameObject:
   - component: {fileID: 1865992684}
   - component: {fileID: 1865992683}
   - component: {fileID: 1865992687}
+  - component: {fileID: 1865992688}
   m_Layer: 0
   m_Name: Dice Slot 1
   m_TagString: Untagged
@@ -19949,9 +20300,9 @@ RectTransform:
   - {fileID: 14254180}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 83, y: -75}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1865992683
@@ -20069,6 +20420,19 @@ MonoBehaviour:
   faceGraphics: []
   emptyName: "\uC8FC\uC0AC\uC704 \uC120\uD0DD"
   useDiceTextContrast: 0
+--- !u!114 &1865992688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1865992681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1867170241
 GameObject:
   m_ObjectHideFlags: 0
@@ -20679,6 +21043,7 @@ GameObject:
   - component: {fileID: 1947271845}
   - component: {fileID: 1947271844}
   - component: {fileID: 1947271843}
+  - component: {fileID: 1947271846}
   m_Layer: 0
   m_Name: Fire Button
   m_TagString: Untagged
@@ -20788,6 +21153,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1947271841}
   m_CullTransparentMesh: 1
+--- !u!114 &1947271846
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1947271841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &1949461482
 GameObject:
   m_ObjectHideFlags: 0
@@ -21164,6 +21542,7 @@ GameObject:
   - component: {fileID: 2000670064}
   - component: {fileID: 2000670063}
   - component: {fileID: 2000670062}
+  - component: {fileID: 2000670065}
   m_Layer: 0
   m_Name: Question Button
   m_TagString: Untagged
@@ -21273,6 +21652,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2000670060}
   m_CullTransparentMesh: 1
+--- !u!114 &2000670065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000670060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &2010493223
 GameObject:
   m_ObjectHideFlags: 0
@@ -21525,6 +21917,7 @@ GameObject:
   - component: {fileID: 2015376455}
   - component: {fileID: 2015376454}
   - component: {fileID: 2015376456}
+  - component: {fileID: 2015376457}
   m_Layer: 0
   m_Name: Primary Action
   m_TagString: Untagged
@@ -21634,6 +22027,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2015376457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2015376452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &2024297208
 GameObject:
   m_ObjectHideFlags: 0
@@ -23289,6 +23695,7 @@ GameObject:
   - component: {fileID: 2105496172}
   - component: {fileID: 2105496171}
   - component: {fileID: 2105496175}
+  - component: {fileID: 2105496176}
   m_Layer: 0
   m_Name: Dice Slot 2
   m_TagString: Untagged
@@ -23314,9 +23721,9 @@ RectTransform:
   - {fileID: 350436866}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 267, y: -75}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2105496171
@@ -23434,6 +23841,19 @@ MonoBehaviour:
   faceGraphics: []
   emptyName: "\uC8FC\uC0AC\uC704 \uC120\uD0DD"
   useDiceTextContrast: 0
+--- !u!114 &2105496176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2105496169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0e9ed9be66df4948bf5456593ebb2fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
+  volume: 1
 --- !u!1 &2111150238
 GameObject:
   m_ObjectHideFlags: 0

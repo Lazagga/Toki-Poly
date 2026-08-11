@@ -2,6 +2,7 @@ using System;
 using GaeBullBing.Core;
 using UnityEngine;
 using UnityEngine.UI;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine.InputSystem;
 
 namespace GaeBullBing.Presentation.UI
@@ -38,7 +39,11 @@ private void Update()
 
         private static void Invoke(Button button)
         {
-            if (button != null && button.gameObject.activeInHierarchy && button.interactable) button.onClick.Invoke();
+            if (button != null && button.gameObject.activeInHierarchy && button.interactable)
+            {
+                UIButtonSound.PlayFor(button);
+                button.onClick.Invoke();
+            }
         }
 
         public void ShowElementSelection(Action<TowerElement> selected)

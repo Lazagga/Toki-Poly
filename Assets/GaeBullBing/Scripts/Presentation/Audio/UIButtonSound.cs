@@ -1,30 +1,35 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace GaeBullBing.Presentation.Audio
 {
     [RequireComponent(typeof(Button))]
-    public sealed class UIButtonSound : MonoBehaviour
+    public sealed class UIButtonSound : MonoBehaviour, IPointerDownHandler
     {
         [SerializeField, Range(0f, 1f)] private float volume = 1f;
         private Button button;
 
-        private void Awake()
+        private void Awake() => button = GetComponent<Button>();
+
+        public void OnPointerDown(PointerEventData eventData)
         {
-            button = GetComponent<Button>();
-            button.onClick.AddListener(PlayClickSound);
+            if (eventData.button == PointerEventData.InputButton.Left &&
+                button != null && button.IsActive() && button.interactable)
+                Play();
         }
 
-        private void OnDestroy()
-        {
-            if (button != null) button.onClick.RemoveListener(PlayClickSound);
-        }
-
-        private void PlayClickSound()
+        public void Play()
         {
             var manager = AudioManager.Instance;
             if (manager != null)
                 manager.PlayUi(manager.Ui.ButtonClick, volume);
+        }
+
+        public static void PlayFor(Button target)
+        {
+            if (target == null || !target.IsActive() || !target.interactable) return;
+            target.GetComponent<UIButtonSound>()?.Play();
         }
     }
 }

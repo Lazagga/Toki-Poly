@@ -4,6 +4,7 @@ using GaeBullBing.Core;
 using GaeBullBing.Core.Data;
 using UnityEngine;
 using UnityEngine.UI;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine.InputSystem;
 
 namespace GaeBullBing.Presentation.UI
@@ -59,6 +60,7 @@ private void Update()
             if (primaryButton.gameObject.activeInHierarchy && primaryButton.interactable &&
                 (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame))
             {
+                UIButtonSound.PlayFor(primaryButton);
                 primaryButton.onClick.Invoke();
                 return;
             }
@@ -80,7 +82,10 @@ private void InvokeChoice(int index)
                 return;
             var button = upgradeChoiceButtons[index];
             if (button != null && button.gameObject.activeInHierarchy && button.interactable)
+            {
+                UIButtonSound.PlayFor(button);
                 button.onClick.Invoke();
+            }
         }
 
         public void ShowPrimary(

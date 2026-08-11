@@ -4,6 +4,7 @@ using GaeBullBing.Core.Dice;
 using GaeBullBing.Presentation.Dice;
 using UnityEngine;
 using UnityEngine.UI;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
@@ -73,7 +74,11 @@ namespace GaeBullBing.Presentation.UI
         }
         private static void Invoke(Button button)
         {
-            if (button != null && button.gameObject.activeInHierarchy && button.interactable) button.onClick.Invoke();
+            if (button != null && button.gameObject.activeInHierarchy && button.interactable)
+            {
+                UIButtonSound.PlayFor(button);
+                button.onClick.Invoke();
+            }
         }
 
         public void Show(IReadOnlyList<DiceState> diceStates, Func<int, int, int, bool> onSelected,

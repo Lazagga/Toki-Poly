@@ -96,9 +96,26 @@ namespace GaeBullBing.Editor
             Assign(pauseData, "audioSettingsView", view);
             pauseData.ApplyModifiedPropertiesWithoutUndo();
             settingsRoot.gameObject.SetActive(false);
+            BindAllButtonSounds();
             EditorUtility.SetDirty(pause);
             EditorSceneManager.MarkSceneDirty(pause.gameObject.scene);
             EditorSceneManager.SaveScene(pause.gameObject.scene);
+        }
+
+        [MenuItem("GaeBullBing/Audio/Bind All UI Button Sounds")]
+        public static void BindAllButtonSounds()
+        {
+            var buttons = Object.FindObjectsByType<Button>(FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            foreach (var target in buttons)
+            {
+                if (target.GetComponent<UIButtonSound>() != null) continue;
+                Undo.AddComponent<UIButtonSound>(target.gameObject);
+                EditorUtility.SetDirty(target.gameObject);
+            }
+
+            if (buttons.Length > 0)
+                EditorSceneManager.MarkSceneDirty(buttons[0].gameObject.scene);
         }
 
         private static void EnsureAudioManager()

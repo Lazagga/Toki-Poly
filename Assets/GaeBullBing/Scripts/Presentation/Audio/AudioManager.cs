@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 namespace GaeBullBing.Presentation.Audio
 {
@@ -161,8 +162,19 @@ namespace GaeBullBing.Presentation.Audio
             for (var index = 0; index < initialPoolSize; index++) CreatePooledSource();
         }
 
+        private void Start() => BindUiButtonSounds();
+
         private void OnDestroy() { if (Instance == this) Instance = null; }
         private void OnApplicationQuit() => PlayerPrefs.Save();
+
+        public void BindUiButtonSounds()
+        {
+            var buttons = FindObjectsByType<Button>(FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+            foreach (var target in buttons)
+                if (target.GetComponent<UIButtonSound>() == null)
+                    target.gameObject.AddComponent<UIButtonSound>();
+        }
 
         public void SetMasterVolume(float value) { MasterVolume = Save(MasterKey, value); RefreshVolumes(); }
         public void SetBgmVolume(float value) { BgmVolume = Save(BgmKey, value); RefreshVolumes(); }
