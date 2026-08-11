@@ -55,7 +55,6 @@ namespace GaeBullBing.Presentation.Audio
         private void EnsureBackButtonBound()
         {
             if (backButton == null) return;
-            UIButtonSound.SetGenericClickEnabled(backButton, false);
             backButton.onClick.RemoveListener(RequestBack);
             backButton.onClick.AddListener(RequestBack);
         }

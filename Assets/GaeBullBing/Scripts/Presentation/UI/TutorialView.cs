@@ -57,7 +57,6 @@ namespace GaeBullBing.Presentation.UI
             Time.timeScale = 0f;
             isOpen = true;
             tutorialRoot.SetActive(true);
-            AudioManager.Instance?.PlayPanelOpen();
             tutorialCanvasGroup.alpha = 0f;
             tutorialCanvasGroup.interactable = false;
             tutorialCanvasGroup.blocksRaycasts = true;
@@ -68,7 +67,6 @@ namespace GaeBullBing.Presentation.UI
         {
             if (!isOpen)
                 return;
-            AudioManager.Instance?.PlayPanelClose();
             tutorialCanvasGroup.interactable = false;
             StartFade(FadeOut());
         }

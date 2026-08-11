@@ -24,7 +24,6 @@ namespace GaeBullBing.Presentation.UI
 
         public void Show(string title, string towerDescription, string monsterDescription)
         {
-            var wasVisible = IsVisible;
             if (titleText != null) titleText.text = title;
             if (towerText != null) towerText.text = towerDescription;
             if (monsterText != null)
@@ -32,7 +31,6 @@ namespace GaeBullBing.Presentation.UI
                 monsterText.text = monsterDescription;
             }
             if (panelRoot != null) panelRoot.SetActive(true);
-            if (!wasVisible) AudioManager.Instance?.PlayPanelOpen();
             targetPanelAlpha = 1f;
             SetPanelAlpha(1f);
             Canvas.ForceUpdateCanvases();
@@ -88,11 +86,9 @@ namespace GaeBullBing.Presentation.UI
 
         public void Hide()
         {
-            var wasVisible = IsVisible;
             targetPanelAlpha = 1f;
             SetPanelAlpha(1f);
             if (panelRoot != null) panelRoot.SetActive(false);
-            if (wasVisible) AudioManager.Instance?.PlayPanelClose();
         }
 
         private void SetPanelAlpha(float alpha)

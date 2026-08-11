@@ -81,11 +81,22 @@ namespace GaeBullBing.Presentation.UI
                 return;
             }
             var keyboard = Keyboard.current; if (keyboard == null) return;
-            if (keyboard.backquoteKey.wasPressedThisFrame) SetOpen(!panel.activeSelf);
-            if (panel.activeSelf && keyboard.escapeKey.wasPressedThisFrame) SetOpen(false);
+            if (keyboard.backquoteKey.wasPressedThisFrame)
+            {
+                AudioManager.Instance?.PlayButtonClick();
+                SetOpen(!panel.activeSelf);
+            }
+            if (panel.activeSelf && keyboard.escapeKey.wasPressedThisFrame)
+            {
+                AudioManager.Instance?.PlayButtonClick();
+                SetOpen(false);
+            }
             if (panel.activeSelf && input.isFocused &&
                 !submitPending && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame))
+            {
+                AudioManager.Instance?.PlayButtonClick();
                 StartCoroutine(SubmitAfterImeCommit());
+            }
         }
 
         private IEnumerator SubmitAfterImeCommit()
@@ -101,8 +112,6 @@ namespace GaeBullBing.Presentation.UI
         {
             if (panel.activeSelf == open) return;
             panel.SetActive(open);
-            if (open) AudioManager.Instance?.PlayPanelOpen();
-            else AudioManager.Instance?.PlayPanelClose();
             if (open) { input.ActivateInputField(); input.Select(); }
         }
 

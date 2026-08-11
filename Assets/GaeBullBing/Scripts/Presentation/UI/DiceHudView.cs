@@ -2,6 +2,7 @@ using GaeBullBing.Presentation.Game;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using GaeBullBing.Presentation.Audio;
 
 namespace GaeBullBing.Presentation.UI
 {
@@ -43,7 +44,10 @@ namespace GaeBullBing.Presentation.UI
                 return;
             if ((keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame) &&
                 rollButton.gameObject.activeInHierarchy && rollButton.interactable)
+            {
+                UIButtonSound.PlayFor(rollButton);
                 OnRollClicked();
+            }
         }
 
         public void SetRolling(bool rolling)

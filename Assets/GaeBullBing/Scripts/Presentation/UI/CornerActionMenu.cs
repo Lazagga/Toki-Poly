@@ -48,9 +48,7 @@ private void Update()
 
         public void ShowElementSelection(Action<TowerElement> selected)
         {
-            var wasVisible = root.activeSelf;
             root.SetActive(true);
-            if (!wasVisible) AudioManager.Instance?.PlayPanelOpen();
             elementRoot.SetActive(true);
             title.text = "강화할 속성 선택";
             title.color = Color.white;
@@ -67,7 +65,6 @@ private void Update()
         {
             if (root == null || !root.activeSelf) return;
             root.SetActive(false);
-            AudioManager.Instance?.PlayPanelClose();
         }
         private void Bind(Button button, TowerElement element, Action<TowerElement> selected)
         { button.onClick.RemoveAllListeners(); button.onClick.AddListener(() => selected(element)); }

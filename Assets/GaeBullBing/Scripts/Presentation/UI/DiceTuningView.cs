@@ -53,15 +53,23 @@ namespace GaeBullBing.Presentation.UI
             }
             else if (currentStep == Step.Dice)
             {
-                if (Pressed(keyboard.digit1Key, keyboard.numpad1Key)) SelectDice(0);
-                else if (Pressed(keyboard.digit2Key, keyboard.numpad2Key)) SelectDice(1);
+                if (Pressed(keyboard.digit1Key, keyboard.numpad1Key))
+                {
+                    AudioManager.Instance?.PlayButtonClick();
+                    SelectDice(0);
+                }
+                else if (Pressed(keyboard.digit2Key, keyboard.numpad2Key))
+                {
+                    AudioManager.Instance?.PlayButtonClick();
+                    SelectDice(1);
+                }
             }
             else if (currentStep == Step.Face)
             {
-                if (keyboard.upArrowKey.wasPressedThisFrame) display3D.RotateUp();
-                else if (keyboard.downArrowKey.wasPressedThisFrame) display3D.RotateDown();
-                else if (keyboard.leftArrowKey.wasPressedThisFrame) display3D.RotateLeft();
-                else if (keyboard.rightArrowKey.wasPressedThisFrame) display3D.RotateRight();
+                if (keyboard.upArrowKey.wasPressedThisFrame) { AudioManager.Instance?.PlayButtonClick(); display3D.RotateUp(); }
+                else if (keyboard.downArrowKey.wasPressedThisFrame) { AudioManager.Instance?.PlayButtonClick(); display3D.RotateDown(); }
+                else if (keyboard.leftArrowKey.wasPressedThisFrame) { AudioManager.Instance?.PlayButtonClick(); display3D.RotateLeft(); }
+                else if (keyboard.rightArrowKey.wasPressedThisFrame) { AudioManager.Instance?.PlayButtonClick(); display3D.RotateRight(); }
                 else if (Pressed(keyboard.digit1Key, keyboard.numpad1Key)) Invoke(decrementButton);
                 else if (Pressed(keyboard.digit2Key, keyboard.numpad2Key)) Invoke(incrementButton);
             }
@@ -88,16 +96,13 @@ namespace GaeBullBing.Presentation.UI
             selected = onSelected;
             allTowerBoostSelected = onAllTowerBoostSelected;
             root.SetActive(true);
-            AudioManager.Instance?.PlayPanelOpen();
             ShowRewardStep();
         }
 
         public void Hide()
         {
-            var wasVisible = root != null && root.activeSelf;
             display3D?.HideDisplay();
             root.SetActive(false);
-            if (wasVisible) AudioManager.Instance?.PlayPanelClose();
         }
 
         private void ShowRewardStep()

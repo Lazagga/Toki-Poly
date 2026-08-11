@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 using UnityEngine.EventSystems;
+using GaeBullBing.Presentation.Audio;
 
 namespace GaeBullBing.Presentation.Board
 {
@@ -74,11 +75,19 @@ namespace GaeBullBing.Presentation.Board
 
             if (selected != null)
             {
-                if (nearest >= 0) Select(nearest);
+                if (nearest >= 0)
+                {
+                    AudioManager.Instance?.PlayButtonClick();
+                    Select(nearest);
+                }
                 return;
             }
 
-            if (nearest >= 0) inspected?.Invoke(nearest);
+            if (nearest >= 0)
+            {
+                AudioManager.Instance?.PlayButtonClick();
+                inspected?.Invoke(nearest);
+            }
             else inspectionClosed?.Invoke();
         }
 
