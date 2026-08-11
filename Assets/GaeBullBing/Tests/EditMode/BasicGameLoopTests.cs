@@ -239,6 +239,19 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
+        public void GameSession_CompletePlayerLapAppliesWorldTravelReward()
+        {
+            var state = new GameState();
+            var session = CreateSession(state);
+            session.StartNewGame();
+
+            session.CompletePlayerLap();
+
+            Assert.That(state.CompletedLaps, Is.EqualTo(1));
+            Assert.That(state.PermanentAllTowerDamageRateBonus, Is.EqualTo(.05f));
+        }
+
+        [Test]
         public void MonsterService_MovesMonsterByTurnDistance()
         {
             var state = new GameState();

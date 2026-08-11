@@ -122,10 +122,7 @@ namespace GaeBullBing.Core.Game
             var completedLap = State.Player.CurrentTileIndex + distance >= State.Board.TileCount;
             movementService.Move(State.Player, State.Board, distance);
             if (completedLap)
-            {
-                State.CompletedLaps++;
-                State.AddPermanentAllTowerDamageRateBonus(.05f);
-            }
+                CompletePlayerLap();
             State.CurrentPhase = TurnPhase.TileResolve;
             return distance;
         }
@@ -530,6 +527,12 @@ namespace GaeBullBing.Core.Game
 
         public void AddPermanentAllTowerDamageRateBonus(float amount) =>
             State.AddPermanentAllTowerDamageRateBonus(amount);
+
+        public void CompletePlayerLap()
+        {
+            State.CompletedLaps++;
+            State.AddPermanentAllTowerDamageRateBonus(.05f);
+        }
 
         public void TeleportPlayer(int tileIndex)
         {

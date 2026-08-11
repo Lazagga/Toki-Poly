@@ -1041,10 +1041,26 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             audio?.PlaySfx(audio.Player.Teleport);
             var start = State.Player.CurrentTileIndex;
             var distance = (tileIndex - start + State.Board.TileCount) % State.Board.TileCount;
-            if (start == 0 || distance > 0 && start + distance >= State.Board.TileCount)
+            var completesLap = distance > 0 && start + distance >= State.Board.TileCount;
+            if (completesLap)
+            {
+                Session.CompletePlayerLap();
                 pendingDiceTuning = true;
+            }
             var focusRoutine = StartCoroutine(cameraController.FocusOn(playerView));
-            yield return playerView.MoveSteps(start, distance);
+            Coroutine lapOverviewRoutine = null;
+            yield return playerView.MoveSteps(
+                start,
+                distance,
+                enteredTileIndex =>
+                {
+                    if (completesLap && enteredTileIndex == 0)
+                        lapOverviewRoutine = StartCoroutine(
+                            ReturnToOverviewAfterPress(enteredTileIndex));
+                },
+                enteredTileIndex => completesLap && enteredTileIndex == 0
+                    ? PlayLapCompletionPresentation(lapOverviewRoutine)
+                    : null);
             yield return focusRoutine;
             Session.TeleportPlayer(tileIndex);
             if (tileIndex == 0 || tileIndex == 18)

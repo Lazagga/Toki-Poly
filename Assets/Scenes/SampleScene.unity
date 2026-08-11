@@ -254,7 +254,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &14254179
 GameObject:
   m_ObjectHideFlags: 0
@@ -786,7 +785,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &58978451
 GameObject:
   m_ObjectHideFlags: 0
@@ -1200,7 +1198,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &77515742
 GameObject:
   m_ObjectHideFlags: 0
@@ -1601,7 +1598,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &102232316
 GameObject:
   m_ObjectHideFlags: 0
@@ -2836,7 +2832,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &235352689
 GameObject:
   m_ObjectHideFlags: 0
@@ -3139,7 +3134,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &256295368
 GameObject:
   m_ObjectHideFlags: 0
@@ -4086,7 +4080,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &301350612
 GameObject:
   m_ObjectHideFlags: 0
@@ -4284,7 +4277,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!114 &327086053
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4567,7 +4559,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &333939264
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4909,7 +4901,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &357045416
 GameObject:
   m_ObjectHideFlags: 0
@@ -5124,7 +5115,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &362251427
 GameObject:
   m_ObjectHideFlags: 0
@@ -5686,7 +5676,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &459104731
 GameObject:
   m_ObjectHideFlags: 0
@@ -5822,7 +5811,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &491927527
 GameObject:
   m_ObjectHideFlags: 0
@@ -7161,7 +7149,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!114 &598720618
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8473,7 +8460,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &678842618
 GameObject:
   m_ObjectHideFlags: 0
@@ -9120,7 +9106,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &710225583
 GameObject:
   m_ObjectHideFlags: 0
@@ -9650,8 +9635,6 @@ MonoBehaviour:
     Defeat: {fileID: 0}
   ui:
     ButtonClick: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
-    PanelOpen: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
-    PanelClose: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
     Selection: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
     Cancel: {fileID: 8300000, guid: a158a9da719d62c4ab9dd26bbd9a55d3, type: 3}
   dice:
@@ -10635,7 +10618,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &890345592
 GameObject:
   m_ObjectHideFlags: 0
@@ -13057,7 +13039,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1176674983
 GameObject:
   m_ObjectHideFlags: 0
@@ -13271,7 +13252,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1191491435
 GameObject:
   m_ObjectHideFlags: 0
@@ -14343,7 +14323,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1281744025
 GameObject:
   m_ObjectHideFlags: 0
@@ -14500,7 +14479,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1292055798
 GameObject:
   m_ObjectHideFlags: 0
@@ -14636,7 +14614,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1338049345
 GameObject:
   m_ObjectHideFlags: 0
@@ -14926,7 +14903,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1346560655
 GameObject:
   m_ObjectHideFlags: 0
@@ -15098,7 +15074,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1355693729
 GameObject:
   m_ObjectHideFlags: 0
@@ -15457,7 +15432,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1366624288
 GameObject:
   m_ObjectHideFlags: 0
@@ -16192,7 +16166,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1472353594
 GameObject:
   m_ObjectHideFlags: 0
@@ -17164,7 +17137,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1567366768
 GameObject:
   m_ObjectHideFlags: 0
@@ -17663,7 +17635,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1598840802
 GameObject:
   m_ObjectHideFlags: 0
@@ -18182,7 +18153,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1637543460
 GameObject:
   m_ObjectHideFlags: 0
@@ -19127,7 +19097,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1717386345
 GameObject:
   m_ObjectHideFlags: 0
@@ -19749,7 +19718,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1810937108
 GameObject:
   m_ObjectHideFlags: 0
@@ -20330,9 +20298,9 @@ RectTransform:
   - {fileID: 14254180}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 83, y: -75}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1865992683
@@ -20463,7 +20431,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1867170241
 GameObject:
   m_ObjectHideFlags: 0
@@ -21197,7 +21164,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &1949461482
 GameObject:
   m_ObjectHideFlags: 0
@@ -21697,7 +21663,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &2010493223
 GameObject:
   m_ObjectHideFlags: 0
@@ -22073,7 +22038,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &2024297208
 GameObject:
   m_ObjectHideFlags: 0
@@ -23755,9 +23719,9 @@ RectTransform:
   - {fileID: 350436866}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 267, y: -75}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2105496171
@@ -23888,7 +23852,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: GaeBullBing.Presentation::GaeBullBing.Presentation.Audio.UIButtonSound
   volume: 1
-  playGenericClick: 1
 --- !u!1 &2111150238
 GameObject:
   m_ObjectHideFlags: 0
