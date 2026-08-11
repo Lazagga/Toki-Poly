@@ -4,6 +4,7 @@ using GaeBullBing.Presentation.Game;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using GaeBullBing.Presentation.Audio;
 
 namespace GaeBullBing.Presentation.UI
 {
@@ -98,7 +99,10 @@ namespace GaeBullBing.Presentation.UI
 
         public void SetOpen(bool open)
         {
+            if (panel.activeSelf == open) return;
             panel.SetActive(open);
+            if (open) AudioManager.Instance?.PlayPanelOpen();
+            else AudioManager.Instance?.PlayPanelClose();
             if (open) { input.ActivateInputField(); input.Select(); }
         }
 

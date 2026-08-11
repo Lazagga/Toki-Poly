@@ -60,9 +60,18 @@ namespace GaeBullBing.Presentation.UI
             Bind(continueButton, Close);
             Bind(restartButton, Restart);
             Bind(settingsButton, OpenSettings);
+            UIButtonSound.SetGenericClickEnabled(settingsButton, false);
             Bind(titleButton, ReturnToTitle);
             if (audioSettingsView == null)
                 audioSettingsView = GetComponentInChildren<AudioSettingsView>(true);
+            if (audioSettingsView != null)
+                audioSettingsView.BindBackAction(CloseSettings);
+        }
+
+        private void OnDestroy()
+        {
+            if (audioSettingsView != null)
+                audioSettingsView.UnbindBackAction(CloseSettings);
         }
 
         private void Update()
@@ -101,6 +110,7 @@ namespace GaeBullBing.Presentation.UI
             Time.timeScale = 0f;
             isOpen = true;
             menuRoot.SetActive(true);
+            AudioManager.Instance?.PlayPanelOpen();
             if (mainOptionsRoot != null) mainOptionsRoot.SetActive(true);
             audioSettingsView?.Hide();
             SetBackgroundDimAlpha(0f);
@@ -112,6 +122,7 @@ namespace GaeBullBing.Presentation.UI
         {
             if (!isOpen || isAnimating)
                 return;
+            AudioManager.Instance?.PlayPanelClose();
             SetButtonsInteractable(false);
             StartAnimation(AnimateClose());
         }
@@ -200,12 +211,14 @@ namespace GaeBullBing.Presentation.UI
                 return;
             if (mainOptionsRoot != null) mainOptionsRoot.SetActive(false);
             audioSettingsView.Show();
+            AudioManager.Instance?.PlayPanelOpen();
         }
 
         private void CloseSettings()
         {
             audioSettingsView?.Hide();
             if (mainOptionsRoot != null) mainOptionsRoot.SetActive(true);
+            AudioManager.Instance?.PlayPanelClose();
         }
 
         private void RestoreTimeScale()

@@ -94,10 +94,12 @@ private void InvokeChoice(int index)
             bool hasTower,
             Action onPrimarySelected)
         {
+            var wasVisible = menuRoot.gameObject.activeSelf;
             ClearChoices();
             worldTarget = target;
             worldCamera = camera;
             menuRoot.gameObject.SetActive(true);
+            if (!wasVisible) AudioManager.Instance?.PlayPanelOpen();
             primaryButton.gameObject.SetActive(true);
             var actionSprite = hasTower ? enhanceButtonSprite : buildButtonSprite;
             var image = primaryButton.image;
@@ -161,9 +163,11 @@ private void InvokeChoice(int index)
 
         public void Hide()
         {
+            var wasVisible = menuRoot.gameObject.activeSelf;
             ClearChoices();
             worldTarget = null;
             menuRoot.gameObject.SetActive(false);
+            if (wasVisible) AudioManager.Instance?.PlayPanelClose();
         }
 
 private void ClearChoices()

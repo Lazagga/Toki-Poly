@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +18,7 @@ namespace GaeBullBing.Presentation.Audio
         [SerializeField] private Button backButton;
 
         public bool IsOpen => settingsRoot != null && settingsRoot.activeSelf;
+        public event Action BackRequested;
 
         private void Awake()
         {
@@ -24,12 +26,12 @@ namespace GaeBullBing.Presentation.Audio
             Bind(bgmSlider, SetBgmVolume);
             Bind(sfxSlider, SetSfxVolume);
             Bind(uiSlider, SetUiVolume);
-            if (backButton != null) backButton.onClick.AddListener(Hide);
+            EnsureBackButtonBound();
         }
 
         private void OnDestroy()
         {
-            if (backButton != null) backButton.onClick.RemoveListener(Hide);
+            if (backButton != null) backButton.onClick.RemoveListener(RequestBack);
         }
 
         public void Show()
@@ -40,6 +42,29 @@ namespace GaeBullBing.Presentation.Audio
         }
 
         public void Hide() { if (settingsRoot != null) settingsRoot.SetActive(false); }
+
+        public void BindBackAction(Action action)
+        {
+            BackRequested -= action;
+            BackRequested += action;
+            EnsureBackButtonBound();
+        }
+
+        public void UnbindBackAction(Action action) => BackRequested -= action;
+
+        private void EnsureBackButtonBound()
+        {
+            if (backButton == null) return;
+            UIButtonSound.SetGenericClickEnabled(backButton, false);
+            backButton.onClick.RemoveListener(RequestBack);
+            backButton.onClick.AddListener(RequestBack);
+        }
+
+        private void RequestBack()
+        {
+            if (BackRequested != null) BackRequested.Invoke();
+            else Hide();
+        }
 
         private void RefreshFromManager()
         {

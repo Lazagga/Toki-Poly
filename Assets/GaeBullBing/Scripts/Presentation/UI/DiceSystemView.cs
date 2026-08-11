@@ -102,6 +102,7 @@ namespace GaeBullBing.Presentation.UI
             pendingRewardCompleted = completed;
             replacementOpen = false;
             rewardOverlay.SetActive(true);
+            AudioManager.Instance?.PlayPanelOpen();
             rewardText.gameObject.SetActive(false);
             rewardDisplay.gameObject.SetActive(true);
             rewardDisplay.Bind(reward);
@@ -161,10 +162,9 @@ namespace GaeBullBing.Presentation.UI
         {
             if (slot < 0 || slot >= slotButtons.Length) return;
             selectedSlot = slot;
-            var audio = AudioManager.Instance;
-            audio?.PlayUi(audio.Dice.Select);
             SetSelectedSlot(slot);
             dropdown.gameObject.SetActive(true);
+            AudioManager.Instance?.PlayPanelOpen();
             hud.SetDiceSelectionOpen(true);
             var inventory = controller.State.DiceInventory.Dice;
             var candidateIndex = 0;
@@ -222,6 +222,9 @@ namespace GaeBullBing.Presentation.UI
                 var navigation = slotButtons[slot].navigation;
                 navigation.mode = Navigation.Mode.None;
                 slotButtons[slot].navigation = navigation;
+                var sound = slotButtons[slot].GetComponent<UIButtonSound>();
+                if (sound == null) sound = slotButtons[slot].gameObject.AddComponent<UIButtonSound>();
+                sound.SetGenericClickEnabled(false);
                 slotButtons[slot].onClick.RemoveAllListeners();
                 slotButtons[slot].onClick.AddListener(() => ToggleDropdown(captured));
             }
@@ -235,7 +238,9 @@ namespace GaeBullBing.Presentation.UI
 
         private void CloseDropdown()
         {
+            var wasVisible = dropdown.gameObject.activeSelf;
             dropdown.gameObject.SetActive(false);
+            if (wasVisible) AudioManager.Instance?.PlayPanelClose();
             SetSelectedSlot(-1);
             hud.SetDiceSelectionOpen(false);
             ClearEventSelection();
@@ -243,7 +248,9 @@ namespace GaeBullBing.Presentation.UI
 
         private void CloseReward(Action completed)
         {
+            var wasVisible = rewardOverlay.activeSelf;
             rewardOverlay.SetActive(false);
+            if (wasVisible) AudioManager.Instance?.PlayPanelClose();
             pendingReward = null;
             pendingRewardCompleted = null;
             replacementOpen = false;

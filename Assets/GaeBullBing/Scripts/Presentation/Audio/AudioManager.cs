@@ -185,6 +185,8 @@ namespace GaeBullBing.Presentation.Audio
             Play(clip, AudioPlaybackChannel.Sfx, Vector3.zero, false, volume);
         public AudioSource PlayUi(AudioClip clip, float volume = 1f) =>
             Play(clip, AudioPlaybackChannel.Ui, Vector3.zero, false, volume);
+        public void PlayPanelOpen() => PlayUi(ui.PanelOpen);
+        public void PlayPanelClose() => PlayUi(ui.PanelClose);
         public AudioSource PlayAt(AudioClip clip, Vector3 position, float volume = 1f,
             AudioPlaybackChannel channel = AudioPlaybackChannel.Sfx) =>
             Play(clip, channel, position, true, volume);

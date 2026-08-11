@@ -88,13 +88,16 @@ namespace GaeBullBing.Presentation.UI
             selected = onSelected;
             allTowerBoostSelected = onAllTowerBoostSelected;
             root.SetActive(true);
+            AudioManager.Instance?.PlayPanelOpen();
             ShowRewardStep();
         }
 
         public void Hide()
         {
+            var wasVisible = root != null && root.activeSelf;
             display3D?.HideDisplay();
             root.SetActive(false);
+            if (wasVisible) AudioManager.Instance?.PlayPanelClose();
         }
 
         private void ShowRewardStep()
