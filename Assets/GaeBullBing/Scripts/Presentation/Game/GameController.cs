@@ -23,6 +23,15 @@ namespace GaeBullBing.Presentation.Game
 {
     public sealed class GameController : MonoBehaviour
     {
+        private enum GameFlowState
+        {
+            Title,
+            Gameplay,
+            Boss,
+            Victory,
+            Defeat
+        }
+
         [SerializeField] private BoardTilemapView boardView;
         [SerializeField] private PlayerBoardView playerView;
         [SerializeField] private DiceHudView diceHud;
@@ -64,6 +73,7 @@ namespace GaeBullBing.Presentation.Game
         private const int BossResultWave = 8;
         private static bool startImmediatelyAfterReload;
         private static bool fadeTitleAfterReload;
+        private GameFlowState? currentFlowState;
         
         private int pendingConsoleUpgradeTile = -1;
         private readonly List<TowerUpgradeDefinition> pendingConsoleUpgrades = new();
@@ -534,6 +544,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (startImmediatelyAfterReload)
             {
                 startImmediatelyAfterReload = false;
+                EnterFlowState(GameFlowState.Gameplay);
                 isBusy = true;
                 diceHud.SetBusy();
                 gameFlowView?.BeginRestart();
@@ -545,15 +556,13 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 var fadePortraits = fadeTitleAfterReload;
                 fadeTitleAfterReload = false;
                 gameFlowView?.ShowTitle(fadePortraits);
+                EnterFlowState(GameFlowState.Title);
             }
-            var audio = AudioManager.Instance;
-            audio?.PlayBgm(audio.Bgm.Title);
         }
 
         public void StartGameFromTitle()
         {
-            var audio = AudioManager.Instance;
-            audio?.PlayBgm(audio.Bgm.Gameplay);
+            EnterFlowState(GameFlowState.Gameplay);
             HasGameplayStarted = true;
             gameFlowView?.HideAll();
             isBusy = true;
@@ -1365,8 +1374,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     else
                     {
                         var boss = Session.SpawnMonster(bossDefinition, 1f);
-                        var audio = AudioManager.Instance;
-                        audio?.PlayBgm(audio.Bgm.Boss);
+                        EnterFlowState(GameFlowState.Boss);
                         yield return monsterPresenter.SpawnWithEntrance(boss);
                     }
                 }
@@ -1596,7 +1604,7 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
         {
             var audio = AudioManager.Instance;
             audio?.PlaySfx(audio.GameFlow.Victory);
-            audio?.PlayBgm(audio.Bgm.Victory);
+            EnterFlowState(GameFlowState.Victory);
             if (gameFlowView != null)
                 yield return gameFlowView.PlayOutro();
             diceHud.ShowGameClear();
@@ -1608,12 +1616,31 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
         {
             var audio = AudioManager.Instance;
             audio?.PlaySfx(audio.GameFlow.Defeat);
-            audio?.PlayBgm(audio.Bgm.Defeat);
+            EnterFlowState(GameFlowState.Defeat);
             if (gameFlowView != null)
                 yield return gameFlowView.PlayOutro();
             diceHud.ShowGameOver(State.EscapedMonsterCount, State.EscapeLimit);
             gameFlowView?.ShowDefeat();
             isBusy = false;
+        }
+
+        private void EnterFlowState(GameFlowState state)
+        {
+            if (currentFlowState == state) return;
+            currentFlowState = state;
+
+            var audio = AudioManager.Instance;
+            if (audio == null) return;
+            var clip = state switch
+            {
+                GameFlowState.Title => audio.Bgm.Title,
+                GameFlowState.Gameplay => audio.Bgm.Gameplay,
+                GameFlowState.Boss => audio.Bgm.Boss,
+                GameFlowState.Victory => audio.Bgm.Victory,
+                GameFlowState.Defeat => audio.Bgm.Defeat,
+                _ => null
+            };
+            audio.PlayBgm(clip);
         }
 
 private IEnumerator PlayAttackResult(
