@@ -1010,10 +1010,11 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     destinations.Add(tileIndex);
             boardView.SetSelectionHighlights(destinations);
             yield return cameraController.ReturnToOverview();
+            ShowTileInformation(sourceTileIndex, false);
             tileSelectionView.BeginSelection(
                 SelectTeleportDestination,
                 tileIndex => ShowTileInformation(tileIndex, false),
-                HideTileInformation,
+                () => ShowTileInformation(sourceTileIndex, false),
                 tileIndex => tileIndex != sourceTileIndex);
         }
 

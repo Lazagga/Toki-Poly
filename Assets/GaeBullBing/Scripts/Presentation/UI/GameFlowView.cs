@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using GaeBullBing.Presentation.Game;
+using GaeBullBing.Presentation.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,10 @@ namespace GaeBullBing.Presentation.UI
     {
         [SerializeField] private GameObject titleRoot;
         [SerializeField] private Button startButton;
+        [SerializeField] private GameObject titleMainRoot;
+        [SerializeField] private Button titleSettingsButton;
+        [SerializeField] private Button titleQuitButton;
+        [SerializeField] private AudioSettingsView titleAudioSettingsView;
         [SerializeField] private GameObject defeatRoot;
         [SerializeField] private CanvasGroup defeatCanvasGroup;
         [SerializeField] private Button defeatTitleButton;
@@ -46,6 +51,10 @@ namespace GaeBullBing.Presentation.UI
             rightPortraitStart = rightPortrait.anchoredPosition;
             ResetTitleVisuals();
             Bind(startButton, BeginStartTransition);
+            Bind(titleSettingsButton, OpenTitleSettings);
+            Bind(titleQuitButton, QuitGame);
+            if (titleAudioSettingsView != null)
+                titleAudioSettingsView.BindBackAction(CloseTitleSettings);
             Bind(defeatTitleButton, () => BeginResultExit(defeatCanvasGroup, controller.ReturnToTitle));
             Bind(restartButton, () => BeginResultExit(defeatCanvasGroup, controller.RestartGame));
             Bind(victoryTitleButton, () => BeginResultExit(victoryCanvasGroup, controller.ReturnToTitle));
@@ -58,12 +67,41 @@ namespace GaeBullBing.Presentation.UI
             SetGameplayVisible(false);
             boardTransition.PrepareHidden();
             ShowOnly(titleRoot);
+            CloseTitleSettings();
             if (fadePortraits)
             {
                 SetPortraitAlpha(0f);
                 startButton.interactable = false;
                 portraitFadeRoutine = StartCoroutine(FadePortraitsIn());
             }
+        }
+
+        private void OnDestroy()
+        {
+            if (titleAudioSettingsView != null)
+                titleAudioSettingsView.UnbindBackAction(CloseTitleSettings);
+        }
+
+        private void OpenTitleSettings()
+        {
+            if (transitionRoutine != null || titleAudioSettingsView == null) return;
+            if (titleMainRoot != null) titleMainRoot.SetActive(false);
+            titleAudioSettingsView.Show();
+        }
+
+        private void CloseTitleSettings()
+        {
+            titleAudioSettingsView?.Hide();
+            if (titleMainRoot != null) titleMainRoot.SetActive(true);
+        }
+
+        private static void QuitGame()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
         public void ShowDefeat()
         {
@@ -259,6 +297,7 @@ namespace GaeBullBing.Presentation.UI
 
         private static void Bind(Button button, Action action)
         {
+            if (button == null) return;
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() => action());
         }
