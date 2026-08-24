@@ -10449,7 +10449,7 @@ MonoBehaviour:
   dice:
     Select: {fileID: 0}
     Equip: {fileID: 0}
-    Roll: {fileID: 0}
+    Roll: {fileID: 8300000, guid: 8a526d10abc7dfd4387fa64b4454e20e, type: 3}
     Land: {fileID: 0}
     Reward: {fileID: 0}
   player:
@@ -10463,9 +10463,9 @@ MonoBehaviour:
     OverUpgrade: {fileID: 0}
     FireAttack: {fileID: 8300000, guid: f08f37c932a1b494db907c5ed377ab3a, type: 3}
     IceAttack: {fileID: 8300000, guid: 9ae21283752e8e0409b0e1046f97ca9c, type: 3}
-    ElectricAttack: {fileID: 0}
-    PhysicsAttack: {fileID: 0}
-    RollingStone: {fileID: 0}
+    ElectricAttack: {fileID: 8300000, guid: d6930bc96dcfef44794766965e340b93, type: 3}
+    PhysicsAttack: {fileID: 8300000, guid: b375dceada4ab474aa9435edca2a2f63, type: 3}
+    RollingStone: {fileID: 8300000, guid: b375dceada4ab474aa9435edca2a2f63, type: 3}
     ProjectileHit: {fileID: 0}
   monster:
     Spawn: {fileID: 8300000, guid: d2595028c0d014f43a0a3d78f81d1ea1, type: 3}
@@ -10486,7 +10486,7 @@ MonoBehaviour:
   gameFlow:
     PlayerTurn: {fileID: 0}
     EnemyTurn: {fileID: 0}
-    LapReward: {fileID: 0}
+    LapReward: {fileID: 8300000, guid: 6cb3764e2b58da349b5cc4317a37798f, type: 3}
     Victory: {fileID: 0}
     Defeat: {fileID: 0}
   initialPoolSize: 12
@@ -22834,9 +22834,9 @@ RectTransform:
   - {fileID: 14254180}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 83, y: -75}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1865992683
@@ -26660,9 +26660,9 @@ RectTransform:
   - {fileID: 350436866}
   m_Father: {fileID: 2111150239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 267, y: -75}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 155, y: 145}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2105496171
