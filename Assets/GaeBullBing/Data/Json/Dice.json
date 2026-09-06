@@ -16,7 +16,8 @@
       "grade": "Common",
       "faces": [1, 2, 3, 4, 5, 6],
       "color": "#F5F5ED",
-      "passive": null
+      "description": "기본 주사위",
+      "effect_ids": []
     },
     {
       "id": "DICE_BLACK",
@@ -24,7 +25,8 @@
       "grade": "Common",
       "faces": [1, 2, 3, 4, 5, 6],
       "color": "#1E1E24",
-      "passive": null
+      "description": "기본 주사위",
+      "effect_ids": []
     },
     {
       "id": "DICE_RED",
@@ -32,7 +34,10 @@
       "grade": "Rare",
       "faces": [2, 2, 4, 4, 6, 6],
       "color": "#E63946",
-      "passive": null
+      "description": "이동한 타일에서 불 타워를 건설할 경우, 즉시 다음 티어까지 업그레이드(보너스면 3티어)",
+      "effect_ids": [
+        { "id": "fire_build_instant_upgrade", "value": 1 }
+      ]
     },
     {
       "id": "DICE_BLUE",
@@ -40,7 +45,10 @@
       "grade": "Rare",
       "faces": [1, 1, 2, 2, 4, 4],
       "color": "#1D3557",
-      "passive": null
+      "description": "이동한 타일에서 얼음 타워를 건설할 경우, 기본 공격력 +20인 타워 건설",
+      "effect_ids": [
+        { "id": "ice_build_bonus_damage", "value": 20 }
+      ]
     },
     {
       "id": "DICE_GREEN",
@@ -48,7 +56,10 @@
       "grade": "Rare",
       "faces": [3, 3, 5, 5, 6, 6],
       "color": "#2A9D8F",
-      "passive": null
+      "description": "이 주사위로 완주할 때마다, 타워 하나를 선택해 공격력 +10%",
+      "effect_ids": [
+        { "id": "lap_complete_tower_damage_buff", "value": 10 }
+      ]
     },
     {
       "id": "DICE_PURPLE",
@@ -56,7 +67,10 @@
       "grade": "Rare",
       "faces": [2, 2, 3, 3, 4, 4],
       "color": "#8E44AD",
-      "passive": null
+      "description": "이동한 타일에 최대로 업그레이드된 전기타워가 있는 경우, 3티어 업그레이드를 하나 더 선택",
+      "effect_ids": [
+        { "id": "electric_maxtier_extra_upgrade_choice", "value": 1 }
+      ]
     },
     {
       "id": "DICE_ROSE",
@@ -64,7 +78,10 @@
       "grade": "Epic",
       "faces": [4, 4, 4, 6, 6, 6],
       "color": "#F05D5E",
-      "passive": null
+      "description": "이 주사위로 지나간 경로에 있는 모든 불 타워에 공격력 +5%",
+      "effect_ids": [
+        { "id": "path_fire_tower_damage_buff", "value": 5 }
+      ]
     },
     {
       "id": "DICE_FORGETMENOT",
@@ -72,7 +89,10 @@
       "grade": "Epic",
       "faces": [3, 3, 3, 5, 5, 5],
       "color": "#6495ED",
-      "passive": null
+      "description": "이동한 타일에 얼음 타워가 있는 경우, 이 타워의 공격력 +20%",
+      "effect_ids": [
+        { "id": "ice_tower_damage_buff", "value": 20 }
+      ]
     },
     {
       "id": "DICE_CLOVER",
@@ -80,7 +100,10 @@
       "grade": "Epic",
       "faces": [1, 1, 1, 4, 4, 4],
       "color": "#4CAF50",
-      "passive": null
+      "description": "0번, 18번 타일을 밟을 경우 원하는 타일로 두 번 이동",
+      "effect_ids": [
+        { "id": "corner_tile_free_move", "value": 2 }
+      ]
     },
     {
       "id": "DICE_VIOLET",
@@ -88,7 +111,10 @@
       "grade": "Epic",
       "faces": [3, 3, 3, 6, 6, 6],
       "color": "#7B1FA2",
-      "passive": null
+      "description": "이동한 타일에 효과가 있는 경우, 해당 타일 효과를 라인 전체로 확산",
+      "effect_ids": [
+        { "id": "tile_effect_line_spread", "value": 1 }
+      ]
     },
     {
       "id": "DICE_RUBY",
@@ -96,7 +122,10 @@
       "grade": "Legendary",
       "faces": [6, 6, 6, 6, 6, 6],
       "color": "#9B111E",
-      "passive": null
+      "description": "최대 업그레이드 타워에 도착 시, 추가로 모든 해당 속성 타워의 기본 공격력 +20",
+      "effect_ids": [
+        { "id": "maxtier_element_damage_buff", "value": 20 }
+      ]
     },
     {
       "id": "DICE_SAPPHIRE",
@@ -104,7 +133,11 @@
       "grade": "Legendary",
       "faces": [5, 5, 5, 5, 5, 5],
       "color": "#0F52BA",
-      "passive": null
+      "description": "이동한 타일에 얼음 타워가 있는 경우, 그 타워의 공격 횟수 +1(최대 +2)",
+      "effect_ids": [
+        { "id": "ice_attack_count_add", "value": 1 },
+        { "id": "ice_attack_count_add_cap", "value": 2 }
+      ]
     },
     {
       "id": "DICE_EMERALD",
@@ -112,7 +145,10 @@
       "grade": "Legendary",
       "faces": [1, 1, 1, 1, 1, 1],
       "color": "#50C878",
-      "passive": null
+      "description": "이 주사위를 굴릴 때마다, 모든 타워 공격력 +5%",
+      "effect_ids": [
+        { "id": "global_damage_buff_on_roll", "value": 5 }
+      ]
     },
     {
       "id": "DICE_AMETHYST",
@@ -120,7 +156,10 @@
       "grade": "Legendary",
       "faces": [3, 3, 3, 3, 3, 3],
       "color": "#9966CC",
-      "passive": null
+      "description": "이 주사위로 도착한 라인의 모든 타워 공격 횟수 한 턴동안 +1",
+      "effect_ids": [
+        { "id": "line_attack_count_buff_temp", "value": 1 }
+      ]
     }
   ]
 }
