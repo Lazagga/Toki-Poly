@@ -10,7 +10,9 @@
             "target_count": 1,
             "attack_count": 1
       },
-      "base_effect_ids": []
+      "base_effect_ids": [
+        { "id": "burn", "value": 1 }
+      ]
   },
   {
       "id": "TOW_02",
@@ -22,7 +24,11 @@
             "target_count": 1,
             "attack_count": 1
       },
-      "base_effect_ids": []
+      "base_effect_ids": [
+        { "id": "frostbite", "value": 1 },
+        { "id": "frostbite_burst_threshold", "value": 3 },
+        { "id": "frostbite_burst_damage_multiply", "value": 3 }
+      ]
   },
       {
       "id": "TOW_03",
@@ -46,7 +52,9 @@
             "target_count": 1,
             "attack_count": 1
       },
-      "base_effect_ids": []
+      "base_effect_ids": [
+        { "id": "status_transfer", "value": 1 }
+      ]
   }
   ]
 }
