@@ -73,14 +73,12 @@
       "name": "TOW_01_불_T3_00",
       "element": "Fire",
       "tier": 3,
-      "weight": 1,
-      "description": "공격할 때마다 화상을 1중첩 부여합니다.",
+      "weight": 0,
+      "description": "신규 효과 확정 전 비활성화된 선택지입니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
-      "effect_ids": [
-        { "id": "burn", "value": 1 }
-      ]
+      "effect_ids": []
     },
     {
       "id": "UPG_FIRE_T3_01",
@@ -102,12 +100,12 @@
       "element": "Fire",
       "tier": 3,
       "weight": 1,
-      "description": "공격 대상의 화상 중첩이 10 이상인 경우, 폭발하며 해당 타일 및 양옆 1타일에 피해를 입힙니다.",
+      "description": "공격 이전 화상 중첩이 20 이상인 경우, 공격 후 폭발하며 해당 타일 및 양옆 1타일에 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
       "effect_ids": [
-        { "id": "burn_explode", "value": 1 }
+        { "id": "burn_explode", "value": 20 }
       ]
     },
     {
@@ -116,12 +114,12 @@
       "element": "Fire",
       "tier": 3,
       "weight": 1,
-      "description": "공격 대상의 화상 중첩당, 공격력의 20% 추가 피해를 입힙니다.",
+      "description": "공격 이전 화상 중첩당, 공격력의 10% 추가 피해를 입힙니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 20 }
       ],
       "effect_ids": [
-        { "id": "burn_damage", "value": 1 }
+        { "id": "burn_damage", "value": 0.1 }
       ]
     },
     {
@@ -380,12 +378,12 @@
       "element": "Electric",
       "tier": 2,
       "weight": 1,
-      "description": "공격 대상의 상태이상을 해당 타일 및 양옆 타일로 전이합니다.",
+      "description": "공격한 타일에 장판이 있다면 지속시간을 갱신하고 양옆 타일로 확산합니다.",
       "stat_modifiers": [
         { "stat": "damage", "operation": "add", "value": 15 }
       ],
       "effect_ids": [
-        { "id": "spread_debuff", "value": 1 }
+        { "id": "field_spread", "value": 1 }
       ]
     },
     {

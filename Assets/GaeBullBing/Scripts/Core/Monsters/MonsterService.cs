@@ -205,7 +205,7 @@ namespace GaeBullBing.Core.Monsters
                 return;
             monster.BurnStacks++;
             monster.TouchedFireThisMove = true;
-            var damage = monster.MaxHealth * .005f * monster.BurnStacks;
+            var damage = monster.MaxHealth * .0025f * monster.BurnStacks;
             var actual = monster.ReceiveDamage(damage, state.Difficulty);
             results.Add(new TowerAttackResult(0, monster.InstanceId, actual, monster.IsDead,
                 targetTileIndex: tileIndex));

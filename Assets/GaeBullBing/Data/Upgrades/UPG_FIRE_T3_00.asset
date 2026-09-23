@@ -14,15 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
   id: UPG_FIRE_T3_00
   displayName: "TOW_01_\uBD88_T3_00"
-  description: "\uACF5\uACA9\uD560 \uB54C\uB9C8\uB2E4 \uD654\uC0C1\uC744 1\uC911\uCCA9
-    \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+  description: "\uC2E0\uADDC \uD6A8\uACFC \uD655\uC815 \uC804 \uBE44\uD65C\uC131\uD654\uB41C
+    \uC120\uD0DD\uC9C0\uC785\uB2C8\uB2E4."
   element: 1
   tier: 3
-  weight: 1
+  weight: 0
   statModifiers:
   - Stat: damage
     Operation: add
     Value: 20
-  effects:
-  - Id: burn
-    Value: 1
+  effects: []

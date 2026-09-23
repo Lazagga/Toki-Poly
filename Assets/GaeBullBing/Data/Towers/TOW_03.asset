@@ -20,4 +20,4 @@ MonoBehaviour:
   range: 3
   targetCount: 1
   attackCount: 1
-  baseEffectIds: []
+  baseEffects: []

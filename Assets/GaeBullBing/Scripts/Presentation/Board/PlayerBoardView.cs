@@ -109,6 +109,14 @@ namespace GaeBullBing.Presentation.Board
             shadowGroundPosition = GetShadowGroundPosition(currentTileIndex);
         }
 
+        public void SetVisible(bool visible)
+        {
+            if (visualRenderer == null) ConfigureVisual();
+            if (visualRenderer != null) visualRenderer.enabled = visible;
+            shadow?.SetVisible(visible);
+            if (positionMarker != null) positionMarker.gameObject.SetActive(visible);
+        }
+
         private IEnumerator AnimateLayoutOffset(Vector3 targetOffset)
         {
             var startOffset = positionOffset;

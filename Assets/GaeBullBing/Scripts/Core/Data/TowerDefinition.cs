@@ -14,7 +14,7 @@ namespace GaeBullBing.Core.Data
         [SerializeField, Min(0)] private int range;
         [SerializeField, Min(1)] private int targetCount = 1;
         [SerializeField, Min(1)] private int attackCount = 1;
-        [SerializeField] private string[] baseEffectIds = Array.Empty<string>();
+        [SerializeField] private TowerUpgradeEffect[] baseEffects = Array.Empty<TowerUpgradeEffect>();
 
         public string Id => id;
         public string DisplayName => displayName;
@@ -24,7 +24,7 @@ namespace GaeBullBing.Core.Data
         public int Range => range;
         public int TargetCount => targetCount;
         public int AttackCount => attackCount;
-        public string[] BaseEffectIds => baseEffectIds;
+        public TowerUpgradeEffect[] BaseEffects => baseEffects;
     }
 
 }

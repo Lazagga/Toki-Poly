@@ -18,8 +18,11 @@ namespace GaeBullBing.Core.Monsters
         public int BurnStacks
         {
             get => burnStacks;
-            set => burnStacks = value < 0 ? 0 : value > 10 ? 10 : value;
+            set => burnStacks = value < 0 ? 0 : value > 20 ? 20 : value;
         }
+        public int FrostbiteStacks { get; set; }
+        public int FrostbiteBurstThreshold { get; set; } = 3;
+        public float FrostbiteBurstDamageMultiplier { get; set; } = 3f;
         public bool TouchedFireThisMove { get; set; }
         public bool Shocked { get; set; }
         public int FrozenMovesRemaining { get; set; }

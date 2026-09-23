@@ -16,6 +16,7 @@ namespace GaeBullBing.Presentation.Monsters
 
         private readonly List<Icon> icons = new();
         private Icon burn;
+        private Icon frostbite;
         private Icon freeze;
         private Icon knockback;
         private Icon shock;
@@ -31,6 +32,7 @@ namespace GaeBullBing.Presentation.Monsters
             iconRoot.SetParent(transform, false);
 
             burn = CreateIcon("Burn", new Color(.92f, .12f, .08f, 1f), true);
+            frostbite = CreateIcon("Frostbite", new Color(.25f, .78f, 1f, 1f), true);
             freeze = CreateIcon("Freeze", new Color(.12f, .46f, .95f, 1f), false);
             knockback = CreateIcon("Knockback Immunity", new Color(.18f, .72f, .28f, 1f), false);
             shock = CreateIcon("Shock", new Color(.64f, .20f, .86f, 1f), false);
@@ -45,6 +47,13 @@ namespace GaeBullBing.Presentation.Monsters
             {
                 burn.Count.text = state.BurnStacks.ToString();
                 burn.Count.gameObject.SetActive(state.BurnStacks > 0);
+            }
+
+            SetIconActive(frostbite, state.FrostbiteStacks > 0);
+            if (frostbite.Count != null)
+            {
+                frostbite.Count.text = state.FrostbiteStacks.ToString();
+                frostbite.Count.gameObject.SetActive(state.FrostbiteStacks > 0);
             }
 
             var freezeImmune = state.FreezeImmuneThisTurn || state.IsImmuneTo("freeze");

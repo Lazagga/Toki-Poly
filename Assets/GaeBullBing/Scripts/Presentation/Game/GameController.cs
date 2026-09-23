@@ -85,8 +85,125 @@ private bool finishRoutineStarted;
 
         public GameState State { get; private set; }
         public GameSession Session { get; private set; }
+        public IReadOnlyList<MonsterDefinition> TestMonsterDefinitions => monsterDefinitions;
+        public IReadOnlyList<TowerDefinition> TestTowerDefinitions => towerDefinitions;
+        public IReadOnlyList<TowerUpgradeDefinition> TestTowerUpgradeDefinitions => towerUpgradeDefinitions;
         public int TotalKills => State?.Difficulty?.KillCount ?? 0;
         public bool HasGameplayStarted { get; private set; }
+
+        public bool TestLabConfigureTower(
+            int tileIndex,
+            string towerDefinitionId,
+            IReadOnlyList<string> upgradeIds,
+            bool bonusTile,
+            out string message)
+        {
+            if (State == null || tileIndex < 0 || tileIndex >= State.Board.TileCount)
+            {
+                message = "Invalid tile.";
+                return false;
+            }
+            var definition = FindTowerDefinition(towerDefinitionId);
+            if (definition == null)
+            {
+                message = $"Tower not found: {towerDefinitionId}";
+                return false;
+            }
+            var tile = State.Board.Tiles[tileIndex];
+            tile.Tower = null;
+            tile.IsBonusTile = bonusTile;
+            Session.BuildTower(tileIndex, definition);
+            if (upgradeIds != null)
+                foreach (var id in upgradeIds)
+                    foreach (var upgrade in towerUpgradeDefinitions)
+                        if (upgrade != null && upgrade.Id == id)
+                        {
+                            Session.UpgradeTower(tileIndex, upgrade);
+                            break;
+                        }
+            towerPresenter.SetTower(tileIndex, definition, tile.Tower.UpgradeTier);
+            boardView.RefreshBonusTileBorders(State.Board);
+            message = $"Configured {definition.DisplayName} on tile {tileIndex}.";
+            return true;
+        }
+
+        public bool TestLabSpawnMonster(
+            string definitionId, int tileIndex, bool stationary,
+            out int instanceId, out string message)
+        {
+            instanceId = 0;
+            if (!SpawnMonsterFromConsole(definitionId, tileIndex, out message)) return false;
+            var monster = State.Monsters[State.Monsters.Count - 1];
+            if (stationary) monster.MoveDistance = 0;
+            instanceId = monster.InstanceId;
+            monsterPresenter.RefreshAll();
+            return true;
+        }
+
+        public IEnumerator TestLabAttack(
+            int tileIndex, int count, int preferredTargetInstanceId, bool ignoreRange)
+        {
+            var results = Session.ResolveTestTowerAttack(
+                tileIndex, count, preferredTargetInstanceId, ignoreRange,
+                towerDefinitions, towerUpgradeDefinitions);
+            var illuminated = new HashSet<int>();
+            foreach (var result in results)
+                yield return PlayAttackResult(result, illuminated);
+            monsterPresenter.RefreshAll();
+            boardView.RefreshTileEffects(State.Board);
+        }
+
+        public IEnumerator TestLabMoveMonster(int instanceId, int distance)
+        {
+            var savedDistances = new Dictionary<int, int>();
+            foreach (var monster in State.Monsters)
+            {
+                savedDistances[monster.InstanceId] = monster.MoveDistance;
+                monster.MoveDistance = monster.InstanceId == instanceId ? Mathf.Max(0, distance) : 0;
+            }
+            var results = Session.MoveMonsters(towerDefinitions, towerUpgradeDefinitions);
+            foreach (var result in results)
+            {
+                yield return monsterPresenter.Move(result);
+                foreach (var tileEffect in result.TileEffectResults)
+                    yield return PlayAttackResult(tileEffect, new HashSet<int>());
+            }
+            foreach (var monster in State.Monsters)
+                if (savedDistances.TryGetValue(monster.InstanceId, out var saved))
+                    monster.MoveDistance = saved;
+            monsterPresenter.RefreshAll();
+            boardView.RefreshTileEffects(State.Board);
+        }
+
+        public void TestLabRefreshViews()
+        {
+            monsterPresenter.RefreshAll();
+            boardView.RefreshTileEffects(State.Board);
+            diceHud.RefreshDiceFaces();
+        }
+
+        public bool TestLabSetDice(string firstId, string secondId, out string message)
+        {
+            var first = DiceCatalog.GetById(firstId);
+            var second = DiceCatalog.GetById(secondId);
+            if (first == null || second == null)
+            {
+                message = "Select two valid dice.";
+                return false;
+            }
+
+            // TestLab에는 획득/교체 개념이 없다. 런타임 서비스가 참조하는 보유 목록도
+            // 장착한 두 주사위로만 맞춰 패시브 검증 경로를 단순하게 유지한다.
+            State.DiceInventory.Dice.Clear();
+            State.DiceInventory.Dice.Add(first);
+            State.DiceInventory.Dice.Add(second);
+            State.Dice.Clear();
+            State.Dice.Add(first);
+            State.Dice.Add(second);
+            diceHud.RefreshDiceFaces();
+            message = $"Equipped dice: {first.Id}, {second.Id}.";
+            return true;
+        }
 
         public void BuildResultStatistics(out string left, out string right)
         {
@@ -571,6 +688,19 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             StartCoroutine(BeginFirstPlayerTurnRoutine());
         }
 
+        public void StartTestLabMode()
+        {
+            EnterFlowState(GameFlowState.Gameplay);
+            HasGameplayStarted = true;
+            isBusy = false;
+            AcceptsGameplayInput = false;
+            diceHud.SetBusy();
+            gameFlowView?.EnterTestLabMode();
+            // 이동/배치 보조 코루틴은 PlayerBoardView를 참조하므로 오브젝트는 활성 상태로 두고
+            // TestLab에서 불필요한 시각 요소만 숨긴다.
+            playerView?.SetVisible(false);
+        }
+
         private IEnumerator BeginFirstPlayerTurnRoutine()
         {
             if (turnTransitionBanner != null)
@@ -808,6 +938,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         {
             var values = new List<string>();
             if (monster.BurnStacks > 0) values.Add($"화상 {monster.BurnStacks}중첩");
+            if (monster.FrostbiteStacks > 0) values.Add($"동상 {monster.FrostbiteStacks}중첩");
             if (monster.Shocked) values.Add("감전");
             if (monster.FrozenMovesRemaining > 0) values.Add("빙결");
             if (monster.StunnedMovesRemaining > 0) values.Add("이동 불가");

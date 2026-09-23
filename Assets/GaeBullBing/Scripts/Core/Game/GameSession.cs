@@ -310,9 +310,12 @@ namespace GaeBullBing.Core.Game
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             var tower = BuildTower(tileIndex, definition.Id);
-            foreach (var effectId in definition.BaseEffectIds ?? Array.Empty<string>())
-                if (!string.IsNullOrWhiteSpace(effectId) && !tower.AppliedEffectIds.Contains(effectId))
-                    tower.AppliedEffectIds.Add(effectId);
+            foreach (var effect in definition.BaseEffects ?? Array.Empty<TowerUpgradeEffect>())
+                if (!string.IsNullOrWhiteSpace(effect.Id))
+                {
+                    if (!tower.AppliedEffectIds.Contains(effect.Id)) tower.AppliedEffectIds.Add(effect.Id);
+                    tower.EffectValues[effect.Id] = effect.Value;
+                }
             return tower;
         }
 
@@ -364,17 +367,69 @@ namespace GaeBullBing.Core.Game
                 {
                     [tile.Tower.InstanceId] = towerStats
                 };
-                var attacks = towerCombatService.ResolveByTower(State, singleTowerStats);
-                foreach (var result in ResolveAttackEffects(attacks)) combined.Add(result);
+                var attacks = towerCombatService.ResolveByTower(
+                    State, singleTowerStats, ResolveAttackEffects);
+                foreach (var result in attacks) combined.Add(result);
                 if (tile.Tower.StoneActive)
                 {
                     var stoneAttacks = new System.Collections.Generic.List<TowerAttackResult>();
-                    towerEffectService.ResolveStone(State, tile.Tower, stoneAttacks);
-                    foreach (var result in ResolveAttackEffects(stoneAttacks)) combined.Add(result);
+                    towerEffectService.ResolveStone(
+                        State, tile.Tower, stoneAttacks, ResolveAttackEffects);
+                    foreach (var result in stoneAttacks) combined.Add(result);
                 }
             }
             ResolveBossVictory(combined);
             return combined;
+        }
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveTestTowerAttack(
+            int tileIndex,
+            int attackCount,
+            int preferredTargetInstanceId,
+            bool ignoreRange,
+            System.Collections.Generic.IReadOnlyList<TowerDefinition> definitions,
+            System.Collections.Generic.IReadOnlyList<TowerUpgradeDefinition> upgrades)
+        {
+            if (tileIndex < 0 || tileIndex >= State.Board.TileCount)
+                throw new ArgumentOutOfRangeException(nameof(tileIndex));
+            var tile = State.Board.Tiles[tileIndex];
+            if (!tile.HasTower) return System.Array.Empty<TowerAttackResult>();
+
+            TowerDefinition definition = null;
+            foreach (var candidate in definitions ?? System.Array.Empty<TowerDefinition>())
+                if (candidate != null && candidate.Id == tile.Tower.DefinitionId)
+                {
+                    definition = candidate;
+                    break;
+                }
+            if (definition == null) return System.Array.Empty<TowerAttackResult>();
+
+            State.CurrentPhase = TurnPhase.TowerCombat;
+            var resolved = BuildCombatStats(definition, tile, upgrades);
+            var stats = new TowerCombatStats(
+                resolved.Damage,
+                ignoreRange ? State.Board.TileCount : resolved.Range,
+                resolved.TargetCount,
+                Math.Max(1, attackCount));
+            tile.Tower.LastResolvedDamage = stats.Damage;
+            var byTower = new System.Collections.Generic.Dictionary<int, TowerCombatStats>
+            {
+                [tile.Tower.InstanceId] = stats
+            };
+            var results = towerCombatService.ResolveByTower(
+                State, byTower, ResolveAttackEffects, preferredTargetInstanceId);
+            if (tile.Tower.StoneActive)
+            {
+                var stoneResults = new System.Collections.Generic.List<TowerAttackResult>();
+                towerEffectService.ResolveStone(
+                    State, tile.Tower, stoneResults, ResolveAttackEffects);
+                var combined = new System.Collections.Generic.List<TowerAttackResult>(results);
+                combined.AddRange(stoneResults);
+                ResolveBossVictory(combined);
+                return combined;
+            }
+            ResolveBossVictory(results);
+            return results;
         }
 
         private System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveAttackEffects(

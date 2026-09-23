@@ -146,6 +146,14 @@ namespace GaeBullBing.Presentation.UI
             transitionBlocker.SetActive(false);
         }
 
+        public void EnterTestLabMode()
+        {
+            StopTransition();
+            HideAll();
+            SetGameplayVisible(false);
+            transitionBlocker.SetActive(false);
+        }
+
         private void ShowOnly(GameObject target)
         {
             HideAll();

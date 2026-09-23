@@ -54,7 +54,8 @@ namespace GaeBullBing.Editor
                     throw new InvalidOperationException($"{item.id}의 속성이 올바르지 않습니다: {item.element}");
                 if (item.base_stats == null)
                     throw new InvalidOperationException($"{item.id}의 base_stats가 없습니다.");
-                foreach (var effectId in item.base_effect_ids ?? Array.Empty<string>())
+                foreach (var effectId in Array.ConvertAll(
+                             item.base_effect_ids ?? Array.Empty<EffectJson>(), effect => effect.id))
                     if (!TowerEffectCatalog.IsImplemented(effectId))
                         throw new InvalidOperationException($"{item.id}의 기본 효과가 구현되지 않았습니다: {effectId}");
 
@@ -68,7 +69,7 @@ namespace GaeBullBing.Editor
                 serialized.FindProperty("range").intValue = Math.Max(0, item.base_stats.range);
                 serialized.FindProperty("targetCount").intValue = Math.Max(1, item.base_stats.target_count);
                 serialized.FindProperty("attackCount").intValue = Math.Max(1, item.base_stats.attack_count);
-                SetStringArray(serialized.FindProperty("baseEffectIds"), item.base_effect_ids);
+                SetEffects(serialized.FindProperty("baseEffects"), item.base_effect_ids);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
                 definition.name = item.id;
                 EditorUtility.SetDirty(definition);
@@ -175,12 +176,6 @@ namespace GaeBullBing.Editor
             EditorUtility.SetDirty(database);
         }
 
-        private static void SetStringArray(SerializedProperty property, string[] values)
-        {
-            values ??= Array.Empty<string>(); property.arraySize = values.Length;
-            for (var i = 0; i < values.Length; i++) property.GetArrayElementAtIndex(i).stringValue = values[i];
-        }
-
         private static void SetModifiers(SerializedProperty property, ModifierJson[] values)
         {
             values ??= Array.Empty<ModifierJson>(); property.arraySize = values.Length;
@@ -280,7 +275,7 @@ namespace GaeBullBing.Editor
         }
 
         [Serializable] private sealed class TowerDatabaseJson { public TowerJson[] tower_database; }
-        [Serializable] private sealed class TowerJson { public string id; public string name; public string element; public int tier = 1; public TowerStatsJson base_stats; public string[] base_effect_ids; }
+        [Serializable] private sealed class TowerJson { public string id; public string name; public string element; public int tier = 1; public TowerStatsJson base_stats; public EffectJson[] base_effect_ids; }
         [Serializable] private sealed class TowerStatsJson { public int damage; public int range; public int target_count = 1; public int attack_count = 1; }
         [Serializable] private sealed class UpgradeDatabaseJson { public UpgradeJson[] tower_upgrade_database; }
         [Serializable] private sealed class UpgradeJson { public string id; public string name; public string description; public string element; public int tier; public int weight = 1; public ModifierJson[] stat_modifiers; public EffectJson[] effect_ids; }

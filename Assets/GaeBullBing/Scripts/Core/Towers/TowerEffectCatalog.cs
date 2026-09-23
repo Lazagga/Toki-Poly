@@ -11,7 +11,7 @@ namespace GaeBullBing.Core.Towers
         public const string Freeze = "freeze";
         public const string RangeAttack = "range_attack";
         public const string Knockback = "knockback";
-        public const string SpreadDebuff = "spread_debuff";
+        public const string StatusTransfer = "status_transfer";
         public const string Shock = "shock";
         public const string BurnDamage = "burn_damage";
         public const string BurnExplode = "burn_explode";
@@ -32,15 +32,19 @@ namespace GaeBullBing.Core.Towers
         public const string SpreadRangeAdd = "spread_range_add";
         public const string TileStepLineBuff = "tile_step_line_buff";
         public const string FieldSpread = "field_spread";
+        public const string Frostbite = "frostbite";
+        public const string FrostbiteBurstThreshold = "frostbite_burst_threshold";
+        public const string FrostbiteBurstDamageMultiply = "frostbite_burst_damage_multiply";
 
         // This is the single source of truth for effects with runtime handlers.
         public static readonly IReadOnlyCollection<string> ImplementedEffectIds = Array.AsReadOnly(new[]
         {
-            Explode, Burn, Freeze, RangeAttack, Knockback, SpreadDebuff, Shock,
+            Explode, Burn, Freeze, RangeAttack, Knockback, StatusTransfer, Shock,
             BurnDamage, BurnExplode, ChainLightning, ChainLine, ChainTile, Cooldown,
             DoubleBurn, FreezeDamageMultiply, RollingStone, TileBreak, TileBurn,
             TileFreeze, TowerBuff, Wall, AreaTile, LineTowerBuff, SpreadRangeAdd,
-            TileStepLineBuff, FieldSpread
+            TileStepLineBuff, FieldSpread, Frostbite, FrostbiteBurstThreshold,
+            FrostbiteBurstDamageMultiply
         });
 
         public static bool IsImplemented(string id)

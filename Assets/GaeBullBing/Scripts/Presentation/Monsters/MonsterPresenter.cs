@@ -350,6 +350,18 @@ public void RefreshStatuses()
                     view.UpdateStatus(pair.Value);
         }
 
+        public void RefreshAll()
+        {
+            foreach (var pair in states)
+            {
+                if (!views.TryGetValue(pair.Key, out var view)) continue;
+                displayedHealth[pair.Key] = pair.Value.CurrentHealth;
+                view.UpdateStatus(pair.Value);
+                view.UpdateHealth(pair.Value.CurrentHealth, pair.Value.MaxHealth);
+            }
+            ReflowAll();
+        }
+
 
         private void OnMonsterTileChanged(int previousTileIndex, int currentTileIndex)
         {

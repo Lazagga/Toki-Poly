@@ -26,6 +26,16 @@ namespace GaeBullBing.Presentation.Game
             SetActorOffset(hiddenDistance);
         }
 
+        /// <summary>
+        /// 등장 연출을 거치지 않는 테스트/도구 씬에서 보드와 액터를 최종 위치로 즉시 복구한다.
+        /// PrepareHidden 이후 일반 인트로를 호출하지 않으면 전환 오프셋이 남기 때문에 반드시 이 경로를 사용한다.
+        /// </summary>
+        public void ShowImmediately()
+        {
+            boardView.SetAllTransitionOffsets(0f);
+            SetActorOffset(0f);
+        }
+
         public IEnumerator PlayIntro()
         {
             var hiddenDistance = GetHiddenVerticalDistance();
