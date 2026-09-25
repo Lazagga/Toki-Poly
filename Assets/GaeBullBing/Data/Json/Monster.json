@@ -1,9 +1,14 @@
 {
+  "region_definitions": [
+    { "id": "REGION_01", "name": "숲", "order": 1 },
+    { "id": "REGION_02", "name": "설원", "order": 2 }
+  ],
   "monster_database": [
     {
       "id": "MON_001",
       "name": "곰",
       "tier": "Normal",
+      "region_id": "REGION_01",
       "appearance_wave": 1,
       "base_stats": {
         "max_hp": 420,
@@ -12,14 +17,13 @@
       },
       "status_immunities": {
       },
-      "kill_rewards": {
-        "dice_points": 5
-      }
+      "passive_effect_ids": []
     },
         {
       "id": "MON_002",
       "name": "여우",
       "tier": "Normal",
+      "region_id": "REGION_01",
       "appearance_wave": 1,
       "base_stats": {
         "max_hp": 300,
@@ -28,14 +32,13 @@
       },
       "status_immunities": {
       },
-      "kill_rewards": {
-        "dice_points": 5
-      }
+      "passive_effect_ids": []
     },
         {
       "id": "MON_003",
       "name": "다람쥐",
       "tier": "Normal",
+      "region_id": "REGION_01",
       "appearance_wave": 1,
       "base_stats": {
         "max_hp": 240,
@@ -44,14 +47,13 @@
       },
       "status_immunities": {
       },
-      "kill_rewards": {
-        "dice_points": 5
-      }
+      "passive_effect_ids": []
     },
     {
       "id": "BOSS_001",
       "name": "까마귀",
       "tier": "Boss",
+      "region_id": "REGION_01",
       "appearance_wave": 8,
       "base_stats": {
         "max_hp": 2250,
@@ -61,9 +63,70 @@
       "status_immunities": [
         "knockback"
       ],
-      "kill_rewards": {
-        "dice_points": 5
-      }
+      "passive_effect_ids": []
+    },
+    {
+      "id": "MON_004",
+      "name": "펭귄",
+      "tier": "Normal",
+      "region_id": "REGION_02",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 500,
+        "move_speed": 1,
+        "base_defense": 0
+      },
+      "status_immunities": {
+      },
+      "passive_effect_ids": [
+        { "id": "ice_overlay_slide", "value": 1 }
+      ]
+    },
+    {
+      "id": "MON_005",
+      "name": "설표",
+      "tier": "Normal",
+      "region_id": "REGION_02",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 300,
+        "move_speed": 3,
+        "base_defense": 0
+      },
+      "status_immunities": {
+      },
+      "passive_effect_ids": []
+    },
+    {
+      "id": "MON_006",
+      "name": "북극늑대",
+      "tier": "Normal",
+      "region_id": "REGION_02",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 380,
+        "move_speed": 2,
+        "base_defense": 0
+      },
+      "status_immunities": {
+      },
+      "passive_effect_ids": []
+    },
+    {
+      "id": "BOSS_002",
+      "name": "바다표범",
+      "tier": "Boss",
+      "region_id": "REGION_02",
+      "appearance_wave": 16,
+      "base_stats": {
+        "max_hp": 3200,
+        "move_speed": 4,
+        "base_defense": 250
+      },
+      "status_immunities": [
+        "freeze"
+      ],
+      "passive_effect_ids": []
     }
   ]
 }
