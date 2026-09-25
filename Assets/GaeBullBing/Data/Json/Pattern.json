@@ -2,27 +2,27 @@
   "wavedata": [
     {
       "region_id": "REGION_01",
-      "required_kills": 5,
-      "multiplier": 1.45,
-      "defense_per_wave": 20.0
+      "required_kills": 3,
+      "multiplier": 1.5,
+      "defense_per_wave": 22
     },
     {
       "region_id": "REGION_02",
-      "required_kills": 5,
-      "multiplier": 1.45,
-      "defense_per_wave": 20.0
+      "required_kills": 3,
+      "multiplier": 1.5,
+      "defense_per_wave": 22
     },
     {
       "region_id": "REGION_03",
-      "required_kills": 5,
-      "multiplier": 1.45,
-      "defense_per_wave": 20.0
+      "required_kills": 3,
+      "multiplier": 1.5,
+      "defense_per_wave": 22
     },
     {
       "region_id": "REGION_04",
-      "required_kills": 5,
-      "multiplier": 1.45,
-      "defense_per_wave": 20.0
+      "required_kills": 3,
+      "multiplier": 1.5,
+      "defense_per_wave": 22
     }
   ],
   "wave_patterns": [
