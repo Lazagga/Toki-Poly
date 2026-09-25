@@ -24,27 +24,27 @@ MonoBehaviour:
   - RequiredKills: 5
     HealthMultiplier: 1.45
     MonsterIds:
-    - MON_001
-    - MON_001
-    - MON_002
-    - MON_003
-    - MON_003
+    - MON_004
+    - MON_004
+    - MON_004
+    - MON_005
+    - MON_005
   - RequiredKills: 10
     HealthMultiplier: 2.1025002
     MonsterIds:
-    - MON_001
-    - MON_001
-    - MON_003
-    - MON_003
-    - MON_003
+    - MON_007
+    - MON_007
+    - MON_007
+    - MON_008
+    - MON_008
   - RequiredKills: 15
     HealthMultiplier: 3.0486255
     MonsterIds:
-    - MON_002
-    - MON_002
-    - MON_003
-    - MON_002
-    - MON_003
+    - MON_010
+    - MON_010
+    - MON_010
+    - MON_011
+    - MON_011
   - RequiredKills: 20
     HealthMultiplier: 4.420507
     MonsterIds:
@@ -53,6 +53,126 @@ MonoBehaviour:
     - MON_002
     - MON_003
     - MON_003
+  - RequiredKills: 25
+    HealthMultiplier: 6.409735
+    MonsterIds:
+    - MON_004
+    - MON_004
+    - MON_005
+    - MON_006
+    - MON_006
+  - RequiredKills: 30
+    HealthMultiplier: 9.294116
+    MonsterIds:
+    - MON_007
+    - MON_007
+    - MON_008
+    - MON_009
+    - MON_009
+  - RequiredKills: 35
+    HealthMultiplier: 13.476469
+    MonsterIds:
+    - MON_010
+    - MON_010
+    - MON_011
+    - MON_012
+    - MON_012
+  - RequiredKills: 40
+    HealthMultiplier: 19.54088
+    MonsterIds:
+    - MON_001
+    - MON_001
+    - MON_003
+    - MON_003
+    - MON_003
+  - RequiredKills: 45
+    HealthMultiplier: 28.334278
+    MonsterIds:
+    - MON_010
+    - MON_010
+    - MON_012
+    - MON_012
+    - MON_012
+  - RequiredKills: 50
+    HealthMultiplier: 41.084705
+    MonsterIds:
+    - MON_004
+    - MON_004
+    - MON_006
+    - MON_006
+    - MON_006
+  - RequiredKills: 55
+    HealthMultiplier: 59.572826
+    MonsterIds:
+    - MON_007
+    - MON_007
+    - MON_009
+    - MON_009
+    - MON_009
+  - RequiredKills: 60
+    HealthMultiplier: 86.3806
+    MonsterIds:
+    - MON_002
+    - MON_002
+    - MON_003
+    - MON_002
+    - MON_003
+  - RequiredKills: 65
+    HealthMultiplier: 125.25188
+    MonsterIds:
+    - MON_005
+    - MON_005
+    - MON_006
+    - MON_005
+    - MON_006
+  - RequiredKills: 70
+    HealthMultiplier: 181.61523
+    MonsterIds:
+    - MON_011
+    - MON_011
+    - MON_012
+    - MON_011
+    - MON_012
+  - RequiredKills: 75
+    HealthMultiplier: 263.3421
+    MonsterIds:
+    - MON_008
+    - MON_008
+    - MON_009
+    - MON_008
+    - MON_009
+  - RequiredKills: 80
+    HealthMultiplier: 381.84607
+    MonsterIds:
+    - MON_004
+    - MON_004
+    - MON_005
+    - MON_006
+    - MON_006
+  - RequiredKills: 85
+    HealthMultiplier: 553.6768
+    MonsterIds:
+    - MON_001
+    - MON_001
+    - MON_002
+    - MON_003
+    - MON_003
+  - RequiredKills: 90
+    HealthMultiplier: 802.8314
+    MonsterIds:
+    - MON_007
+    - MON_007
+    - MON_008
+    - MON_009
+    - MON_009
+  - RequiredKills: 95
+    HealthMultiplier: 1164.1056
+    MonsterIds:
+    - MON_010
+    - MON_010
+    - MON_011
+    - MON_012
+    - MON_012
   killsPerLevel: 5
   healthMultiplierPerLevel: 1.45
   defensePerLevel: 20

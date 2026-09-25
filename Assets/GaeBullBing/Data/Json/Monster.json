@@ -1,7 +1,25 @@
 {
   "region_definitions": [
-    { "id": "REGION_01", "name": "숲", "order": 1 },
-    { "id": "REGION_02", "name": "설원", "order": 2 }
+    {
+      "id": "REGION_01",
+      "name": "숲",
+      "order": 1
+    },
+    {
+      "id": "REGION_02",
+      "name": "설원",
+      "order": 2
+    },
+    {
+      "id": "REGION_03",
+      "name": "사막",
+      "order": 2
+    },
+    {
+      "id": "REGION_04",
+      "name": "늪지대",
+      "order": 2
+    }
   ],
   "monster_database": [
     {
@@ -15,11 +33,10 @@
         "move_speed": 1,
         "base_defense": 0
       },
-      "status_immunities": {
-      },
+      "status_immunities": {},
       "passive_effect_ids": []
     },
-        {
+    {
       "id": "MON_002",
       "name": "여우",
       "tier": "Normal",
@@ -30,11 +47,10 @@
         "move_speed": 2,
         "base_defense": 0
       },
-      "status_immunities": {
-      },
+      "status_immunities": {},
       "passive_effect_ids": []
     },
-        {
+    {
       "id": "MON_003",
       "name": "다람쥐",
       "tier": "Normal",
@@ -45,8 +61,7 @@
         "move_speed": 3,
         "base_defense": 0
       },
-      "status_immunities": {
-      },
+      "status_immunities": {},
       "passive_effect_ids": []
     },
     {
@@ -76,10 +91,12 @@
         "move_speed": 1,
         "base_defense": 0
       },
-      "status_immunities": {
-      },
+      "status_immunities": {},
       "passive_effect_ids": [
-        { "id": "ice_overlay_slide", "value": 1 }
+        {
+          "id": "ice_overlay_slide",
+          "value": 1
+        }
       ]
     },
     {
@@ -93,8 +110,7 @@
         "move_speed": 3,
         "base_defense": 0
       },
-      "status_immunities": {
-      },
+      "status_immunities": {},
       "passive_effect_ids": []
     },
     {
@@ -108,8 +124,7 @@
         "move_speed": 2,
         "base_defense": 0
       },
-      "status_immunities": {
-      },
+      "status_immunities": {},
       "passive_effect_ids": []
     },
     {
@@ -127,6 +142,152 @@
         "freeze"
       ],
       "passive_effect_ids": []
+    },
+    {
+      "id": "MON_007",
+      "name": "사막여우",
+      "tier": "Normal",
+      "region_id": "REGION_03",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 280,
+        "move_speed": 3,
+        "base_defense": 0
+      },
+      "status_immunities": {},
+      "passive_effect_ids": []
+    },
+    {
+      "id": "MON_008",
+      "name": "아르마딜로",
+      "tier": "Normal",
+      "region_id": "REGION_03",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 380,
+        "move_speed": 1,
+        "base_defense": 60
+      },
+      "status_immunities": {},
+      "passive_effect_ids": [
+        {
+          "id": "quicksand_slow_immune",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "MON_009",
+      "name": "방울뱀",
+      "tier": "Normal",
+      "region_id": "REGION_03",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 320,
+        "move_speed": 2,
+        "base_defense": 0
+      },
+      "status_immunities": {},
+      "passive_effect_ids": [
+        {
+          "id": "sand_burrow_stealth",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "BOSS_003",
+      "name": "독수리",
+      "tier": "Boss",
+      "region_id": "REGION_03",
+      "appearance_wave": 16,
+      "base_stats": {
+        "max_hp": 3100,
+        "move_speed": 4,
+        "base_defense": 220
+      },
+      "status_immunities": [
+        "knockback"
+      ],
+      "passive_effect_ids": [
+        {
+          "id": "dive_strike",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "MON_010",
+      "name": "두꺼비",
+      "tier": "Normal",
+      "region_id": "REGION_04",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 360,
+        "move_speed": 2,
+        "base_defense": 0
+      },
+      "status_immunities": {},
+      "passive_effect_ids": [
+        {
+          "id": "poison_trail",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "MON_011",
+      "name": "수달",
+      "tier": "Normal",
+      "region_id": "REGION_04",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 260,
+        "move_speed": 3,
+        "base_defense": 0
+      },
+      "status_immunities": {},
+      "passive_effect_ids": []
+    },
+    {
+      "id": "MON_012",
+      "name": "거북이",
+      "tier": "Normal",
+      "region_id": "REGION_04",
+      "appearance_wave": 9,
+      "base_stats": {
+        "max_hp": 420,
+        "move_speed": 1,
+        "base_defense": 90
+      },
+      "status_immunities": {},
+      "passive_effect_ids": [
+        {
+          "id": "swamp_toxin_immune",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "BOSS_004",
+      "name": "악어",
+      "tier": "Boss",
+      "region_id": "REGION_04",
+      "appearance_wave": 16,
+      "base_stats": {
+        "max_hp": 3300,
+        "move_speed": 3,
+        "base_defense": 260
+      },
+      "status_immunities": [
+        "slow"
+      ],
+      "passive_effect_ids": [
+        {
+          "id": "ambush_lunge",
+          "value": 1
+        }
+      ]
     }
   ]
 }

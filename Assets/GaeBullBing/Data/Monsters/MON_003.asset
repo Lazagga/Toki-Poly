@@ -20,4 +20,4 @@ MonoBehaviour:
   moveDistance: 3
   baseDefense: 0
   statusImmunities: []
-  killRewardDicePoints: 5
+  killRewardDicePoints: 0

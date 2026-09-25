@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7c006461b7c1c43a1de40283f0aad3, type: 3}
-  m_Name: "MON_002_\uC5EC\uC6B0"
+  m_Name: "BOSS_004_\uC545\uC5B4"
   m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.MonsterDefinition
-  id: MON_002
-  displayName: "\uC5EC\uC6B0"
-  tier: 0
-  appearanceWave: 1
-  maxHp: 300
-  moveDistance: 2
-  baseDefense: 0
-  statusImmunities: []
+  id: BOSS_004
+  displayName: "\uC545\uC5B4"
+  tier: 1
+  appearanceWave: 16
+  maxHp: 3300
+  moveDistance: 3
+  baseDefense: 260
+  statusImmunities:
+  - slow
   killRewardDicePoints: 0

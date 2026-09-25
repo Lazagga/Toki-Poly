@@ -21,4 +21,4 @@ MonoBehaviour:
   baseDefense: 200
   statusImmunities:
   - knockback
-  killRewardDicePoints: 5
+  killRewardDicePoints: 0
