@@ -33,6 +33,9 @@ namespace GaeBullBing.Core.Towers
         public int StoneExitTileIndex { get; set; } = -1;
         public bool IsFeatherSealed { get; set; }
         public int LastResolvedDamage { get; set; }
+        public float PersonalDamageRateBonus { get; set; }
+        public int PersonalDamageFlatBonus { get; set; }
+        public int PermanentBonusAttackCount { get; set; }
 
         public bool HasEffect(string effectId) =>
             !string.IsNullOrWhiteSpace(effectId) && AppliedEffectIds.Contains(effectId);

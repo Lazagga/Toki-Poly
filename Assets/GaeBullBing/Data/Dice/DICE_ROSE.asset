@@ -17,3 +17,8 @@ MonoBehaviour:
   grade: 3
   faces: 040000000400000004000000060000000600000006000000
   color: {r: 0.9411765, g: 0.3647059, b: 0.36862746, a: 1}
+  description: "\uC774 \uC8FC\uC0AC\uC704\uB85C \uC9C0\uB098\uAC04 \uACBD\uB85C\uC5D0
+    \uC788\uB294 \uBAA8\uB4E0 \uBD88 \uD0C0\uC6CC\uC5D0 \uACF5\uACA9\uB825 +5%"
+  effects:
+  - Id: path_fire_tower_damage_buff
+    Value: 5

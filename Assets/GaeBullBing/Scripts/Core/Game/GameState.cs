@@ -11,6 +11,9 @@ namespace GaeBullBing.Core.Game
         public const int DefaultEscapeLimit = 5;
 
         public int Round { get; set; }
+        public int StageNumber { get; set; } = 1;
+        public string CurrentRegionId { get; set; } = "REGION_01";
+        public List<string> BossRewardItemIds { get; } = new();
         public int CompletedLaps { get; set; }
         public TurnPhase CurrentPhase { get; set; }
         public int EscapedMonsterCount { get; set; }

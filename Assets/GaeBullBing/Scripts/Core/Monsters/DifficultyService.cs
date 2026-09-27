@@ -7,9 +7,20 @@ namespace GaeBullBing.Core.Monsters
     [Serializable]
     public sealed class DifficultyPatternData
     {
+        public int Level = 1;
         public int RequiredKills;
         public float HealthMultiplier = 1f;
         public string[] MonsterIds = Array.Empty<string>();
+    }
+
+    [Serializable]
+    public sealed class RegionDifficultyData
+    {
+        public string RegionId = string.Empty;
+        public int KillsPerLevel = 1;
+        public float HealthMultiplierPerLevel = 1f;
+        public float DefensePerLevel;
+        public DifficultyPatternData[] Patterns = Array.Empty<DifficultyPatternData>();
     }
 
     public sealed class DifficultyState

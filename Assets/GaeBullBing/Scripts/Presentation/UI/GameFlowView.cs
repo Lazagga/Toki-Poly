@@ -13,6 +13,8 @@ namespace GaeBullBing.Presentation.UI
         [SerializeField] private Button startButton;
         [SerializeField] private GameObject titleMainRoot;
         [SerializeField] private Button titleSettingsButton;
+        [SerializeField] private Button compendiumButton;
+        [SerializeField] private MonsterCompendiumView monsterCompendiumView;
         [SerializeField] private Button titleQuitButton;
         [SerializeField] private AudioSettingsView titleAudioSettingsView;
         [SerializeField] private GameObject defeatRoot;
@@ -52,9 +54,11 @@ namespace GaeBullBing.Presentation.UI
             ResetTitleVisuals();
             Bind(startButton, BeginStartTransition);
             Bind(titleSettingsButton, OpenTitleSettings);
+            Bind(compendiumButton, OpenCompendium);
             Bind(titleQuitButton, QuitGame);
             if (titleAudioSettingsView != null)
                 titleAudioSettingsView.BindBackAction(CloseTitleSettings);
+            monsterCompendiumView?.Bind(CloseCompendium);
             Bind(defeatTitleButton, () => BeginResultExit(defeatCanvasGroup, controller.ReturnToTitle));
             Bind(restartButton, () => BeginResultExit(defeatCanvasGroup, controller.RestartGame));
             Bind(victoryTitleButton, () => BeginResultExit(victoryCanvasGroup, controller.ReturnToTitle));
@@ -87,6 +91,19 @@ namespace GaeBullBing.Presentation.UI
             if (transitionRoutine != null || titleAudioSettingsView == null) return;
             if (titleMainRoot != null) titleMainRoot.SetActive(false);
             titleAudioSettingsView.Show();
+        }
+
+        private void OpenCompendium()
+        {
+            if (transitionRoutine != null || monsterCompendiumView == null) return;
+            if (titleMainRoot != null) titleMainRoot.SetActive(false);
+            monsterCompendiumView.Show();
+        }
+
+        private void CloseCompendium()
+        {
+            monsterCompendiumView?.Hide();
+            if (titleMainRoot != null) titleMainRoot.SetActive(true);
         }
 
         private void CloseTitleSettings()
@@ -135,6 +152,17 @@ namespace GaeBullBing.Presentation.UI
             transitionBlocker.SetActive(true);
             SetGameplayVisible(false);
             yield return boardTransition.PlayOutro();
+            transitionBlocker.SetActive(false);
+        }
+
+        public IEnumerator PlayRegionIntro()
+        {
+            HideAll();
+            transitionBlocker.SetActive(true);
+            SetGameplayVisible(false);
+            boardTransition.PrepareHidden();
+            yield return boardTransition.PlayIntro();
+            SetGameplayVisible(true);
             transitionBlocker.SetActive(false);
         }
 

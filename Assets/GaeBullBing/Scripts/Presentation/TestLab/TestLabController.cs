@@ -15,6 +15,8 @@ namespace GaeBullBing.Presentation.TestLab
         private TowerUpgradeDefinition[] upgrades = Array.Empty<TowerUpgradeDefinition>();
         private MonsterDefinition[] monsters = Array.Empty<MonsterDefinition>();
         private DiceDefinition[] dice = Array.Empty<DiceDefinition>();
+        private RegionDefinition[] regions = Array.Empty<RegionDefinition>();
+        private int regionIndex;
         private readonly List<string> log = new();
         private Vector2 leftScroll;
         private Vector2 rightScroll;
@@ -71,6 +73,7 @@ namespace GaeBullBing.Presentation.TestLab
             towers = ToArray(game.TestTowerDefinitions);
             upgrades = ToArray(game.TestTowerUpgradeDefinitions);
             monsters = ToArray(game.TestMonsterDefinitions);
+            regions = ToArray(game.TestRegionDefinitions);
             var database = Resources.Load<DiceDatabaseDefinition>("GaeBullBing/DiceDatabase");
             dice = database != null && database.Dice != null
                 ? database.Dice
@@ -102,6 +105,7 @@ namespace GaeBullBing.Presentation.TestLab
                 GUIStyle.none,
                 GUI.skin.verticalScrollbar,
                 GUILayout.Height(Screen.height * .72f));
+            DrawRegionSection();
             DrawTowerSection();
             DrawMonsterSection();
             DrawTileSection();
@@ -116,6 +120,18 @@ namespace GaeBullBing.Presentation.TestLab
             GUILayout.EndArea();
 
             if (inspectorVisible) DrawInspector(width);
+        }
+
+        private void DrawRegionSection()
+        {
+            GUILayout.Label("Stage / Region", SectionStyle());
+            if (regions.Length == 0) { GUILayout.Label("No region data."); return; }
+            var names = new string[regions.Length];
+            for (var i = 0; i < regions.Length; i++) names[i] = $"{regions[i].Order}: {regions[i].DisplayName}";
+            regionIndex = GUILayout.SelectionGrid(regionIndex, names, 2);
+            GUILayout.Label(regions[regionIndex].Description, WrapStyle());
+            if (GUILayout.Button("Apply Region / Reset Lab", GUILayout.Height(28)))
+                AddLog(game.TestLabSetRegion(regions[regionIndex].Id, out var message) ? message : $"ERROR: {message}");
         }
 
         private void DrawTowerSection()

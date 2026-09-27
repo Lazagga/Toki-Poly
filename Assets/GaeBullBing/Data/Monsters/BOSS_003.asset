@@ -15,10 +15,15 @@ MonoBehaviour:
   id: BOSS_003
   displayName: "\uB3C5\uC218\uB9AC"
   tier: 1
+  regionId: REGION_03
+  story: 
   appearanceWave: 16
   maxHp: 3100
   moveDistance: 4
   baseDefense: 220
   statusImmunities:
   - knockback
+  passiveEffects:
+  - Id: dive_strike
+    Value: 1
   killRewardDicePoints: 0

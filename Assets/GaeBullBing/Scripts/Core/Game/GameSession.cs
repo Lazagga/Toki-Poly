@@ -50,6 +50,7 @@ namespace GaeBullBing.Core.Game
             else
                 boardService.Initialize(State.Board);
             State.DiceInventory.ResetToDefaults();
+            State.Monsters.Clear();
             State.Dice.Clear();
             State.Dice.Add(State.DiceInventory.Dice[0]);
             State.Dice.Add(State.DiceInventory.Dice[1]);
@@ -323,8 +324,7 @@ namespace GaeBullBing.Core.Game
         {
             State.CurrentPhase = TurnPhase.TowerResolve;
             var tile = State.Board.Tiles[tileIndex];
-            var tower = tile.IsBonusTile &&
-                tile.Tower != null &&
+            var tower = tile.Tower != null &&
                 tile.Tower.UpgradeTier == 3 &&
                 upgrade.Tier == 3
                     ? towerService.ApplyBonusTier3Upgrade(tile, upgrade.Id, upgrade.Tier)
@@ -550,13 +550,14 @@ namespace GaeBullBing.Core.Game
             var rateBonus = State.PermanentAllTowerDamageRateBonus +
                 State.GetPermanentTowerDamageRateBonus(definition.Element) +
                 State.GetPermanentLineTowerDamageRateBonus(MonsterService.GetLine(tile.Index)) +
-                GetLineAuraDamageRateBonus(tile);
+                GetLineAuraDamageRateBonus(tile) + tile.Tower.PersonalDamageRateBonus;
             return TowerStatCalculator.Calculate(
                 definition,
                 tile.Tower,
                 upgrades,
                 rateBonus,
-                State.GetPermanentTowerDamageFlatBonus(definition.Element)).CombatStats;
+                State.GetPermanentTowerDamageFlatBonus(definition.Element) + tile.Tower.PersonalDamageFlatBonus,
+                tile.Tower.PermanentBonusAttackCount).CombatStats;
         }
 
         private float GetLineAuraDamageRateBonus(TileState targetTile)
@@ -609,6 +610,15 @@ namespace GaeBullBing.Core.Game
 public DiceState CreateLapReward()
         {
             return DiceCatalog.GetReward(Math.Max(0, State.Round - 1));
+        }
+
+        public DiceState[] CreateLapRewardChoices()
+        {
+            var first = CreateLapReward();
+            var second = CreateLapReward();
+            for (var attempt = 0; attempt < 12 && second != null && first != null && second.Id == first.Id; attempt++)
+                second = CreateLapReward();
+            return new[] { first, second };
         }
 
         public bool StoreDiceReward(DiceState reward) =>

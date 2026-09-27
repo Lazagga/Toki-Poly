@@ -17,3 +17,5 @@ MonoBehaviour:
   grade: 0
   faces: 010000000200000003000000040000000500000006000000
   color: {r: 0.9607843, g: 0.9607843, b: 0.92941177, a: 1}
+  description: "\uAE30\uBCF8 \uC8FC\uC0AC\uC704"
+  effects: []

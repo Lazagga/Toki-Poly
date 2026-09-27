@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using GaeBullBing.Presentation.Board;
 
@@ -13,6 +14,8 @@ namespace GaeBullBing.Presentation.Camera
         [SerializeField, Min(.01f)] private float overscan = 1.01f;
         [SerializeField, Min(.1f)] private float depth = 20f;
         [SerializeField, Min(.1f)] private float focusSize = 2.8f;
+        [SerializeField, Min(.01f)] private float regionFadeDuration = .45f;
+        private Color regionTint = Color.white;
 
         private void Reset() => Configure();
         private void OnEnable() => Configure();
@@ -30,12 +33,34 @@ namespace GaeBullBing.Presentation.Camera
             if (backgroundRenderer != null)
             {
                 backgroundRenderer.sortingOrder = -10000;
-                backgroundRenderer.color = Color.white;
+                backgroundRenderer.color = regionTint;
             }
             FitToBoardCameraRange();
         }
 
         private void FitToCamera() => FitToBoardCameraRange();
+
+        public IEnumerator FadeTo(Sprite nextBackground, Color tint)
+        {
+            if (backgroundRenderer == null) yield break;
+            var start = backgroundRenderer.color;
+            for (var elapsed = 0f; elapsed < regionFadeDuration; elapsed += Time.unscaledDeltaTime)
+            {
+                var t = Mathf.Clamp01(elapsed / regionFadeDuration);
+                backgroundRenderer.color = new Color(start.r, start.g, start.b, Mathf.Lerp(start.a, 0f, t));
+                yield return null;
+            }
+            if (nextBackground != null) backgroundRenderer.sprite = nextBackground;
+            regionTint = tint;
+            for (var elapsed = 0f; elapsed < regionFadeDuration; elapsed += Time.unscaledDeltaTime)
+            {
+                var t = Mathf.Clamp01(elapsed / regionFadeDuration);
+                backgroundRenderer.color = new Color(tint.r, tint.g, tint.b, t);
+                yield return null;
+            }
+            backgroundRenderer.color = tint;
+            FitToBoardCameraRange();
+        }
 
         private void FitToBoardCameraRange()
         {

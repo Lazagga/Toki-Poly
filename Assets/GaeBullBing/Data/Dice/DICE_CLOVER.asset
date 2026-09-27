@@ -17,3 +17,8 @@ MonoBehaviour:
   grade: 3
   faces: 010000000100000001000000040000000400000004000000
   color: {r: 0.29803923, g: 0.6862745, b: 0.3137255, a: 1}
+  description: "0\uBC88, 18\uBC88 \uD0C0\uC77C\uC744 \uBC1F\uC744 \uACBD\uC6B0 \uC6D0\uD558\uB294
+    \uD0C0\uC77C\uB85C \uB450 \uBC88 \uC774\uB3D9"
+  effects:
+  - Id: corner_tile_free_move
+    Value: 2

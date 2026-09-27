@@ -15,9 +15,14 @@ MonoBehaviour:
   id: MON_004
   displayName: "\uD3AD\uADC4"
   tier: 0
+  regionId: REGION_02
+  story: 
   appearanceWave: 9
   maxHp: 500
   moveDistance: 1
   baseDefense: 0
   statusImmunities: []
+  passiveEffects:
+  - Id: ice_overlay_slide
+    Value: 1
   killRewardDicePoints: 0

@@ -15,9 +15,14 @@ MonoBehaviour:
   id: MON_009
   displayName: "\uBC29\uC6B8\uBC40"
   tier: 0
+  regionId: REGION_03
+  story: 
   appearanceWave: 9
   maxHp: 320
   moveDistance: 2
   baseDefense: 0
   statusImmunities: []
+  passiveEffects:
+  - Id: sand_burrow_stealth
+    Value: 1
   killRewardDicePoints: 0

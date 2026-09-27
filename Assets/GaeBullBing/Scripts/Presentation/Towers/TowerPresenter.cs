@@ -53,6 +53,14 @@ namespace GaeBullBing.Presentation.Towers
             renderer.transform.localScale = Vector3.one;
         }
 
+        public void ClearAll()
+        {
+            foreach (var renderer in towerViews.Values)
+                if (renderer != null) Destroy(renderer.gameObject);
+            towerViews.Clear();
+            towerVerticalOffsets.Clear();
+        }
+
         public IEnumerator PlayBuildAnimation(
             int tileIndex,
             TowerDefinition definition,

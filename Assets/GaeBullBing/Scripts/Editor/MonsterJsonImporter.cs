@@ -60,11 +60,14 @@ namespace GaeBullBing.Editor
                 serialized.FindProperty("id").stringValue = source.id;
                 serialized.FindProperty("displayName").stringValue = source.name;
                 serialized.FindProperty("tier").enumValueIndex = (int)tier;
+                serialized.FindProperty("regionId").stringValue = source.region_id ?? string.Empty;
+                serialized.FindProperty("story").stringValue = source.story ?? string.Empty;
                 serialized.FindProperty("appearanceWave").intValue = Mathf.Max(1, source.appearance_wave);
                 serialized.FindProperty("maxHp").intValue = source.base_stats.max_hp;
                 serialized.FindProperty("moveDistance").intValue = source.base_stats.move_speed;
                 serialized.FindProperty("baseDefense").floatValue = source.base_stats.base_defense;
                 SetStringArray(serialized.FindProperty("statusImmunities"), source.status_immunities);
+                SetEffects(serialized.FindProperty("passiveEffects"), source.passive_effect_ids);
                 serialized.FindProperty("killRewardDicePoints").intValue =
                     Mathf.Max(0, source.kill_rewards?.dice_points ?? 0);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -156,6 +159,18 @@ namespace GaeBullBing.Editor
                 property.GetArrayElementAtIndex(index).stringValue = values[index];
         }
 
+        private static void SetEffects(SerializedProperty property, EffectJson[] values)
+        {
+            values ??= Array.Empty<EffectJson>();
+            property.arraySize = values.Length;
+            for (var index = 0; index < values.Length; index++)
+            {
+                var element = property.GetArrayElementAtIndex(index);
+                element.FindPropertyRelative("Id").stringValue = values[index]?.id ?? string.Empty;
+                element.FindPropertyRelative("Value").floatValue = values[index]?.value ?? 0f;
+            }
+        }
+
         private static string SanitizeFileName(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -177,11 +192,17 @@ namespace GaeBullBing.Editor
             public string id;
             public string name;
             public string tier;
+            public string region_id;
+            public string story;
             public int appearance_wave = 1;
             public MonsterBaseStatsJson base_stats;
             public string[] status_immunities;
+            public EffectJson[] passive_effect_ids;
             public KillRewardsJson kill_rewards;
         }
+
+        [Serializable]
+        private sealed class EffectJson { public string id; public float value; }
 
         [Serializable]
         private sealed class MonsterBaseStatsJson

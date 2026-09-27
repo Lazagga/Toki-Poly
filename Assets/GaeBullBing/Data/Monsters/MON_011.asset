@@ -15,9 +15,12 @@ MonoBehaviour:
   id: MON_011
   displayName: "\uC218\uB2EC"
   tier: 0
+  regionId: REGION_04
+  story: 
   appearanceWave: 9
   maxHp: 260
   moveDistance: 3
   baseDefense: 0
   statusImmunities: []
+  passiveEffects: []
   killRewardDicePoints: 0

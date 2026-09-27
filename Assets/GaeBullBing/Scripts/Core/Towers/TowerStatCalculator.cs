@@ -24,7 +24,8 @@ namespace GaeBullBing.Core.Towers
             TowerState tower,
             IReadOnlyList<TowerUpgradeDefinition> upgrades,
             float damageRateBonus,
-            int postMultiplierDamageBonus)
+            int postMultiplierDamageBonus,
+            int bonusAttackCount = 0)
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             if (tower == null) throw new ArgumentNullException(nameof(tower));
@@ -65,7 +66,7 @@ namespace GaeBullBing.Core.Towers
                 Math.Max(0, (int)Math.Round(resolvedDamage)),
                 Math.Max(0, (int)Math.Round(resolvedRange)),
                 Math.Max(1, (int)Math.Round(resolvedTargets)),
-                Math.Max(1, (int)Math.Round(resolvedAttacks)));
+                Math.Max(1, (int)Math.Round(resolvedAttacks) + bonusAttackCount));
 
             var formula = damage.Set.HasValue
                 ? Format(damage.Set.Value)

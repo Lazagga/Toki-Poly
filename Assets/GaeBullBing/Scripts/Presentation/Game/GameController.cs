@@ -55,6 +55,9 @@ namespace GaeBullBing.Presentation.Game
         private TowerDefinition[] towerDefinitions;
         private TowerUpgradeDefinition[] towerUpgradeDefinitions;
         private DifficultyService difficultyService;
+        private DifficultyDatabaseDefinition difficultyDatabase;
+        private RegionDatabaseDefinition regionDatabase;
+        private CameraBackgroundView cameraBackground;
         private int killsPerDifficultyLevel = 10;
         private float healthMultiplierPerDifficultyLevel = 1.15f;
         private float defensePerDifficultyLevel;
@@ -65,6 +68,10 @@ namespace GaeBullBing.Presentation.Game
         private BoardTileSelectionView tileSelectionView;
         private bool pendingDiceTuning;
         private bool diceTuningComplete;
+        private bool lapTowerBuffSelectionComplete;
+        private int doubleTriggersThisTurn;
+        private int cornerMovesRemaining;
+        private const int MaxDoubleTriggersPerTurn = 2;
         private Coroutine tileInfoCameraRoutine;
         private bool tileInfoOpen;
         private int inspectedTileIndex = -1;
@@ -80,6 +87,9 @@ namespace GaeBullBing.Presentation.Game
         private TowerDefinition pendingConsoleBuildDefinition;
         private int pendingBonusBuildTile = -1;
         private TowerDefinition pendingBonusBuildDefinition;
+        private int pendingBuildTargetTier = 2;
+        private bool pendingBuildFinalUpgrade;
+        private int pendingRemoteUpgradeTile = -1;
         public bool HasPendingConsoleUpgrade => pendingConsoleUpgradeTile >= 0 && pendingConsoleUpgrades.Count > 0;
 private bool finishRoutineStarted;
 
@@ -88,6 +98,7 @@ private bool finishRoutineStarted;
         public IReadOnlyList<MonsterDefinition> TestMonsterDefinitions => monsterDefinitions;
         public IReadOnlyList<TowerDefinition> TestTowerDefinitions => towerDefinitions;
         public IReadOnlyList<TowerUpgradeDefinition> TestTowerUpgradeDefinitions => towerUpgradeDefinitions;
+        public IReadOnlyList<RegionDefinition> TestRegionDefinitions => regionDatabase?.Regions ?? System.Array.Empty<RegionDefinition>();
         public int TotalKills => State?.Difficulty?.KillCount ?? 0;
         public bool HasGameplayStarted { get; private set; }
 
@@ -124,6 +135,24 @@ private bool finishRoutineStarted;
             towerPresenter.SetTower(tileIndex, definition, tile.Tower.UpgradeTier);
             boardView.RefreshBonusTileBorders(State.Board);
             message = $"Configured {definition.DisplayName} on tile {tileIndex}.";
+            return true;
+        }
+
+        public bool TestLabSetRegion(string regionId, out string message)
+        {
+            var region = regionDatabase?.Get(regionId);
+            if (region == null) { message = $"Region not found: {regionId}"; return false; }
+            towerPresenter?.ClearAll();
+            monsterPresenter?.ClearAll();
+            Session.StartNewGame(boardDefinition: boardDefinition);
+            State.StageNumber = region.Order;
+            ConfigureRegion(region.Id);
+            boardView.RefreshBuildElementOverlays(State.Board, towerDefinitions);
+            boardView.RefreshBonusTileBorders(State.Board);
+            boardView.RefreshTileEffects(State.Board);
+            playerView.Initialize(boardView, 0);
+            monsterPresenter.SetPlayerTile(0);
+            message = $"Region changed: {region.DisplayName} ({region.Id})";
             return true;
         }
 
@@ -531,6 +560,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 "GaeBullBing/TowerUpgradeDatabase");
             var difficultyData = Resources.Load<DifficultyDatabaseDefinition>(
                 "GaeBullBing/DifficultyDatabase");
+            regionDatabase = Resources.Load<RegionDatabaseDefinition>("GaeBullBing/RegionDatabase");
             if (!TryLoadRequiredGameData(
                     monsterData, towerData, runtimeUpgradeDatabase, difficultyData,
                     out var dataError))
@@ -540,13 +570,17 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 enabled = false;
                 return;
             }
+            if (regionDatabase == null || regionDatabase.Regions == null || regionDatabase.Regions.Length == 0)
+            {
+                Debug.LogError("게임 데이터 초기화 실패: RegionDatabase가 없습니다. Region.json을 임포트하세요.", this);
+                enabled = false;
+                return;
+            }
 
             monsterDefinitions = monsterData.Monsters;
             towerDefinitions = towerData.Towers;
             towerUpgradeDefinitions = runtimeUpgradeDatabase.Upgrades;
-            killsPerDifficultyLevel = difficultyData.KillsPerLevel;
-            healthMultiplierPerDifficultyLevel = difficultyData.HealthMultiplierPerLevel;
-            defensePerDifficultyLevel = difficultyData.DefensePerLevel;
+            difficultyDatabase = difficultyData;
             State = new GameState();
             Session = new GameSession(
                 State,
@@ -560,14 +594,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             boardView.RefreshBuildElementOverlays(State.Board, towerDefinitions);
             boardView.RefreshBonusTileBorders(State.Board);
             monsterDatabase = new MonsterDatabase(monsterDefinitions);
-            var bossAppearanceLevel = FindBossDefinition()?.AppearanceWave ?? DifficultyService.FinalBossLevel;
-            difficultyService = new DifficultyService(
-                difficultyData.Patterns,
-                killsPerDifficultyLevel,
-                healthMultiplierPerDifficultyLevel,
-                defensePerDifficultyLevel,
-                bossAppearanceLevel);
-            difficultyService.Reset(State.Difficulty);
+            ConfigureRegion("REGION_01");
+            cameraBackground = FindFirstObjectByType<CameraBackgroundView>(FindObjectsInactive.Include);
             dice3DPresenter = GetComponent<Dice3DPresenter>();
             if (dice3DPresenter == null)
                 dice3DPresenter = gameObject.AddComponent<Dice3DPresenter>();
@@ -604,6 +632,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 "Assets/GaeBullBing/Data/Json/Dice.json",
                 "Assets/GaeBullBing/Data/Json/Monster.json",
                 "Assets/GaeBullBing/Data/Json/Pattern.json",
+                "Assets/GaeBullBing/Data/Json/Region.json",
                 "Assets/GaeBullBing/Data/Json/Tile.json",
                 "Assets/GaeBullBing/Data/Json/Tower.json",
                 "Assets/GaeBullBing/Data/Json/Upgrade.json"
@@ -953,13 +982,14 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var rateBonus = State.PermanentAllTowerDamageRateBonus +
                 State.GetPermanentTowerDamageRateBonus(definition.Element) +
                 State.GetPermanentLineTowerDamageRateBonus(MonsterService.GetLine(tile.Index)) +
-                GetLineAuraDamageRateBonus(tile);
+                GetLineAuraDamageRateBonus(tile) + tile.Tower.PersonalDamageRateBonus;
             return TowerStatCalculator.Calculate(
                 definition,
                 tile.Tower,
                 towerUpgradeDefinitions,
                 rateBonus,
-                State.GetPermanentTowerDamageFlatBonus(definition.Element));
+                State.GetPermanentTowerDamageFlatBonus(definition.Element) + tile.Tower.PersonalDamageFlatBonus,
+                tile.Tower.PermanentBonusAttackCount);
         }
 
         private float GetLineAuraDamageRateBonus(TileState targetTile)
@@ -1003,6 +1033,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
             var startTileIndex = State.Player.CurrentTileIndex;
             var distance = Session.RollDiceAndMovePlayer();
+            ApplyDiceRollPassives();
             pendingDiceTuning |= startTileIndex + distance >= State.Board.TileCount;
             diceHud.SetResults(State.LastDiceResults[0], State.LastDiceResults[1]);
             yield return dice3DPresenter.Roll(State.Dice, State.LastDiceResults[0], State.LastDiceResults[1]);
@@ -1014,6 +1045,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 distance,
                 tileIndex =>
                 {
+                    ApplyDicePathPassives(tileIndex);
                     if (completesLap && tileIndex == 0)
                         lapOverviewRoutine = StartCoroutine(ReturnToOverviewAfterPress(tileIndex));
                 },
@@ -1110,6 +1142,67 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (tile.HasTower && tile.Tower.HasEffect(TowerEffectCatalog.TileStepLineBuff))
                 Session.AddPermanentLineTowerDamageRateBonus(MonsterService.GetLine(tile.Index),
                     tile.Tower.GetEffectValue(TowerEffectCatalog.TileStepLineBuff, 10f) / 100f);
+            if (tile.HasTower)
+            {
+                var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+                if (definition != null && definition.Element == TowerElement.Ice)
+                {
+                    tile.Tower.PersonalDamageRateBonus += GetEquippedDiceEffect("ice_tower_damage_buff") / 100f;
+                    var add = Mathf.RoundToInt(GetEquippedDiceEffect("ice_attack_count_add"));
+                    var cap = Mathf.Max(0, Mathf.RoundToInt(GetEquippedDiceEffect("ice_attack_count_add_cap")));
+                    if (add > 0) tile.Tower.PermanentBonusAttackCount = Mathf.Min(cap, tile.Tower.PermanentBonusAttackCount + add);
+                }
+                var lineBonus = Mathf.RoundToInt(GetEquippedDiceEffect("line_attack_count_buff_temp"));
+                if (lineBonus > 0)
+                    foreach (var candidate in State.Board.Tiles)
+                        if (candidate.HasTower && MonsterService.GetLine(candidate.Index) == MonsterService.GetLine(tile.Index))
+                        {
+                            candidate.Tower.PendingBonusAttackCount = Mathf.Max(candidate.Tower.PendingBonusAttackCount, lineBonus);
+                            candidate.Tower.PendingBonusAttackTurns = Mathf.Max(candidate.Tower.PendingBonusAttackTurns, 2);
+                        }
+                if (tile.Tower.UpgradeTier >= 3)
+                {
+                    var flat = Mathf.RoundToInt(GetEquippedDiceEffect("maxtier_element_damage_buff"));
+                    if (flat > 0 && definition != null) Session.AddPermanentTowerDamageFlatBonus(definition.Element, flat);
+                }
+            }
+
+            if (GetEquippedDiceEffect("tile_effect_line_spread") > 0f &&
+                (tile.FireTurnsRemaining > 0 || tile.IceTurnsRemaining > 0))
+            {
+                var line = MonsterService.GetLine(tile.Index);
+                foreach (var candidate in State.Board.Tiles)
+                    if (MonsterService.GetLine(candidate.Index) == line)
+                    {
+                        candidate.FireTurnsRemaining = Mathf.Max(candidate.FireTurnsRemaining, tile.FireTurnsRemaining);
+                        candidate.IceTurnsRemaining = Mathf.Max(candidate.IceTurnsRemaining, tile.IceTurnsRemaining);
+                    }
+                boardView.RefreshTileEffects(State.Board);
+            }
+        }
+
+        private float GetEquippedDiceEffect(string id)
+        {
+            var value = 0f;
+            foreach (var dice in State.Dice) if (dice != null) value += dice.GetEffectValue(id);
+            return value;
+        }
+
+        private void ApplyDiceRollPassives()
+        {
+            var amount = GetEquippedDiceEffect("global_damage_buff_on_roll");
+            if (amount > 0f) Session.AddPermanentAllTowerDamageRateBonus(amount / 100f);
+        }
+
+        private void ApplyDicePathPassives(int tileIndex)
+        {
+            if (tileIndex < 0 || tileIndex >= State.Board.TileCount) return;
+            var amount = GetEquippedDiceEffect("path_fire_tower_damage_buff");
+            var tile = State.Board.Tiles[tileIndex];
+            if (amount <= 0f || !tile.HasTower) return;
+            var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+            if (definition != null && definition.Element == TowerElement.Fire)
+                tile.Tower.PersonalDamageRateBonus += amount / 100f;
         }
 
         private bool TryOpenCornerAction(int tileIndex)
@@ -1123,12 +1216,44 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             }
             if (tileIndex == 0 || tileIndex == 18)
             {
+                var region = regionDatabase?.Get(State.CurrentRegionId);
+                if (tileIndex == 18 && region != null && region.OverrideEffectId == "oasis_extra_upgrade")
+                {
+                    State.CurrentPhase = TurnPhase.CornerSelection;
+                    StartCoroutine(PrepareOasisSelectionRoutine());
+                    return true;
+                }
                 State.CurrentPhase = TurnPhase.CornerSelection;
+                cornerMovesRemaining = Mathf.Max(1, Mathf.RoundToInt(GetEquippedDiceEffect("corner_tile_free_move")));
                 cornerActionMenu.Hide();
                 StartCoroutine(PrepareTileSelectionRoutine());
                 return true;
             }
             return false;
+        }
+
+        private IEnumerator PrepareOasisSelectionRoutine()
+        {
+            yield return boardView.WaitForPressCompletion(State.Player.CurrentTileIndex);
+            var destinations = new List<int>();
+            foreach (var tile in State.Board.Tiles) if (tile.HasTower) destinations.Add(tile.Index);
+            boardView.SetSelectionHighlights(destinations);
+            yield return cameraController.ReturnToOverview();
+            tileSelectionView.BeginSelection(SelectOasisTower, null, null,
+                tileIndex => tileIndex >= 0 && tileIndex < State.Board.TileCount && State.Board.Tiles[tileIndex].HasTower);
+        }
+
+        private void SelectOasisTower(int tileIndex)
+        {
+            ClearTileSelectionHighlights();
+            var tile = State.Board.Tiles[tileIndex];
+            var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+            var nextTier = Mathf.Min(3, tile.Tower.UpgradeTier + 1);
+            var choices = GetUpgradeChoices(definition, nextTier, tile.Tower.AppliedUpgradeIds);
+            if (choices.Count == 0) { StartCoroutine(CompleteTileActionRoutine()); return; }
+            pendingRemoteUpgradeTile = tileIndex;
+            State.CurrentPhase = TurnPhase.TowerSelection;
+            radialMenu.ShowUpgradeChoices(choices, SelectUpgrade);
         }
 
         private IEnumerator PrepareTileSelectionRoutine()
@@ -1195,6 +1320,13 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     : null);
             yield return focusRoutine;
             Session.TeleportPlayer(tileIndex);
+            cornerMovesRemaining = Mathf.Max(0, cornerMovesRemaining - 1);
+            if (cornerMovesRemaining > 0)
+            {
+                State.CurrentPhase = TurnPhase.CornerSelection;
+                yield return PrepareTileSelectionRoutine();
+                yield break;
+            }
             if (tileIndex == 0 || tileIndex == 18)
             {
                 yield return CompleteTileActionRoutine();
@@ -1252,13 +1384,16 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
             var tileIndex = State.Player.CurrentTileIndex;
             var tile = State.Board.Tiles[tileIndex];
-            if (tile.IsBonusTile)
+            var instantFireUpgrade = definition.Element == TowerElement.Fire &&
+                                     GetEquippedDiceEffect("fire_build_instant_upgrade") > 0f;
+            if (tile.IsBonusTile || instantFireUpgrade)
             {
                 var upgrades = GetUpgradeChoices(definition, 2, null);
                 if (upgrades.Count > 0)
                 {
                     pendingBonusBuildTile = tileIndex;
                     pendingBonusBuildDefinition = definition;
+                    pendingBuildTargetTier = tile.IsBonusTile && instantFireUpgrade ? 3 : 2;
                     radialMenu.ShowUpgradeChoices(upgrades, SelectUpgrade);
                     return;
                 }
@@ -1267,6 +1402,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             }
 
             Session.BuildTower(tileIndex, definition);
+            ApplyDiceBuildPassives(State.Board.Tiles[tileIndex], definition);
             radialMenu.Hide();
             HideTileInformation();
             StartCoroutine(CompleteTowerBuildRoutine(tileIndex, definition, 1));
@@ -1275,14 +1411,29 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         public void SelectUpgrade(TowerUpgradeDefinition upgrade)
         {
             if (State.CurrentPhase != TurnPhase.TowerSelection || upgrade == null) return;
-            var tileIndex = State.Player.CurrentTileIndex;
+            var tileIndex = pendingRemoteUpgradeTile >= 0 ? pendingRemoteUpgradeTile : State.Player.CurrentTileIndex;
             if (pendingBonusBuildDefinition != null &&
                 pendingBonusBuildTile == tileIndex)
             {
                 Session.BuildTower(tileIndex, pendingBonusBuildDefinition);
+                ApplyDiceBuildPassives(State.Board.Tiles[tileIndex], pendingBonusBuildDefinition);
                 Session.UpgradeTower(tileIndex, upgrade);
                 var builtDefinition = pendingBonusBuildDefinition;
                 var builtTier = State.Board.Tiles[tileIndex].Tower.UpgradeTier;
+                if (pendingBuildTargetTier > builtTier)
+                {
+                    var next = GetUpgradeChoices(builtDefinition, builtTier + 1,
+                        State.Board.Tiles[tileIndex].Tower.AppliedUpgradeIds);
+                    if (next.Count > 0)
+                    {
+                        pendingBonusBuildTile = -1;
+                        pendingBonusBuildDefinition = null;
+                        pendingRemoteUpgradeTile = tileIndex;
+                        pendingBuildFinalUpgrade = true;
+                        radialMenu.ShowUpgradeChoices(next, SelectUpgrade);
+                        return;
+                    }
+                }
                 pendingBonusBuildTile = -1;
                 pendingBonusBuildDefinition = null;
                 radialMenu.Hide();
@@ -1295,10 +1446,17 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             }
 
             Session.UpgradeTower(tileIndex, upgrade);
+            pendingRemoteUpgradeTile = -1;
             var tile = State.Board.Tiles[tileIndex];
             var definition = FindTowerDefinition(tile.Tower.DefinitionId);
             radialMenu.Hide();
             HideTileInformation();
+            if (pendingBuildFinalUpgrade)
+            {
+                pendingBuildFinalUpgrade = false;
+                StartCoroutine(CompleteTowerBuildRoutine(tileIndex, definition, tile.Tower.UpgradeTier));
+                return;
+            }
             StartCoroutine(CompleteTowerUpgradeRoutine(
                 tileIndex,
                 definition,
@@ -1313,6 +1471,13 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (towerPresenter != null && definition != null)
                 yield return towerPresenter.PlayBuildAnimation(tileIndex, definition, tier);
             yield return CompleteTileActionRoutine();
+        }
+
+        private void ApplyDiceBuildPassives(TileState tile, TowerDefinition definition)
+        {
+            if (tile?.Tower == null || definition == null) return;
+            if (definition.Element == TowerElement.Ice)
+                tile.Tower.PersonalDamageFlatBonus += Mathf.RoundToInt(GetEquippedDiceEffect("ice_build_bonus_damage"));
         }
 
         private IEnumerator CompleteTowerUpgradeRoutine(
@@ -1378,13 +1543,18 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             return result;
         }
 
-        private static int GetUpgradeTargetTier(TileState tile)
+        private int GetUpgradeTargetTier(TileState tile)
         {
             if (tile == null || !tile.HasTower)
                 return -1;
             if (tile.Tower.UpgradeTier < 3)
                 return tile.Tower.UpgradeTier + 1;
             if (tile.IsBonusTile && tile.Tower.UpgradeTier == 3 &&
+                !tile.Tower.BonusTier3UpgradeClaimed)
+                return 3;
+            var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+            if (definition != null && definition.Element == TowerElement.Electric &&
+                GetEquippedDiceEffect("electric_maxtier_extra_upgrade_choice") > 0f &&
                 !tile.Tower.BonusTier3UpgradeClaimed)
                 return 3;
             return -1;
@@ -1447,11 +1617,41 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (pendingDiceTuning)
             {
                 pendingDiceTuning = false;
+                var lapBuff = GetEquippedDiceEffect("lap_complete_tower_damage_buff");
+                if (lapBuff > 0f)
+                {
+                    var targets = new List<int>();
+                    foreach (var tile in State.Board.Tiles) if (tile.HasTower) targets.Add(tile.Index);
+                    if (targets.Count > 0)
+                    {
+                        lapTowerBuffSelectionComplete = false;
+                        boardView.SetSelectionHighlights(targets);
+                        tileSelectionView.BeginSelection(tileIndex =>
+                        {
+                            State.Board.Tiles[tileIndex].Tower.PersonalDamageRateBonus += lapBuff / 100f;
+                            ClearTileSelectionHighlights();
+                            lapTowerBuffSelectionComplete = true;
+                        }, null, null, tileIndex => targets.Contains(tileIndex));
+                        yield return new WaitUntil(() => lapTowerBuffSelectionComplete);
+                    }
+                }
                 diceTuningComplete = false;
                 State.CurrentPhase = TurnPhase.DiceTuning;
                 var diceSystem = diceHud.GetComponent<DiceSystemView>();
-                diceSystem.ShowLapReward(Session.CreateLapReward(), () => diceTuningComplete = true);
+                diceSystem.ShowLapRewards(Session.CreateLapRewardChoices(), () => diceTuningComplete = true);
                 yield return new WaitUntil(() => diceTuningComplete);
+            }
+            if (State.LastDiceResults.Count >= 2 &&
+                State.LastDiceResults[0] == State.LastDiceResults[1] &&
+                doubleTriggersThisTurn < MaxDoubleTriggersPerTurn)
+            {
+                doubleTriggersThisTurn++;
+                State.CurrentPhase = TurnPhase.DiceRoll;
+                if (turnTransitionBanner != null)
+                    yield return turnTransitionBanner.PlayPlayerTurn();
+                diceHud.BeginPlayerTurn();
+                isBusy = false;
+                yield break;
             }
             if (turnTransitionBanner != null)
                 yield return turnTransitionBanner.PlayEnemyTurn();
@@ -1696,6 +1896,8 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
             }
 
             Session.CompleteRound();
+            ApplyRegionTurnGimmick();
+            doubleTriggersThisTurn = 0;
             diceHud.RefreshDiceFaces();
 
             RefreshOpenTileInformation();
@@ -1703,6 +1905,23 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
                 yield return turnTransitionBanner.PlayPlayerTurn();
             diceHud.BeginPlayerTurn();
             isBusy = false;
+        }
+
+        private void ApplyRegionTurnGimmick()
+        {
+            var region = regionDatabase?.Get(State.CurrentRegionId);
+            if (region == null || region.GimmickId != "GIMMICK_ICE_SHEET") return;
+            var count = Mathf.Clamp(region.TilesPerTurn, 0, State.Board.TileCount - 4);
+            var candidates = new List<int>();
+            for (var i = 0; i < State.Board.TileCount; i++)
+                if (i != 0 && i != 9 && i != 18 && i != 27) candidates.Add(i);
+            for (var placed = 0; placed < count && candidates.Count > 0; placed++)
+            {
+                var pick = Random.Range(0, candidates.Count);
+                State.Board.Tiles[candidates[pick]].IceTurnsRemaining = TileState.OneTurnEffectDuration;
+                candidates.RemoveAt(pick);
+            }
+            boardView.RefreshTileEffects(State.Board);
         }
 
         private void CommitCapturedKills(ref int killedCount)
@@ -1717,9 +1936,25 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
         {
             foreach (var definition in monsterDefinitions)
                 if (definition != null &&
-                    (definition.Tier == MonsterTier.Boss || definition.Id == "BOSS_001"))
+                    definition.RegionId == State.CurrentRegionId &&
+                    definition.Tier == MonsterTier.Boss)
                     return definition;
             return null;
+        }
+
+        private void ConfigureRegion(string regionId)
+        {
+            var data = difficultyDatabase?.GetRegion(regionId);
+            if (data == null) throw new System.InvalidOperationException($"지역 난이도 데이터가 없습니다: {regionId}");
+            State.CurrentRegionId = regionId;
+            killsPerDifficultyLevel = data.KillsPerLevel;
+            healthMultiplierPerDifficultyLevel = data.HealthMultiplierPerLevel;
+            defensePerDifficultyLevel = data.DefensePerLevel;
+            var appearanceWave = FindBossDefinition()?.AppearanceWave ?? DifficultyService.FinalBossLevel;
+            var localBossLevel = (Mathf.Max(1, appearanceWave) - 1) % 8 + 1;
+            difficultyService = new DifficultyService(data.Patterns, data.KillsPerLevel,
+                data.HealthMultiplierPerLevel, data.DefensePerLevel, localBossLevel);
+            difficultyService.Reset(State.Difficulty);
         }
 
         private void FinishVictory()
@@ -1750,6 +1985,11 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
 
         private IEnumerator FinishVictoryRoutine()
         {
+            if (State.StageNumber < 2)
+            {
+                yield return AdvanceToNextRegionRoutine();
+                yield break;
+            }
             var audio = AudioManager.Instance;
             audio?.PlaySfx(audio.GameFlow.Victory);
             EnterFlowState(GameFlowState.Victory);
@@ -1758,6 +1998,39 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
             diceHud.ShowGameClear();
             gameFlowView?.ShowVictory();
             isBusy = false;
+        }
+
+        private IEnumerator AdvanceToNextRegionRoutine()
+        {
+            EnterFlowState(GameFlowState.Gameplay);
+            if (gameFlowView != null) yield return gameFlowView.PlayOutro();
+
+            var previousBoss = FindBossDefinition();
+            if (previousBoss != null) State.BossRewardItemIds.Add($"ITEM_{previousBoss.Id}");
+            var candidates = new List<RegionDefinition>();
+            foreach (var region in regionDatabase?.Regions ?? System.Array.Empty<RegionDefinition>())
+                if (region != null && region.Order == 2) candidates.Add(region);
+            if (candidates.Count == 0) throw new System.InvalidOperationException("2스테이지 지역 후보가 없습니다.");
+            var next = candidates[Random.Range(0, candidates.Count)];
+            towerPresenter?.ClearAll();
+            monsterPresenter?.ClearAll();
+            Session.StartNewGame(boardDefinition: boardDefinition);
+            State.StageNumber = 2;
+            ConfigureRegion(next.Id);
+            // 다음 지역의 등장 연출이 시작되기 전에 논리 위치와 화면 위치를 함께 초기화한다.
+            // 연출 이후에 초기화하면 이전 지역의 마지막 타일에 남아 있다가 0번으로 순간이동해 보인다.
+            playerView.Initialize(boardView, State.Player.CurrentTileIndex);
+            monsterPresenter.SetPlayerTile(State.Player.CurrentTileIndex);
+            boardView.RefreshBuildElementOverlays(State.Board, towerDefinitions);
+            boardView.RefreshBonusTileBorders(State.Board);
+            boardView.RefreshTileEffects(State.Board);
+            if (cameraBackground != null) yield return cameraBackground.FadeTo(next.Background, next.BackgroundTint);
+            if (gameFlowView != null) yield return gameFlowView.PlayRegionIntro();
+            diceHud.RefreshDiceFaces();
+            finishRoutineStarted = false;
+            doubleTriggersThisTurn = 0;
+            HasGameplayStarted = true;
+            yield return BeginFirstPlayerTurnRoutine();
         }
 
         private IEnumerator FinishDefeatRoutine()
@@ -1795,6 +2068,8 @@ private IEnumerator PlayAttackResult(
             TowerAttackResult result,
             ISet<int> illuminatedLineTowerIds)
         {
+            if (result.Killed && monsterPresenter.TryGetDefinitionId(result.TargetInstanceId, out var capturedId))
+                MonsterCollectionProgress.Record(capturedId);
             var impactApplied = false;
             if (attackEffectPresenter != null)
                 yield return attackEffectPresenter.Play(State, result, illuminatedLineTowerIds, () =>
@@ -1816,6 +2091,9 @@ private IEnumerator PlayAttackResultsTogether(
             ISet<int> illuminatedLineTowerIds)
         {
             if (results == null || results.Count == 0) yield break;
+            foreach (var result in results)
+                if (result.Killed && monsterPresenter.TryGetDefinitionId(result.TargetInstanceId, out var capturedId))
+                    MonsterCollectionProgress.Record(capturedId);
             var impactApplied = false;
             if (attackEffectPresenter != null)
                 yield return attackEffectPresenter.Play(State, results[0], illuminatedLineTowerIds, () =>

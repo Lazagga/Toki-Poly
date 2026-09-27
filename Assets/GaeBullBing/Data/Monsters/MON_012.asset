@@ -15,9 +15,14 @@ MonoBehaviour:
   id: MON_012
   displayName: "\uAC70\uBD81\uC774"
   tier: 0
+  regionId: REGION_04
+  story: 
   appearanceWave: 9
   maxHp: 420
   moveDistance: 1
   baseDefense: 90
   statusImmunities: []
+  passiveEffects:
+  - Id: swamp_toxin_immune
+    Value: 1
   killRewardDicePoints: 0

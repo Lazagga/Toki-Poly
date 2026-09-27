@@ -55,6 +55,16 @@ namespace GaeBullBing.Presentation.Monsters
             viewTransform = null;
             return false;
         }
+        public bool TryGetDefinitionId(int instanceId, out string definitionId)
+        {
+            if (states.TryGetValue(instanceId, out var state))
+            {
+                definitionId = state.DefinitionId;
+                return true;
+            }
+            definitionId = string.Empty;
+            return false;
+        }
 
         public void SetTransitionOffset(Vector3 offset)
         {
@@ -272,6 +282,12 @@ view.UpdateHealth(state.CurrentHealth, state.MaxHealth);
             }
         }
 
+        public Sprite GetFrontSprite(string definitionId)
+        {
+            GetMonsterSprites(definitionId, out var front, out _, out _, out _);
+            return front != null ? front : monsterSprite;
+        }
+
         public IEnumerator Move(MonsterMoveResult result)
         {
             
@@ -360,6 +376,18 @@ public void RefreshStatuses()
                 view.UpdateHealth(pair.Value.CurrentHealth, pair.Value.MaxHealth);
             }
             ReflowAll();
+        }
+
+        public void ClearAll()
+        {
+            foreach (var view in views.Values)
+                if (view != null) Destroy(view.gameObject);
+            foreach (var indicator in indicators.Values)
+                if (indicator != null) Destroy(indicator.gameObject);
+            views.Clear();
+            states.Clear();
+            displayedHealth.Clear();
+            indicators.Clear();
         }
 
 

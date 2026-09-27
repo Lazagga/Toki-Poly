@@ -17,3 +17,9 @@ MonoBehaviour:
   grade: 4
   faces: 060000000600000006000000060000000600000006000000
   color: {r: 0.60784316, g: 0.06666667, b: 0.11764706, a: 1}
+  description: "\uCD5C\uB300 \uC5C5\uADF8\uB808\uC774\uB4DC \uD0C0\uC6CC\uC5D0 \uB3C4\uCC29
+    \uC2DC, \uCD94\uAC00\uB85C \uBAA8\uB4E0 \uD574\uB2F9 \uC18D\uC131 \uD0C0\uC6CC\uC758
+    \uAE30\uBCF8 \uACF5\uACA9\uB825 +20"
+  effects:
+  - Id: maxtier_element_damage_buff
+    Value: 20

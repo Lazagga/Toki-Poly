@@ -17,3 +17,11 @@ MonoBehaviour:
   grade: 4
   faces: 050000000500000005000000050000000500000005000000
   color: {r: 0.05882353, g: 0.32156864, b: 0.7294118, a: 1}
+  description: "\uC774\uB3D9\uD55C \uD0C0\uC77C\uC5D0 \uC5BC\uC74C \uD0C0\uC6CC\uAC00
+    \uC788\uB294 \uACBD\uC6B0, \uADF8 \uD0C0\uC6CC\uC758 \uACF5\uACA9 \uD69F\uC218
+    +1(\uCD5C\uB300 +2)"
+  effects:
+  - Id: ice_attack_count_add
+    Value: 1
+  - Id: ice_attack_count_add_cap
+    Value: 2

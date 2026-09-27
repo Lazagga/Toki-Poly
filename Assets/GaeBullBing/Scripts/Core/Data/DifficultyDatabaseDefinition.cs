@@ -6,15 +6,21 @@ namespace GaeBullBing.Core.Data
 {
     public sealed class DifficultyDatabaseDefinition : ScriptableObject
     {
-        [SerializeField] private DifficultyPatternData[] patterns =
-            Array.Empty<DifficultyPatternData>();
-        [SerializeField, Min(1)] private int killsPerLevel = 1;
-        [SerializeField, Min(0.0001f)] private float healthMultiplierPerLevel = 1f;
-        [SerializeField, Min(0f)] private float defensePerLevel;
+        [SerializeField] private RegionDifficultyData[] regions =
+            Array.Empty<RegionDifficultyData>();
 
-        public DifficultyPatternData[] Patterns => patterns;
-        public int KillsPerLevel => killsPerLevel;
-        public float HealthMultiplierPerLevel => healthMultiplierPerLevel;
-        public float DefensePerLevel => defensePerLevel;
+        public RegionDifficultyData[] Regions => regions;
+        public DifficultyPatternData[] Patterns => regions.Length > 0 ? regions[0].Patterns : Array.Empty<DifficultyPatternData>();
+        public int KillsPerLevel => regions.Length > 0 ? regions[0].KillsPerLevel : 1;
+        public float HealthMultiplierPerLevel => regions.Length > 0 ? regions[0].HealthMultiplierPerLevel : 1f;
+        public float DefensePerLevel => regions.Length > 0 ? regions[0].DefensePerLevel : 0f;
+
+        public RegionDifficultyData GetRegion(string regionId)
+        {
+            foreach (var region in regions)
+                if (region != null && string.Equals(region.RegionId, regionId, StringComparison.Ordinal))
+                    return region;
+            return null;
+        }
     }
 }

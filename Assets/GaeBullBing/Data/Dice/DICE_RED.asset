@@ -17,3 +17,9 @@ MonoBehaviour:
   grade: 2
   faces: 020000000200000004000000040000000600000006000000
   color: {r: 0.9019608, g: 0.22352941, b: 0.27450982, a: 1}
+  description: "\uC774\uB3D9\uD55C \uD0C0\uC77C\uC5D0\uC11C \uBD88 \uD0C0\uC6CC\uB97C
+    \uAC74\uC124\uD560 \uACBD\uC6B0, \uC989\uC2DC \uB2E4\uC74C \uD2F0\uC5B4\uAE4C\uC9C0
+    \uC5C5\uADF8\uB808\uC774\uB4DC(\uBCF4\uB108\uC2A4\uBA74 3\uD2F0\uC5B4)"
+  effects:
+  - Id: fire_build_instant_upgrade
+    Value: 1

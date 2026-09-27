@@ -43,6 +43,8 @@ namespace GaeBullBing.Editor
                 serialized.FindProperty("grade").enumValueIndex = (int)grade;
                 SetFaces(serialized.FindProperty("faces"), source.faces);
                 serialized.FindProperty("color").colorValue = color;
+                serialized.FindProperty("description").stringValue = source.description ?? string.Empty;
+                SetEffects(serialized.FindProperty("effects"), source.effect_ids);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
                 definition.name = source.id;
                 EditorUtility.SetDirty(definition);
@@ -149,6 +151,18 @@ namespace GaeBullBing.Editor
                 property.GetArrayElementAtIndex(index).intValue = faces[index];
         }
 
+        private static void SetEffects(SerializedProperty property, EffectJson[] values)
+        {
+            values ??= Array.Empty<EffectJson>();
+            property.arraySize = values.Length;
+            for (var index = 0; index < values.Length; index++)
+            {
+                var element = property.GetArrayElementAtIndex(index);
+                element.FindPropertyRelative("Id").stringValue = values[index]?.id ?? string.Empty;
+                element.FindPropertyRelative("Value").floatValue = values[index]?.value ?? 0f;
+            }
+        }
+
         [Serializable]
         private sealed class DiceDatabaseJson
         {
@@ -177,8 +191,11 @@ namespace GaeBullBing.Editor
             public string grade;
             public int[] faces;
             public string color;
+            public string description;
+            public EffectJson[] effect_ids;
             // passive는 형식에만 존재하며 현재 단계에서는 의도적으로 파싱하지 않는다.
         }
+        [Serializable] private sealed class EffectJson { public string id; public float value; }
     }
 
     public sealed class DiceJsonAssetPostprocessor : AssetPostprocessor

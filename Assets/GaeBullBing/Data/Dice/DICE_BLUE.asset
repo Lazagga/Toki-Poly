@@ -17,3 +17,9 @@ MonoBehaviour:
   grade: 2
   faces: 010000000100000002000000020000000400000004000000
   color: {r: 0.11372549, g: 0.20784314, b: 0.34117648, a: 1}
+  description: "\uC774\uB3D9\uD55C \uD0C0\uC77C\uC5D0\uC11C \uC5BC\uC74C \uD0C0\uC6CC\uB97C
+    \uAC74\uC124\uD560 \uACBD\uC6B0, \uAE30\uBCF8 \uACF5\uACA9\uB825 +20\uC778 \uD0C0\uC6CC
+    \uAC74\uC124"
+  effects:
+  - Id: ice_build_bonus_damage
+    Value: 20

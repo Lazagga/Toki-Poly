@@ -15,9 +15,14 @@ MonoBehaviour:
   id: MON_008
   displayName: "\uC544\uB974\uB9C8\uB51C\uB85C"
   tier: 0
+  regionId: REGION_03
+  story: 
   appearanceWave: 9
   maxHp: 380
   moveDistance: 1
   baseDefense: 60
   statusImmunities: []
+  passiveEffects:
+  - Id: quicksand_slow_immune
+    Value: 1
   killRewardDicePoints: 0

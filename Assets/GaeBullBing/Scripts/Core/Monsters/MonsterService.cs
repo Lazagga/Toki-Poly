@@ -78,6 +78,9 @@ namespace GaeBullBing.Core.Monsters
             };
             foreach (var immunity in definition.StatusImmunities ?? Array.Empty<string>())
                 if (!string.IsNullOrWhiteSpace(immunity)) monster.StatusImmunities.Add(immunity);
+            foreach (var passive in definition.PassiveEffects ?? Array.Empty<TowerUpgradeEffect>())
+                if (!string.IsNullOrWhiteSpace(passive.Id))
+                    monster.PassiveEffects[passive.Id] = passive.Value;
             state.Monsters.Add(monster);
             return monster;
         }
@@ -122,7 +125,10 @@ namespace GaeBullBing.Core.Monsters
                 if (monster.StunnedMovesRemaining > 0) monster.StunnedMovesRemaining--;
 
                 var onIce = HasIce(state, monster.CurrentTileIndex);
-                var plannedDistance = cannotMove ? 0 : Math.Min(onIce ? 1 : monster.MoveDistance, remainingToBase);
+                var iceSlide = onIce ? Math.Max(0, (int)monster.GetPassiveValue("ice_overlay_slide")) : 0;
+                var plannedDistance = cannotMove
+                    ? 0
+                    : Math.Min(onIce ? Math.Max(1, iceSlide + 1) : monster.MoveDistance, remainingToBase);
                 var distance = 0;
                 if (monster.IsBoss)
                 {

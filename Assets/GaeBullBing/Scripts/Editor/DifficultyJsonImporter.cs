@@ -12,8 +12,7 @@ namespace GaeBullBing.Editor
     public static class DifficultyJsonImporter
     {
         public const string JsonPath = "Assets/GaeBullBing/Data/Json/Pattern.json";
-        public const string RuntimeDatabasePath =
-            "Assets/Resources/GaeBullBing/DifficultyDatabase.asset";
+        public const string RuntimeDatabasePath = "Assets/Resources/GaeBullBing/DifficultyDatabase.asset";
 
         [MenuItem("GaeBullBing/Data/Import Difficulty JSON")]
         public static void Import()
@@ -21,118 +20,100 @@ namespace GaeBullBing.Editor
             var json = AssetDatabase.LoadAssetAtPath<TextAsset>(JsonPath);
             if (json == null) throw new FileNotFoundException(JsonPath);
             var source = JsonUtility.FromJson<DifficultyDatabaseJson>(json.text);
-            if (source?.wavedata == null || source.wavedata.Length == 0)
-                throw new InvalidOperationException("Pattern.json의 wavedata가 비어 있습니다.");
-            if (source.wave_patterns == null || source.wave_patterns.Length == 0)
-                throw new InvalidOperationException("Pattern.json의 wave_patterns가 비어 있습니다.");
-
-            var monsterDatabase = AssetDatabase.LoadAssetAtPath<MonsterDatabaseDefinition>(
-                MonsterJsonImporter.RuntimeDatabasePath);
-            if (monsterDatabase == null || monsterDatabase.Monsters == null ||
-                monsterDatabase.Monsters.Length == 0)
-                throw new InvalidOperationException(
-                    "MonsterDatabase가 없습니다. Monster.json을 먼저 임포트하세요.");
+            if (source?.wavedata == null || source.wavedata.Length == 0 || source.wave_patterns == null)
+                throw new InvalidOperationException("Pattern.json의 지역/웨이브 데이터가 비어 있습니다.");
+            var monsterDatabase = AssetDatabase.LoadAssetAtPath<MonsterDatabaseDefinition>(MonsterJsonImporter.RuntimeDatabasePath);
+            if (monsterDatabase == null) throw new InvalidOperationException("Monster.json을 먼저 임포트해야 합니다.");
             var monsterIds = new HashSet<string>();
-            foreach (var monster in monsterDatabase.Monsters)
-                if (monster != null) monsterIds.Add(monster.Id);
+            foreach (var monster in monsterDatabase.Monsters) if (monster != null) monsterIds.Add(monster.Id);
 
-            Array.Sort(source.wave_patterns, (left, right) => left.level.CompareTo(right.level));
-            var common = source.wavedata[0];
-            var killsPerLevel = Mathf.Max(1, common.required_kills);
-            var healthMultiplier = common.multiplier > 0f ? common.multiplier : 1f;
-            var patterns = new List<DifficultyPatternData>(source.wave_patterns.Length);
-            var requiredKills = 0;
-            var patternHealth = 1f;
-            foreach (var pattern in source.wave_patterns)
+            var regions = new List<RegionDifficultyData>();
+            foreach (var common in source.wavedata)
             {
-                if (pattern?.spawn_pattern == null || pattern.spawn_pattern.Length == 0)
-                    throw new InvalidOperationException(
-                        $"Pattern.json level {pattern?.level ?? 0}의 spawn_pattern이 비어 있습니다.");
-                foreach (var monsterId in pattern.spawn_pattern)
-                    if (!monsterIds.Contains(monsterId))
-                        throw new InvalidOperationException(
-                            $"Pattern.json이 존재하지 않는 몬스터를 참조합니다: {monsterId}");
-                patterns.Add(new DifficultyPatternData
+                if (common == null || string.IsNullOrWhiteSpace(common.region_id)) continue;
+                var regionPatterns = new List<DifficultyPatternJson>();
+                foreach (var pattern in source.wave_patterns)
+                    if (pattern != null && pattern.region_id == common.region_id) regionPatterns.Add(pattern);
+                regionPatterns.Sort((a, b) => a.level.CompareTo(b.level));
+                if (regionPatterns.Count == 0) throw new InvalidOperationException($"{common.region_id}의 웨이브 패턴이 없습니다.");
+                var patterns = new DifficultyPatternData[regionPatterns.Count];
+                for (var i = 0; i < regionPatterns.Count; i++)
                 {
-                    RequiredKills = requiredKills,
-                    HealthMultiplier = patternHealth,
-                    MonsterIds = pattern.spawn_pattern
+                    var pattern = regionPatterns[i];
+                    if (pattern.spawn_pattern == null || pattern.spawn_pattern.Length == 0)
+                        throw new InvalidOperationException($"{common.region_id} level {pattern.level} 패턴이 비었습니다.");
+                    foreach (var id in pattern.spawn_pattern)
+                        if (!monsterIds.Contains(id)) throw new InvalidOperationException($"존재하지 않는 몬스터 ID: {id}");
+                    patterns[i] = new DifficultyPatternData
+                    {
+                        Level = Mathf.Max(1, pattern.level),
+                        RequiredKills = i * Mathf.Max(1, common.required_kills),
+                        HealthMultiplier = Mathf.Pow(common.multiplier > 0f ? common.multiplier : 1f, i),
+                        MonsterIds = pattern.spawn_pattern
+                    };
+                }
+                regions.Add(new RegionDifficultyData
+                {
+                    RegionId = common.region_id,
+                    KillsPerLevel = Mathf.Max(1, common.required_kills),
+                    HealthMultiplierPerLevel = common.multiplier > 0f ? common.multiplier : 1f,
+                    DefensePerLevel = Mathf.Max(0f, common.defense_per_wave),
+                    Patterns = patterns
                 });
-                requiredKills += killsPerLevel;
-                patternHealth *= healthMultiplier;
             }
 
-            var directory = Path.GetDirectoryName(RuntimeDatabasePath);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-                AssetDatabase.Refresh();
-            }
-            var database = AssetDatabase.LoadAssetAtPath<DifficultyDatabaseDefinition>(
-                RuntimeDatabasePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(RuntimeDatabasePath));
+            var database = AssetDatabase.LoadAssetAtPath<DifficultyDatabaseDefinition>(RuntimeDatabasePath);
             if (database == null)
             {
                 database = ScriptableObject.CreateInstance<DifficultyDatabaseDefinition>();
                 AssetDatabase.CreateAsset(database, RuntimeDatabasePath);
             }
             var serialized = new SerializedObject(database);
-            var patternProperty = serialized.FindProperty("patterns");
-            patternProperty.arraySize = patterns.Count;
-            for (var index = 0; index < patterns.Count; index++)
-            {
-                var element = patternProperty.GetArrayElementAtIndex(index);
-                element.FindPropertyRelative("RequiredKills").intValue =
-                    patterns[index].RequiredKills;
-                element.FindPropertyRelative("HealthMultiplier").floatValue =
-                    patterns[index].HealthMultiplier;
-                var ids = element.FindPropertyRelative("MonsterIds");
-                ids.arraySize = patterns[index].MonsterIds.Length;
-                for (var idIndex = 0; idIndex < patterns[index].MonsterIds.Length; idIndex++)
-                    ids.GetArrayElementAtIndex(idIndex).stringValue =
-                        patterns[index].MonsterIds[idIndex];
-            }
-            serialized.FindProperty("killsPerLevel").intValue = killsPerLevel;
-            serialized.FindProperty("healthMultiplierPerLevel").floatValue = healthMultiplier;
-            serialized.FindProperty("defensePerLevel").floatValue =
-                Mathf.Max(0f, common.defense_per_wave);
+            WriteRegions(serialized.FindProperty("regions"), regions);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(database);
             AssetDatabase.SaveAssets();
-            Debug.Log($"Difficulty JSON 임포트 완료: {patterns.Count}개 패턴");
+            Debug.Log($"Difficulty JSON 임포트 완료: {regions.Count}개 지역");
         }
 
-        [Serializable] private sealed class DifficultyDatabaseJson
+        private static void WriteRegions(SerializedProperty destination, List<RegionDifficultyData> source)
         {
-            public DifficultyCommonJson[] wavedata;
-            public DifficultyPatternJson[] wave_patterns;
+            destination.arraySize = source.Count;
+            for (var i = 0; i < source.Count; i++)
+            {
+                var target = destination.GetArrayElementAtIndex(i);
+                target.FindPropertyRelative("RegionId").stringValue = source[i].RegionId;
+                target.FindPropertyRelative("KillsPerLevel").intValue = source[i].KillsPerLevel;
+                target.FindPropertyRelative("HealthMultiplierPerLevel").floatValue = source[i].HealthMultiplierPerLevel;
+                target.FindPropertyRelative("DefensePerLevel").floatValue = source[i].DefensePerLevel;
+                var patterns = target.FindPropertyRelative("Patterns");
+                patterns.arraySize = source[i].Patterns.Length;
+                for (var j = 0; j < source[i].Patterns.Length; j++)
+                {
+                    var pattern = patterns.GetArrayElementAtIndex(j);
+                    var value = source[i].Patterns[j];
+                    pattern.FindPropertyRelative("Level").intValue = value.Level;
+                    pattern.FindPropertyRelative("RequiredKills").intValue = value.RequiredKills;
+                    pattern.FindPropertyRelative("HealthMultiplier").floatValue = value.HealthMultiplier;
+                    var ids = pattern.FindPropertyRelative("MonsterIds");
+                    ids.arraySize = value.MonsterIds.Length;
+                    for (var k = 0; k < value.MonsterIds.Length; k++) ids.GetArrayElementAtIndex(k).stringValue = value.MonsterIds[k];
+                }
+            }
         }
-        [Serializable] private sealed class DifficultyCommonJson
-        {
-            public int required_kills;
-            public float multiplier;
-            public float defense_per_wave;
-        }
-        [Serializable] private sealed class DifficultyPatternJson
-        {
-            public int level;
-            public string[] spawn_pattern;
-        }
+
+        [Serializable] private sealed class DifficultyDatabaseJson { public DifficultyCommonJson[] wavedata; public DifficultyPatternJson[] wave_patterns; }
+        [Serializable] private sealed class DifficultyCommonJson { public string region_id; public int required_kills; public float multiplier; public float defense_per_wave; }
+        [Serializable] private sealed class DifficultyPatternJson { public string region_id; public int level; public string[] spawn_pattern; }
     }
 
     public sealed class DifficultyJsonAssetPostprocessor : AssetPostprocessor
     {
-        private static void OnPostprocessAllAssets(
-            string[] imported,
-            string[] deleted,
-            string[] moved,
-            string[] movedFrom)
+        private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
             foreach (var path in imported)
-                if (path == DifficultyJsonImporter.JsonPath)
-                {
-                    DifficultyJsonImporter.Import();
-                    return;
-                }
+                if (path == DifficultyJsonImporter.JsonPath) { DifficultyJsonImporter.Import(); return; }
         }
     }
 }

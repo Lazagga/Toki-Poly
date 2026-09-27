@@ -37,11 +37,17 @@ namespace GaeBullBing.Core.Monsters
         public bool BossInitialFeatherPlaced { get; set; }
         public bool IsNewlySpawned { get; set; }
         public HashSet<string> StatusImmunities { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, float> PassiveEffects { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         public bool IsDead => CurrentHealth <= 0;
         public bool IsBoss => Tier == MonsterTier.Boss;
         public bool IsImmuneTo(string statusId) =>
             !string.IsNullOrWhiteSpace(statusId) && StatusImmunities.Contains(statusId);
+
+        public bool HasPassive(string id) => GetPassiveValue(id) != 0f;
+
+        public float GetPassiveValue(string id) =>
+            !string.IsNullOrWhiteSpace(id) && PassiveEffects.TryGetValue(id, out var value) ? value : 0f;
 
         public float GetDefense(DifficultyState difficulty)
         {

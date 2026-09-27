@@ -31,6 +31,7 @@ namespace GaeBullBing.Presentation.UI
         private DiceHudView hud;
         private DeveloperConsoleView developerConsole;
         private DiceState pendingReward;
+        private DiceState[] pendingRewardChoices;
         private Action pendingRewardCompleted;
         private bool replacementOpen;
         private int selectedSlot = -1;
@@ -102,19 +103,31 @@ namespace GaeBullBing.Presentation.UI
 
         public void ShowLapReward(DiceState reward, Action completed)
         {
-            pendingReward = reward;
+            ShowLapRewards(new[] { reward, reward }, completed);
+        }
+
+        public void ShowLapRewards(DiceState[] rewards, Action completed)
+        {
+            if (rewards == null || rewards.Length < 2) throw new ArgumentException("두 개의 주사위 보상이 필요합니다.", nameof(rewards));
+            pendingRewardChoices = rewards;
+            pendingReward = rewards[0];
             pendingRewardCompleted = completed;
             replacementOpen = false;
             rewardOverlay.SetActive(true);
-            rewardText.gameObject.SetActive(false);
+            rewardText.gameObject.SetActive(true);
+            rewardText.text = "완주 보상 — 주사위 하나를 선택하세요\nESC: 획득 포기";
             rewardDisplay.gameObject.SetActive(true);
-            rewardDisplay.Bind(reward);
+            rewardDisplay.Bind(rewards[0]);
             SetRewardMainVisible(true);
+
+            SetButtonLabel(acquireButton, $"1. {rewards[0].DisplayName}\n{FormatFaces(rewards[0])}");
+            SetButtonLabel(towerBoostButton, $"2. {rewards[1].DisplayName}\n{FormatFaces(rewards[1])}");
 
             acquireButton.onClick.RemoveAllListeners();
             towerBoostButton.onClick.RemoveAllListeners();
             acquireButton.onClick.AddListener(() =>
             {
+                pendingReward = pendingRewardChoices[0];
                 if (controller.Session.StoreDiceReward(pendingReward))
                 {
                     var audio = AudioManager.Instance;
@@ -125,8 +138,9 @@ namespace GaeBullBing.Presentation.UI
             });
             towerBoostButton.onClick.AddListener(() =>
             {
-                CloseReward(null);
-                controller.ApplyDiceRewardTowerBoost(completed);
+                pendingReward = pendingRewardChoices[1];
+                if (controller.Session.StoreDiceReward(pendingReward)) CloseReward(completed);
+                else ShowReplacement(completed);
             });
         }
 
@@ -247,6 +261,7 @@ namespace GaeBullBing.Presentation.UI
         {
             rewardOverlay.SetActive(false);
             pendingReward = null;
+            pendingRewardChoices = null;
             pendingRewardCompleted = null;
             replacementOpen = false;
             hud.RefreshDiceFaces();
@@ -271,6 +286,7 @@ namespace GaeBullBing.Presentation.UI
             }
             if (Pressed(keyboard.digit1Key, keyboard.numpad1Key)) InvokeButton(acquireButton);
             else if (Pressed(keyboard.digit2Key, keyboard.numpad2Key)) InvokeButton(towerBoostButton);
+            else if (keyboard.escapeKey.wasPressedThisFrame) CloseReward(pendingRewardCompleted);
         }
 
         private void SetRewardMainVisible(bool visible)
@@ -325,6 +341,12 @@ namespace GaeBullBing.Presentation.UI
         {
             if (UnityEngine.EventSystems.EventSystem.current != null)
                 UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        private static void SetButtonLabel(Button button, string value)
+        {
+            var label = button != null ? button.GetComponentInChildren<Text>(true) : null;
+            if (label != null) label.text = value;
         }
 
         private static string FormatFaces(DiceState dice)

@@ -17,3 +17,8 @@ MonoBehaviour:
   grade: 4
   faces: 010000000100000001000000010000000100000001000000
   color: {r: 0.3137255, g: 0.78431374, b: 0.47058824, a: 1}
+  description: "\uC774 \uC8FC\uC0AC\uC704\uB97C \uAD74\uB9B4 \uB54C\uB9C8\uB2E4,
+    \uBAA8\uB4E0 \uD0C0\uC6CC \uACF5\uACA9\uB825 +5%"
+  effects:
+  - Id: global_damage_buff_on_roll
+    Value: 5

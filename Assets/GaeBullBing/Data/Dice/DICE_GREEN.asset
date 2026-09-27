@@ -17,3 +17,8 @@ MonoBehaviour:
   grade: 2
   faces: 030000000300000005000000050000000600000006000000
   color: {r: 0.16470589, g: 0.6156863, b: 0.56078434, a: 1}
+  description: "\uC774 \uC8FC\uC0AC\uC704\uB85C \uC644\uC8FC\uD560 \uB54C\uB9C8\uB2E4,
+    \uD0C0\uC6CC \uD558\uB098\uB97C \uC120\uD0DD\uD574 \uACF5\uACA9\uB825 +10%"
+  effects:
+  - Id: lap_complete_tower_damage_buff
+    Value: 10

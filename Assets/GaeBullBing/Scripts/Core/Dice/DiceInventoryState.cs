@@ -170,9 +170,8 @@ namespace GaeBullBing.Core.Dice
                 definition.Color.r,
                 definition.Color.g,
                 definition.Color.b,
-                string.Empty,
-                string.Empty,
-                0f,
+                definition.Description,
+                definition.Effects,
                 definition.Grade);
         }
     }

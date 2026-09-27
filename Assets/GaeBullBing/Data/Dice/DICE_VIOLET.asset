@@ -17,3 +17,9 @@ MonoBehaviour:
   grade: 3
   faces: 030000000300000003000000060000000600000006000000
   color: {r: 0.48235294, g: 0.12156863, b: 0.63529414, a: 1}
+  description: "\uC774\uB3D9\uD55C \uD0C0\uC77C\uC5D0 \uD6A8\uACFC\uAC00 \uC788\uB294
+    \uACBD\uC6B0, \uD574\uB2F9 \uD0C0\uC77C \uD6A8\uACFC\uB97C \uB77C\uC778 \uC804\uCCB4\uB85C
+    \uD655\uC0B0"
+  effects:
+  - Id: tile_effect_line_spread
+    Value: 1

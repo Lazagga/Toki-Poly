@@ -17,3 +17,9 @@ MonoBehaviour:
   grade: 4
   faces: 030000000300000003000000030000000300000003000000
   color: {r: 0.6, g: 0.4, b: 0.8, a: 1}
+  description: "\uC774 \uC8FC\uC0AC\uC704\uB85C \uB3C4\uCC29\uD55C \uB77C\uC778\uC758
+    \uBAA8\uB4E0 \uD0C0\uC6CC \uACF5\uACA9 \uD69F\uC218 \uD55C \uD134\uB3D9\uC548
+    +1"
+  effects:
+  - Id: line_attack_count_buff_temp
+    Value: 1

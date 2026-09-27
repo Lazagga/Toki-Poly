@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ece094725b7bb2949b9a8835aeaf085b, type: 3}
+  m_Name: RegionDatabase
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.RegionDatabaseDefinition
+  regions:
+  - Id: REGION_01
+    DisplayName: "\uC232"
+    Order: 1
+    GimmickId: 
+    Status: None
+    Type: 
+    Description: "\uC5C6\uC74C"
+    AppliedEffectId: 
+    Scope: 
+    TilesPerTurn: 0
+    TargetTileIndex: -1
+    OverrideEffectId: 
+    OverrideEffectValue: 0
+    Background: {fileID: 0}
+    BackgroundTint: {r: 1, g: 1, b: 1, a: 1}
+  - Id: REGION_02
+    DisplayName: "\uC124\uC6D0"
+    Order: 2
+    GimmickId: GIMMICK_ICE_SHEET
+    Status: Confirmed
+    Type: periodic_random_tile_status
+    Description: "\uB9E4 \uD134 \uB77C\uC778\uB9C8\uB2E4 \uBB34\uC791\uC704 \uD0C0\uC77C\uC5D0
+      \uBE59\uD310\uC744 \uC0DD\uC131. \uC5BC\uC74C \uD0C0\uC6CC 3\uD2F0\uC5B4 \uC5C5\uADF8\uB808\uC774\uB4DC(UPG_ICE_T3_03)\uAC00
+      \uC0DD\uC131\uD558\uB294 \uBE59\uD310\uACFC \uB3D9\uC77C\uD55C \uD6A8\uACFC(effect_id:
+      tile_freeze)\uB97C \uC7AC\uC0AC\uC6A9"
+    AppliedEffectId: tile_freeze
+    Scope: per_line
+    TilesPerTurn: 10
+    TargetTileIndex: -1
+    OverrideEffectId: 
+    OverrideEffectValue: 0
+    Background: {fileID: 0}
+    BackgroundTint: {r: 0.78, g: 0.9, b: 1, a: 1}
+  - Id: REGION_03
+    DisplayName: "\uC0AC\uB9C9"
+    Order: 2
+    GimmickId: GIMMICK_OASIS_TILE
+    Status: Confirmed
+    Type: tile_behavior_override
+    Description: "18\uBC88 \uD0C0\uC77C(\uAE30\uBCF8: TILE_CORNER, \uC6D0\uD558\uB294
+      \uD0C0\uC77C\uB85C \uC774\uB3D9)\uC758 \uB3D9\uC791\uC744 \uC774 \uC9C0\uC5ED\uC5D0\uC11C\uB294
+      \uC624\uC544\uC2DC\uC2A4 \uD0C0\uC77C\uB85C \uAD50\uCCB4\uD55C\uB2E4. \uC774\uB3D9\uD558\uB294
+      \uB300\uC2E0, \uC6D0\uD558\uB294 \uC704\uCE58\uC5D0 \uC788\uB294 \uD0C0\uC6CC\uC5D0
+      \uC5C5\uADF8\uB808\uC774\uB4DC\uB97C 1\uD68C \uCD94\uAC00\uB85C \uC801\uC6A9\uD55C\uB2E4."
+    AppliedEffectId: 
+    Scope: 
+    TilesPerTurn: 0
+    TargetTileIndex: 18
+    OverrideEffectId: oasis_extra_upgrade
+    OverrideEffectValue: 1
+    Background: {fileID: 0}
+    BackgroundTint: {r: 1, g: 0.86, b: 0.62, a: 1}
+  - Id: REGION_04
+    DisplayName: "\uB2AA\uC9C0\uB300"
+    Order: 2
+    GimmickId: 
+    Status: TBD
+    Type: 
+    Description: "\uB2AA\uC9C0\uB300 \uC2A4\uD14C\uC774\uC9C0 \uAE30\uBBF9 \uBBF8\uC815."
+    AppliedEffectId: 
+    Scope: 
+    TilesPerTurn: 0
+    TargetTileIndex: -1
+    OverrideEffectId: 
+    OverrideEffectValue: 0
+    Background: {fileID: 0}
+    BackgroundTint: {r: 0.58, g: 0.76, b: 0.58, a: 1}

@@ -17,3 +17,9 @@ MonoBehaviour:
   grade: 2
   faces: 020000000200000003000000030000000400000004000000
   color: {r: 0.5568628, g: 0.26666668, b: 0.6784314, a: 1}
+  description: "\uC774\uB3D9\uD55C \uD0C0\uC77C\uC5D0 \uCD5C\uB300\uB85C \uC5C5\uADF8\uB808\uC774\uB4DC\uB41C
+    \uC804\uAE30\uD0C0\uC6CC\uAC00 \uC788\uB294 \uACBD\uC6B0, 3\uD2F0\uC5B4 \uC5C5\uADF8\uB808\uC774\uB4DC\uB97C
+    \uD558\uB098 \uB354 \uC120\uD0DD"
+  effects:
+  - Id: electric_maxtier_extra_upgrade_choice
+    Value: 1
