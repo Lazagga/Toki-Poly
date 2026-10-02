@@ -22,7 +22,5 @@ MonoBehaviour:
   moveDistance: 2
   baseDefense: 0
   statusImmunities: []
-  passiveEffects:
-  - Id: poison_trail
-    Value: 1
+  passiveEffects: []
   killRewardDicePoints: 0

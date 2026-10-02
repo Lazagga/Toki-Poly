@@ -34,8 +34,8 @@ MonoBehaviour:
     GimmickId: GIMMICK_ICE_SHEET
     Status: Confirmed
     Type: periodic_random_tile_status
-    Description: "\uB9E4 \uD134 \uB77C\uC778\uB9C8\uB2E4 \uBB34\uC791\uC704 \uD0C0\uC77C\uC5D0
-      \uBE59\uD310\uC744 \uC0DD\uC131. \uC5BC\uC74C \uD0C0\uC6CC 3\uD2F0\uC5B4 \uC5C5\uADF8\uB808\uC774\uB4DC(UPG_ICE_T3_03)\uAC00
+    Description: "\uB9E4 \uD134 \uBB34\uC791\uC704 \uD0C0\uC77C\uC5D0 \uBE59\uD310\uC744
+      \uC0DD\uC131. \uC5BC\uC74C \uD0C0\uC6CC 3\uD2F0\uC5B4 \uC5C5\uADF8\uB808\uC774\uB4DC(UPG_ICE_T3_03)\uAC00
       \uC0DD\uC131\uD558\uB294 \uBE59\uD310\uACFC \uB3D9\uC77C\uD55C \uD6A8\uACFC(effect_id:
       tile_freeze)\uB97C \uC7AC\uC0AC\uC6A9"
     AppliedEffectId: tile_freeze

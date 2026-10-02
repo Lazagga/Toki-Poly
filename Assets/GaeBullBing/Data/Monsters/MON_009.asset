@@ -22,7 +22,5 @@ MonoBehaviour:
   moveDistance: 2
   baseDefense: 0
   statusImmunities: []
-  passiveEffects:
-  - Id: sand_burrow_stealth
-    Value: 1
+  passiveEffects: []
   killRewardDicePoints: 0

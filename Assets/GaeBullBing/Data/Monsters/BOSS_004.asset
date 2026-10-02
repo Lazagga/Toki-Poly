@@ -23,7 +23,5 @@ MonoBehaviour:
   baseDefense: 260
   statusImmunities:
   - slow
-  passiveEffects:
-  - Id: ambush_lunge
-    Value: 1
+  passiveEffects: []
   killRewardDicePoints: 0

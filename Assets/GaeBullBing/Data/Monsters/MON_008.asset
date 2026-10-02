@@ -22,7 +22,5 @@ MonoBehaviour:
   moveDistance: 1
   baseDefense: 60
   statusImmunities: []
-  passiveEffects:
-  - Id: quicksand_slow_immune
-    Value: 1
+  passiveEffects: []
   killRewardDicePoints: 0

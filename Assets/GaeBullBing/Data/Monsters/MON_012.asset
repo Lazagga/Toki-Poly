@@ -22,7 +22,5 @@ MonoBehaviour:
   moveDistance: 1
   baseDefense: 90
   statusImmunities: []
-  passiveEffects:
-  - Id: swamp_toxin_immune
-    Value: 1
+  passiveEffects: []
   killRewardDicePoints: 0

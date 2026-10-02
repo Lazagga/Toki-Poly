@@ -1,10 +1,10 @@
 {
-  "regions": [
+  "region_gimmicks": [
     {
       "region_id": "REGION_01",
       "gimmick_id": null,
       "status": "None",
-      "description": "없음"
+      "description": "1지역(숲)은 별도의 스테이지 기믹이 없다."
     },
     {
       "region_id": "REGION_02",
@@ -12,14 +12,14 @@
       "name": "빙판 지형",
       "status": "Confirmed",
       "type": "periodic_random_tile_status",
-      "description": "매 턴 라인마다 무작위 타일에 빙판을 생성. 얼음 타워 3티어 업그레이드(UPG_ICE_T3_03)가 생성하는 빙판과 동일한 효과(effect_id: tile_freeze)를 재사용",
+      "description": "매 턴, 라인마다 무작위 타일에 빙판을 생성한다. 얼음 타워 3티어 업그레이드(UPG_ICE_T3_03)가 생성하는 빙판과 동일한 효과(effect_id: tile_freeze)를 재사용한다.",
       "parameters": {
         "applied_effect_id": "tile_freeze",
         "scope": "per_line",
-        "tiles_per_turn": 10
+        "tiles_per_turn": 1
       },
       "open_questions": [
-        "tiles_per_turn 수치에서 웨이브당 1개씩 추가 생성"
+        "tiles_per_turn 확정 수치 (현재 임시값 1)"
       ]
     },
     {
@@ -41,9 +41,23 @@
     },
     {
       "region_id": "REGION_04",
-      "gimmick_id": null,
-      "status": "TBD",
-      "description": "늪지대 스테이지 기믹 미정."
+      "gimmick_id": "GIMMICK_OVERGROWN_PATCH",
+      "name": "무성한 수풀",
+      "status": "Confirmed",
+      "type": "periodic_random_tile_restriction_reward",
+      "description": "매 턴, 보드 전체 중 무작위 타일 8곳에 수풀이 무성하게 자란다. 이 타일에는 타워를 건설하거나 업그레이드할 수 없다. 플레이어가 이동 후 정확히 이 타일에 멈추면 보너스가 발동해 다음 턴에 주사위를 한 번 더 굴릴 수 있다. 타일 상태는 해당 턴 종료 시 사라지고, 다음 턴에 새로운 8곳이 무작위로 다시 지정된다.",
+      "parameters": {
+        "tiles_per_turn": 8,
+        "scope": "board",
+        "duration_turns": 1,
+        "restriction": {
+          "disallow_build": true,
+          "disallow_upgrade": true
+        },
+        "trigger_condition": "stop_exactly_on_tile",
+        "reward_effect_id": "extra_turn",
+        "reward_effect_value": 1
+      }
     }
   ]
 }
