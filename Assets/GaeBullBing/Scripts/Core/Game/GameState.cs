@@ -11,6 +11,7 @@ namespace GaeBullBing.Core.Game
         public const int DefaultEscapeLimit = 5;
 
         public int Round { get; set; }
+        public GaeBullBing.Core.Towers.CombatTrace CombatTrace { get; set; }
         public int StageNumber { get; set; } = 1;
         public string CurrentRegionId { get; set; } = "REGION_01";
         public List<string> BossRewardItemIds { get; } = new();
@@ -88,5 +89,12 @@ namespace GaeBullBing.Core.Game
         public int GrowthPoints { get; set; }
         public int Gold { get; set; }
         public int DicePoints { get; set; }
+        public List<PlayerPathDamageBuff> PathDamageBuffs { get; } = new();
+    }
+
+    public sealed class PlayerPathDamageBuff
+    {
+        public int SourceTowerId { get; set; }
+        public int Damage { get; set; }
     }
 }

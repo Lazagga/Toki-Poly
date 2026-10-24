@@ -434,9 +434,13 @@ view.UpdateHealth(health, state.MaxHealth);
 
             if (result.KnockbackApplied && result.KnockbackFromTile != result.KnockbackToTile)
             {
-                var audio = AudioManager.Instance;
-                audio?.PlayAt(audio.Status.Knockback, view.transform.position);
-                yield return view.PlayKnockback(result.KnockbackFromTile, result.KnockbackToTile);
+                if (result.TeleportApplied) view.TeleportToTile(result.KnockbackToTile);
+                else
+                {
+                    var audio = AudioManager.Instance;
+                    audio?.PlayAt(audio.Status.Knockback, view.transform.position);
+                    yield return view.PlayKnockback(result.KnockbackFromTile, result.KnockbackToTile);
+                }
             }
             if (result.Killed)
             {

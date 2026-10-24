@@ -25,7 +25,8 @@ namespace GaeBullBing.Core.Towers
             IReadOnlyList<TowerUpgradeDefinition> upgrades,
             float damageRateBonus,
             int postMultiplierDamageBonus,
-            int bonusAttackCount = 0)
+            int bonusAttackCount = 0,
+            float preMultiplierDamageBonus = 0f)
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             if (tower == null) throw new ArgumentNullException(nameof(tower));
@@ -57,20 +58,21 @@ namespace GaeBullBing.Core.Towers
                 0f,
                 damage.AdditiveMultiplierFactor + damageRateBonus);
             var resolvedDamage = damage.Set ??
-                (definition.Damage + damage.Add) * combinedDamageMultiplier +
+                (definition.Damage + damage.Add + preMultiplierDamageBonus) * combinedDamageMultiplier +
                 postMultiplierDamageBonus;
             var resolvedRange = range.Resolve(definition.Range);
             var resolvedTargets = targets.Resolve(definition.TargetCount);
             var resolvedAttacks = attacks.Resolve(definition.AttackCount);
+            tower.AttackCountLocked = attacks.Set.HasValue;
             var stats = new TowerCombatStats(
                 Math.Max(0, (int)Math.Round(resolvedDamage)),
                 Math.Max(0, (int)Math.Round(resolvedRange)),
                 Math.Max(1, (int)Math.Round(resolvedTargets)),
-                Math.Max(1, (int)Math.Round(resolvedAttacks) + bonusAttackCount));
+                Math.Max(1, (int)Math.Round(resolvedAttacks) + (attacks.Set.HasValue ? 0 : bonusAttackCount)));
 
             var formula = damage.Set.HasValue
                 ? Format(damage.Set.Value)
-                : $"({Format(definition.Damage)} + {Format(damage.Add)}) * " +
+                : $"({Format(definition.Damage)} + {Format(damage.Add + preMultiplierDamageBonus)}) * " +
                   $"{Format(combinedDamageMultiplier * 100f)}% + " +
                   $"{postMultiplierDamageBonus}";
             return new TowerStatCalculation(stats, formula);
@@ -96,10 +98,11 @@ namespace GaeBullBing.Core.Towers
             public float Add;
             public float Multiply;
             public float MultiplySum;
+            public float MultiplyPenaltySum;
             public int MultiplyCount;
             public float? Set;
             public float Factor => Multiply == 0f ? 1f : Multiply;
-            public float AdditiveMultiplierFactor => MultiplyCount == 0 ? 1f : MultiplySum;
+            public float AdditiveMultiplierFactor => (MultiplyCount == 0 ? 1f : MultiplySum) + MultiplyPenaltySum;
 
             public void Apply(TowerStatModifier modifier)
             {
@@ -109,8 +112,8 @@ namespace GaeBullBing.Core.Towers
                 else if (string.Equals(modifier.Operation, "multiply", StringComparison.OrdinalIgnoreCase))
                 {
                     Multiply *= modifier.Value;
-                    MultiplySum += modifier.Value;
-                    MultiplyCount++;
+                    if (modifier.Value < 1f) MultiplyPenaltySum += modifier.Value - 1f;
+                    else { MultiplySum += modifier.Value; MultiplyCount++; }
                 }
                 else
                     Add += modifier.Value;

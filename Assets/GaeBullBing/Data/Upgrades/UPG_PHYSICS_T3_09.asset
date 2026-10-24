@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
+  m_Name: UPG_PHYSICS_T3_09
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
+  id: UPG_PHYSICS_T3_09
+  displayName: "TOW_03_\uBB3C\uB9AC_T3_09"
+  description: "\uD53C\uACA9\uB41C \uC801\uC744 2\uD0C0\uC77C \uB4A4\uB85C \uB109\uBC31\uC2DC\uD0A4\uB294
+    \uB300\uC2E0, \uD53C\uD574\uB7C9\uC774 30% \uAC10\uC18C\uD569\uB2C8\uB2E4."
+  element: 3
+  tier: 3
+  weight: 1
+  statModifiers:
+  - Stat: damage
+    Operation: add
+    Value: 30
+  - Stat: damage
+    Operation: Multiply
+    Value: 0.7
+  effects:
+  - Id: knockback
+    Value: 2

@@ -123,6 +123,11 @@ namespace GaeBullBing.Presentation.UI
 
         private void Execute(string command)
         {
+            if (gameController != null && gameController.TestLabExecuting)
+            {
+                Write("TestLab is executing. Wait for completion before console commands.");
+                return;
+            }
             
             var parts = command.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
             if (gameController.HasPendingConsoleUpgrade && parts.Length == 1 &&
@@ -159,6 +164,15 @@ namespace GaeBullBing.Presentation.UI
             }
             if (parts.Length == 3 && parts[0].Equals("dice", StringComparison.OrdinalIgnoreCase) && int.TryParse(parts[1], out var first) && int.TryParse(parts[2], out var second))
             { gameController.SetNextDiceResults(first, second, out var message); Write(message); return; }
+            if (parts.Length >= 4 && parts[0].Equals("dice", StringComparison.OrdinalIgnoreCase) &&
+                parts[1].Equals("add", StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(parts[parts.Length - 1], out var diceSlotNumber))
+            {
+                var diceName = string.Join(" ", parts, 2, parts.Length - 3);
+                gameController.AddDiceFromConsole(diceName, diceSlotNumber, out var message);
+                Write(message);
+                return;
+            }
             if (parts.Length >= 2 && parts[0].Equals("spawn", StringComparison.OrdinalIgnoreCase))
             {
                 if (parts.Length >= 3 && int.TryParse(parts[parts.Length - 1], out var spawnTileIndex))
@@ -188,7 +202,7 @@ namespace GaeBullBing.Presentation.UI
                 return;
             }
             if (parts.Length == 1 && parts[0].Equals("help", StringComparison.OrdinalIgnoreCase))
-            { Write("win | lose | reset | speed 1/2/4/8 | dice n m | spawn 몬스터이름 [타일번호] | build 타일번호 | effect 타일번호 frozen/ignite"); return; }
+            { Write("win | lose | reset | speed 1/2/4/8 | dice n m | dice add <주사위 ID/이름> <슬롯 1~4> | spawn 몬스터이름 [타일번호] | build 타일번호 | effect 타일번호 frozen/ignite"); return; }
             Write("알 수 없는 명령어입니다. help를 입력하세요.");
         }
 

@@ -5,7 +5,7 @@ using GaeBullBing.Core.Monsters;
 
 namespace GaeBullBing.Core.Towers
 {
-    public sealed class TowerEffectService
+    public sealed partial class TowerEffectService
     {
         private ICollection<TileEffectVisualChange> activeVisualChanges;
         private HashSet<int> activeFieldCollisionTiles;
@@ -25,6 +25,7 @@ namespace GaeBullBing.Core.Towers
         {
             activeVisualChanges = visualChanges;
             activeFieldCollisionTiles = new HashSet<int>();
+            frostbiteBurstThisResolution.Clear();
             var extra = new List<TowerAttackResult>();
             activeTriggerTileIndex = -1;
             activeTriggerVisualKind = TowerAttackVisualKind.ChainLine;
@@ -71,22 +72,15 @@ namespace GaeBullBing.Core.Towers
                     HasEffect(tower, TowerEffectCatalog.StatusTransfer))
                     SpreadStatuses(state, tower, target, 1, extra);
                 // Phase 4: non-conditional upgrade on-hit effects.
+                using var hitTrace = CombatTrace.StepFor(state, 4, "upgrade on-hit", tower.InstanceId, target);
                 if (target != null)
-                    ApplyUpgradeOnHitEffects(tower, target);
+                    ApplyUpgradeOnHitEffects(state, tower, target);
                 if (target != null && !attack.KnockbackApplied && !target.IsImmuneTo("knockback") &&
                     HasEffect(tower, TowerEffectCatalog.Knockback) &&
                     !target.KnockbackConsumed)
                 {
-                    var fromTile = target.CurrentTileIndex;
-                    var toTile = fromTile == 0
-                        ? 0
-                        : (fromTile + state.Board.TileCount - 1) % state.Board.TileCount;
-                    target.KnockbackImmunityPending = true;
-                    target.CurrentTileIndex = toTile;
-                    if (toTile != fromTile) target.DistanceTravelled = Math.Max(0, target.DistanceTravelled - 1);
-                    extra.Add(new TowerAttackResult(attack.TowerInstanceId, target.InstanceId, 0, false,
-                        true, fromTile, toTile, attackTileIndex));
-                    ResolveKnockbackDestination(state, target, toTile, attack.TowerInstanceId, extra);
+                    KnockbackMonster(state, tower, target,
+                        (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.Knockback, 1f)), extra);
                 }
                 if (HasEffect(tower, TowerEffectCatalog.ChainTile))
                 {
@@ -105,9 +99,8 @@ namespace GaeBullBing.Core.Towers
                                 1 + Math.Max(0, (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.SpreadRangeAdd, 0f))),
                                 attack.TowerInstanceId, extra);
                         var resultCountBeforeTile = extra.Count;
-                        DamageTile(state, chainedTile, attack.Damage, attack.TowerInstanceId, extra,
-                            TowerAttackVisualKind.ChainTile);
-                        ApplyHitEffectsOnTile(state, tower, chainedTile, extra);
+                        ResolveFollowupTile(state, tower, chainedTile, tower.LastResolvedDamage > 0 ? tower.LastResolvedDamage : attack.Damage,
+                            TowerAttackVisualKind.ChainTile, extra);
                         if (extra.Count == resultCountBeforeTile)
                             extra.Add(new TowerAttackResult(attack.TowerInstanceId, -1, 0f, false,
                                 targetTileIndex: chainedTile, visualKind: TowerAttackVisualKind.ChainTile));
@@ -126,28 +119,59 @@ namespace GaeBullBing.Core.Towers
                     AddAreaTileMarkers(attack.TowerInstanceId, new[] { target.CurrentTileIndex }, extra);
                     DamageTile(state,target.CurrentTileIndex,attack.Damage,attack.TowerInstanceId,extra,
                         TowerAttackVisualKind.None);
+                    ApplyHitEffectsOnTile(state, tower, target.CurrentTileIndex, extra);
                 }
                 // Phase 5: conditional effects use the state captured before this attack.
+                ApplyAdditionalOnHitEffects(state, tower, target, attack, extra);
+                hitTrace?.Dispose();
+                using var conditionalTrace = CombatTrace.StepFor(state, 5, "conditional follow-up", tower.InstanceId, target);
                 if (!target.IsDead && HasEffect(tower, TowerEffectCatalog.FreezeDamageMultiply) &&
                     attack.PreAttackFrozen)
+                {
+                    using var effectTrace = CombatTrace.StepFor(state, 5, TowerEffectCatalog.FreezeDamageMultiply, tower.InstanceId, target);
                     ApplyDamage(state, target, tower.LastResolvedDamage * Math.Max(0f,
                         tower.GetEffectValue(TowerEffectCatalog.FreezeDamageMultiply, 5f) - 1f),
                         attack.TowerInstanceId, extra);
+                }
                 if (!target.IsDead && HasEffect(tower, TowerEffectCatalog.BurnDamage) &&
                     attack.PreAttackBurnStacks > 0)
+                {
+                    using var effectTrace = CombatTrace.StepFor(state, 5, TowerEffectCatalog.BurnDamage, tower.InstanceId, target);
                     ApplyDamage(state, target, tower.LastResolvedDamage *
                         tower.GetEffectValue(TowerEffectCatalog.BurnDamage, .2f) * attack.PreAttackBurnStacks,
                         attack.TowerInstanceId, extra);
+                }
                 if (HasEffect(tower, TowerEffectCatalog.BurnExplode) &&
                     attack.PreAttackBurnStacks >= Math.Max(1, (int)Math.Round(
                         tower.GetEffectValue(TowerEffectCatalog.BurnExplode, 20f))))
                 {
+                    using var effectTrace = CombatTrace.StepFor(state, 5, TowerEffectCatalog.BurnExplode, tower.InstanceId, target);
                     AddAreaTiles(state, attackTileIndex, 1, attackedTiles);
                     AddAreaTileMarkers(attack.TowerInstanceId, attackedTiles, extra);
                     DamageArea(state, attackTileIndex, tower.LastResolvedDamage,
                         attack.TowerInstanceId, extra);
                 }
+                ApplyAdditionalConditionalEffects(state, tower, target, attack, extra);
+                if (tower.HasEffect("pierce") && attack.TargetInstanceId > 0)
+                {
+                    for (var offset = 1; offset <= (int)Math.Round(tower.GetEffectValue("pierce")); offset++)
+                    {
+                        var piercedTile = attackTileIndex - offset;
+                        if (piercedTile < TowerUpgradeRules.LineStart(attackTileIndex)) break;
+                        ResolveFollowupTile(state, tower, piercedTile, tower.LastResolvedDamage,
+                            TowerAttackVisualKind.Projectile, extra);
+                    }
+                }
             }
+            var triggeredTowers = new HashSet<int>();
+            foreach (var attack in attacks)
+            {
+                var tower = FindTowerTile(state, attack.TowerInstanceId)?.Tower;
+                if (tower != null && triggeredTowers.Add(tower.InstanceId))
+                    ApplyLineKnockback(state, tower, attacks, extra);
+            }
+            ApplyAttackedTileBuffs(state, attacks);
+            ResolveDeathEffects(state, extra);
             state.Monsters.RemoveAll(m => m.IsDead);
             activeVisualChanges = null;
             activeFieldCollisionTiles = null;
@@ -186,6 +210,20 @@ namespace GaeBullBing.Core.Towers
         public IReadOnlyList<TowerAttackResult> ResolveMonsterTurnEnd(GameState state)
         {
             var results = new List<TowerAttackResult>();
+            foreach (var monster in new List<MonsterState>(state.Monsters))
+            {
+                if (!monster.DamageStoreMarked) continue;
+                var damage = monster.StoredDamage * monster.DamageStoreMultiplier;
+                var sourceId = monster.DamageStoreSourceTowerId;
+                using var trace = CombatTrace.StepFor(state, 0, "damage_store release", sourceId, monster);
+                monster.DamageStoreMarked = false;
+                monster.StoredDamage = 0f;
+                SecondaryHit(state, monster, damage, sourceId, results);
+            }
+            ResolveDeathEffects(state, results);
+            state.Monsters.RemoveAll(monster => monster.IsDead);
+            foreach (var tile in state.Board.Tiles)
+                if (tile.HasTower) tile.Tower.TemporaryDamageBuffs.RemoveAll(buff => buff.ExpiresAfterRound <= state.Round);
             foreach (var tile in state.Board.Tiles) { if (tile.FireTurnsRemaining > 0) tile.FireTurnsRemaining--; if (tile.IceTurnsRemaining > 0) tile.IceTurnsRemaining--; }
             return results;
         }
@@ -205,17 +243,18 @@ namespace GaeBullBing.Core.Towers
 
                 // Existing burn resolves before the current tile creates another stack.
                 if (monster.BurnStacks > 0)
-                    ApplyDamage(state, monster, BurnDamage(monster), 0, results);
+                    ApplyBurnTick(state, monster, results);
                 if (monster.IsDead) continue;
 
                 var tile = state.Board.Tiles[monster.CurrentTileIndex];
                 if (tile.FireTurnsRemaining > 0)
                 {
-                    monster.BurnStacks++;
-                    ApplyDamage(state, monster, BurnDamage(monster), 0, results);
+                    TowerUpgradeRules.AddBurn(state, monster, 1, tile.FireSourceTowerId);
+                    ApplyBurnTick(state, monster, results);
                 }
                 monster.TouchedFireThisMove = false;
             }
+            ResolveDeathEffects(state, results);
             state.Monsters.RemoveAll(monster => monster.IsDead);
             return results;
         }
@@ -284,6 +323,7 @@ private void SpreadTileField(
         {
             var results = new List<TowerAttackResult>();
             var tile = state.Board.Tiles[tileIndex];
+            state.CombatTrace?.Add($"Tile {tileIndex}: place {(placeFire ? "fire" : "ice")}, previous fire {tile.FireTurnsRemaining} / ice {tile.IceTurnsRemaining}", sourceTowerInstanceId);
             if (activeFieldCollisionTiles != null &&
                 activeFieldCollisionTiles.Contains(tileIndex))
             {
@@ -304,11 +344,18 @@ private void SpreadTileField(
                     tileIndex,
                     TileEffectVisualKind.Normal);
                 DamageTile(state, tileIndex, 15 + state.Difficulty.Level * 14, sourceTowerInstanceId, results);
-                state.Monsters.RemoveAll(monster => monster.IsDead);
                 return results;
             }
 
-            if (placeFire) tile.FireTurnsRemaining = Board.TileState.OneTurnEffectDuration;
+            if (placeFire)
+            {
+                var duration = Board.TileState.OneTurnEffectDuration;
+                foreach (var candidate in state.Board.Tiles)
+                    if (candidate.HasTower && MonsterService.GetLine(candidate.Index) == MonsterService.GetLine(tileIndex))
+                        duration += Math.Max(0, (int)Math.Round(candidate.Tower.GetEffectValue("line_fire_tile_duration_add")));
+                tile.FireTurnsRemaining = duration;
+                tile.FireSourceTowerId = sourceTowerInstanceId;
+            }
             else tile.IceTurnsRemaining = Board.TileState.OneTurnEffectDuration;
             RecordTileVisualChange(
                 sourceTowerInstanceId,
@@ -332,20 +379,23 @@ private void SpreadTileField(
         private static void ApplyDamage(GameState state, MonsterState monster, float damage, int tower, ICollection<TowerAttackResult> results,
             TowerAttackVisualKind visualKind = TowerAttackVisualKind.Projectile)
         {
-            var actual = monster.ReceiveDamage(damage, state.Difficulty);
+            var actual = TowerUpgradeRules.Receive(state, monster, damage, tower);
             results.Add(new TowerAttackResult(tower,monster.InstanceId,actual,monster.IsDead,targetTileIndex:monster.CurrentTileIndex,visualKind:tower>0?visualKind:TowerAttackVisualKind.None));
         }
 
-        private static void ApplyBasePersistentEffects(
+        private void ApplyBasePersistentEffects(
             GameState state,
             TowerState tower,
             MonsterState target,
             ICollection<TowerAttackResult> results)
         {
+            using var trace = CombatTrace.StepFor(state, 3, "base persistent effects", tower?.InstanceId ?? 0, target);
             if (tower == null || target == null || target.IsDead) return;
+            if (tower.HasEffect("burn_max_stack_add"))
+                target.MaxBurnStacks = Math.Max(target.MaxBurnStacks, 20 + (int)Math.Round(tower.GetEffectValue("burn_max_stack_add")));
             if (HasEffect(tower, TowerEffectCatalog.Burn))
-                target.BurnStacks += Math.Max(1, (int)Math.Round(
-                    tower.GetEffectValue(TowerEffectCatalog.Burn, 1f)));
+                TowerUpgradeRules.AddBurn(state, target, Math.Max(1, (int)Math.Round(
+                    tower.GetEffectValue(TowerEffectCatalog.Burn, 1f))), tower.InstanceId);
             if (HasEffect(tower, TowerEffectCatalog.Frostbite))
             {
                 target.FrostbiteBurstThreshold = Math.Max(1, (int)Math.Round(
@@ -357,55 +407,93 @@ private void SpreadTileField(
             }
         }
 
-        private static void ApplyUpgradeOnHitEffects(TowerState tower, MonsterState target)
+        private static void ApplyUpgradeOnHitEffects(GameState state, TowerState tower, MonsterState target)
         {
+            using var trace = CombatTrace.StepFor(state, 4, "burn/freeze/shock on-hit", tower?.InstanceId ?? 0, target);
             if (tower == null || target == null || target.IsDead) return;
-            if (HasEffect(tower, TowerEffectCatalog.DoubleBurn))
-                target.BurnStacks *= Math.Max(1, (int)Math.Round(
-                    1f + tower.GetEffectValue(TowerEffectCatalog.DoubleBurn, 1f)));
+            if (HasEffect(tower, TowerEffectCatalog.DoubleBurn) && !tower.HasEffect("disable_burn"))
+                TowerUpgradeRules.AddBurn(state, target, target.BurnStacks * Math.Max(0, (int)Math.Round(
+                    tower.GetEffectValue(TowerEffectCatalog.DoubleBurn, 1f))), tower.InstanceId);
             if (HasEffect(tower, TowerEffectCatalog.Freeze) && target.CanReceiveFreeze)
                 target.FrozenMovesRemaining = Math.Max(target.FrozenMovesRemaining,
                     Math.Max(1, (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.Freeze, 1f))));
-            if (HasEffect(tower, TowerEffectCatalog.Shock)) target.Shocked = true;
+            else if (HasEffect(tower, TowerEffectCatalog.Freeze))
+                state.CombatTrace?.Add("freeze skipped: innate/temporary immunity", tower.InstanceId, target.InstanceId);
+            if (HasEffect(tower, TowerEffectCatalog.Shock) && !target.IsImmuneTo("shock")) target.Shocked = true;
         }
         private static void DamageArea(GameState s,int center,float damage,int tower,ICollection<TowerAttackResult> r)
         { foreach(var m in s.Monsters) if(!m.IsDead&&Math.Min(Math.Abs(m.CurrentTileIndex-center),s.Board.TileCount-Math.Abs(m.CurrentTileIndex-center))<=1) ApplyDamage(s,m,damage,tower,r,TowerAttackVisualKind.None); }
-        private static void SpreadStatuses(GameState s, TowerState tower, MonsterState source,
+        private void SpreadStatuses(GameState s, TowerState tower, MonsterState source,
             int radius, ICollection<TowerAttackResult> results)
         {
-            foreach(var m in s.Monsters)
+            using var trace = CombatTrace.StepFor(s, 3, "status_transfer", tower.InstanceId, source);
+            var burn = source.BurnStacks;
+            var frost = source.FrostbiteStacks;
+            var shock = source.Shocked;
+            var frozen = source.FrozenMovesRemaining;
+            var add = (int)Math.Round(tower.GetEffectValue("transfer_stack_add"));
+            var actualRadius = radius + Math.Max(0, (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.SpreadRangeAdd)));
+            foreach(var m in new List<MonsterState>(s.Monsters))
             {
                 if(m.InstanceId==source.InstanceId || m.IsDead ||
                    Math.Min(Math.Abs(m.CurrentTileIndex-source.CurrentTileIndex),
-                       s.Board.TileCount-Math.Abs(m.CurrentTileIndex-source.CurrentTileIndex))>radius)
+                       s.Board.TileCount-Math.Abs(m.CurrentTileIndex-source.CurrentTileIndex))>actualRadius)
                     continue;
-                m.BurnStacks += source.BurnStacks;
-                if (source.FrostbiteStacks > 0)
+                using var recipientTrace = CombatTrace.StepFor(s, 3, "status_transfer recipient", tower.InstanceId, m);
+                if (burn > 0) TowerUpgradeRules.AddBurn(s, m, burn + add, tower.InstanceId);
+                if (frost > 0)
                 {
                     m.FrostbiteBurstThreshold = source.FrostbiteBurstThreshold;
                     m.FrostbiteBurstDamageMultiplier = source.FrostbiteBurstDamageMultiplier;
-                    AddFrostbite(s, tower, m, source.FrostbiteStacks, results);
+                    AddFrostbite(s, tower, m, frost + add, results);
                 }
-                m.Shocked|=source.Shocked;
-                if(source.FrozenMovesRemaining>0 && m.CanReceiveFreeze)
-                    m.FrozenMovesRemaining=source.FrozenMovesRemaining;
+                if (shock && !m.IsImmuneTo("shock")) { m.Shocked = true; m.ShockDamageBonus = Math.Max(m.ShockDamageBonus, source.ShockDamageBonus); }
+                if(frozen>0 && m.CanReceiveFreeze) m.FrozenMovesRemaining=Math.Max(m.FrozenMovesRemaining, frozen);
+                if (source.DamageStoreMarked && !m.DamageStoreMarked)
+                {
+                    m.DamageStoreMarked = true; m.StoredDamage = 0f;
+                    m.DamageStoreMultiplier = source.DamageStoreMultiplier;
+                    m.DamageStoreSourceTowerId = tower.InstanceId;
+                }
+                if (burn > 0 || frost > 0 || shock || frozen > 0 || source.DamageStoreMarked)
+                {
+                    SecondaryHit(s, m, tower.LastResolvedDamage * tower.GetEffectValue("transfer_damage") / 100f,
+                        tower.InstanceId, results);
+                    if (tower.HasEffect("status_count_damage"))
+                    {
+                        var count = (m.BurnStacks > 0 ? 1 : 0) + (m.FrostbiteStacks > 0 ? 1 : 0) +
+                            (m.Shocked ? 1 : 0) + (m.FrozenMovesRemaining > 0 ? 1 : 0);
+                        SecondaryHit(s, m, tower.LastResolvedDamage * count * tower.GetEffectValue("status_count_damage") / 100f,
+                            tower.InstanceId, results);
+                    }
+                }
             }
         }
 
-        private static void AddFrostbite(GameState state, TowerState tower, MonsterState target,
+        private void AddFrostbite(GameState state, TowerState tower, MonsterState target,
             int stacks, ICollection<TowerAttackResult> results)
         {
-            if (target == null || target.IsDead || stacks <= 0) return;
+            if (target == null || target.IsDead || stacks <= 0 || target.IsImmuneTo("frostbite"))
+            { state.CombatTrace?.Add("frostbite skipped: dead / immune / no stacks", tower.InstanceId, target?.InstanceId ?? 0); return; }
+            var before = target.FrostbiteStacks;
             target.FrostbiteStacks += stacks;
             var threshold = Math.Max(1, target.FrostbiteBurstThreshold);
+            state.CombatTrace?.Add($"frostbite {before} -> {target.FrostbiteStacks}, immediate burst threshold {threshold}", tower.InstanceId, target.InstanceId);
             if (target.FrostbiteStacks < threshold) return;
-            target.FrostbiteStacks = 0;
-            var multiplier = Math.Max(0f, target.FrostbiteBurstDamageMultiplier);
+            if (!frostbiteBurstThisResolution.Add(target.InstanceId)) return;
+            target.FrostbiteStacks = Math.Max(0, (int)Math.Round(tower.GetEffectValue("frostbite_residual")));
+            var multiplier = Math.Max(0f, tower.HasEffect("frostbite_burst_multiplier")
+                ? tower.GetEffectValue("frostbite_burst_multiplier") / 100f : target.FrostbiteBurstDamageMultiplier);
+            using var burstTrace = CombatTrace.StepFor(state, 3, "frostbite immediate burst", tower.InstanceId, target);
             ApplyDamage(state, target, tower.LastResolvedDamage * multiplier,
                 tower.InstanceId, results, TowerAttackVisualKind.None);
+            if (tower.HasEffect("frostbite_burst_spread"))
+                foreach (var other in new List<MonsterState>(state.Monsters))
+                    if (other != target && !other.IsDead && other.CurrentTileIndex == target.CurrentTileIndex)
+                        AddFrostbite(state, tower, other, (int)Math.Round(tower.GetEffectValue("frostbite_burst_spread")), results);
         }
 
-        private static void ApplyHitEffectsOnTile(GameState state, TowerState tower, int tileIndex,
+        private void ApplyHitEffectsOnTile(GameState state, TowerState tower, int tileIndex,
             ICollection<TowerAttackResult> results)
         {
             foreach (var monster in new List<MonsterState>(state.Monsters))
@@ -414,7 +502,7 @@ private void SpreadTileField(
                     ApplyBasePersistentEffects(state, tower, monster, results);
                     if (HasEffect(tower, TowerEffectCatalog.StatusTransfer))
                         SpreadStatuses(state, tower, monster, 1, results);
-                    ApplyUpgradeOnHitEffects(tower, monster);
+                    ApplyUpgradeOnHitEffects(state, tower, monster);
                 }
         }
         private static MonsterState FindMonster(GameState s,int id)=>s.Monsters.Find(m=>m.InstanceId==id);
@@ -458,7 +546,27 @@ private void SpreadTileField(
                     stone.StoneTraversalTiles.Add(stone.StoneTileIndex);
                     var batch = new List<TowerAttackResult>();
                     ResolveStoneAttack(state, stone, damage, batch);
-                    var resolved = effectResolver != null ? effectResolver(batch) : batch;
+                    IReadOnlyList<TowerAttackResult> resolved;
+                    if (effectResolver != null) resolved = effectResolver(batch);
+                    else
+                    {
+                        // Direct service callers still need knockback before the
+                        // next stone step; other on-hit traits are resolved by their caller.
+                        var direct = new List<TowerAttackResult>();
+                        foreach (var hit in batch)
+                        {
+                            var target = FindMonster(state, hit.TargetInstanceId);
+                            var movement = new List<TowerAttackResult>();
+                            var from = target != null ? target.CurrentTileIndex : -1;
+                            if (target != null && stone.HasEffect(TowerEffectCatalog.Knockback))
+                                KnockbackMonster(state, stone, target, (int)Math.Round(
+                                    stone.GetEffectValue(TowerEffectCatalog.Knockback, 1f)), movement);
+                            direct.Add(target != null && from != target.CurrentTileIndex
+                                ? hit.WithKnockback(from, target.CurrentTileIndex) : hit);
+                            foreach (var item in movement) if (!item.KnockbackApplied) direct.Add(item);
+                        }
+                        resolved = direct;
+                    }
                     foreach (var result in resolved) results.Add(result);
                     stone.StoneDamageMultiplier = Math.Max(0f, stone.StoneDamageMultiplier - .1f);
                     if (IsCorner(stone.StoneTileIndex))
@@ -476,67 +584,19 @@ private void SpreadTileField(
             tileIndex == 0 || tileIndex == 9 || tileIndex == 18 || tileIndex == 27;
 
         private static void ResolveStoneAttack(
-            GameState state,
-            TowerState sourceTower,
-            int damage,
-            ICollection<TowerAttackResult> results)
+            GameState state, TowerState sourceTower, int damage, ICollection<TowerAttackResult> results)
         {
-            var appliesKnockback = HasEffect(sourceTower, TowerEffectCatalog.Knockback);
             var hitMonster = false;
             foreach (var monster in new List<MonsterState>(state.Monsters))
             {
                 if (monster.IsDead || monster.CurrentTileIndex != sourceTower.StoneTileIndex) continue;
                 hitMonster = true;
-
-                var fromTile = monster.CurrentTileIndex;
-                var preAttackBurnStacks = monster.BurnStacks;
-                var preAttackFrostbiteStacks = monster.FrostbiteStacks;
-                var preAttackFrozen = monster.FrozenMovesRemaining > 0;
-                var actualDamage = monster.ReceiveDamage(damage, state.Difficulty);
-                var toTile = fromTile;
-                var knockbackApplied = appliesKnockback && !monster.IsDead &&
-                    !monster.IsImmuneTo("knockback") && !monster.KnockbackConsumed;
-                var destinationResults = new List<TowerAttackResult>();
-                if (knockbackApplied)
-                {
-                    toTile = fromTile == 0
-                        ? 0
-                        : (fromTile + state.Board.TileCount - 1) % state.Board.TileCount;
-                    monster.KnockbackImmunityPending = true;
-                    monster.CurrentTileIndex = toTile;
-                    if (toTile != fromTile)
-                        monster.DistanceTravelled = Math.Max(0, monster.DistanceTravelled - 1);
-                    ResolveKnockbackDestination(state, monster, toTile, sourceTower.InstanceId,
-                        destinationResults);
-                }
-                results.Add(new TowerAttackResult(
-                    sourceTower.InstanceId,
-                    monster.InstanceId,
-                    actualDamage,
-                    monster.IsDead,
-                    knockbackApplied,
-                    fromTile,
-                    toTile,
-                    fromTile,
-                    TowerAttackVisualKind.RollingStone,
-                    preAttackBurnStacks: preAttackBurnStacks,
-                    preAttackFrostbiteStacks: preAttackFrostbiteStacks,
-                    preAttackFrozen: preAttackFrozen));
-                foreach (var destinationResult in destinationResults)
-                    results.Add(destinationResult);
+                results.Add(TowerUpgradeRules.PrimaryHit(state, sourceTower, monster, damage,
+                    TowerAttackVisualKind.RollingStone));
             }
-
-            // 몬스터가 없는 타일도 돌의 이동 순서에는 포함되어야 한다.
-            // 이 마커가 없으면 해당 돌의 공격 결과가 하나도 생성되지 않아
-            // 프레젠터가 이동/퇴장 애니메이션을 실행하지 못하고 화면에 남을 수 있다.
             if (!hitMonster)
-                results.Add(new TowerAttackResult(
-                    sourceTower.InstanceId,
-                    -1,
-                    0f,
-                    false,
-                    targetTileIndex: sourceTower.StoneTileIndex,
-                    visualKind: TowerAttackVisualKind.RollingStone));
+                results.Add(new TowerAttackResult(sourceTower.InstanceId, -1, 0f, false,
+                    targetTileIndex: sourceTower.StoneTileIndex, visualKind: TowerAttackVisualKind.RollingStone));
         }
 
         private static void ResolveKnockbackDestination(
@@ -551,9 +611,8 @@ private void SpreadTileField(
             var tile = state.Board.Tiles[tileIndex];
             if (tile.FireTurnsRemaining > 0)
             {
-                monster.BurnStacks++;
-                ApplyDamage(state, monster, BurnDamage(monster), sourceTowerInstanceId, results,
-                    TowerAttackVisualKind.None);
+                TowerUpgradeRules.AddBurn(state, monster, 1, tile.FireSourceTowerId);
+                TowerUpgradeRules.BurnTick(state, monster, tileIndex, results);
             }
             if (monster.IsDead || !tile.HasTower ||
                 !HasEffect(tile.Tower, TowerEffectCatalog.Wall)) return;

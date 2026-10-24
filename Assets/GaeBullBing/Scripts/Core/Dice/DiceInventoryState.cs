@@ -100,6 +100,20 @@ namespace GaeBullBing.Core.Dice
             return null;
         }
 
+        public static DiceState GetByIdOrName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return null;
+            var query = value.Trim();
+            foreach (var definition in GetDefinitions())
+            {
+                if (definition == null) continue;
+                if (string.Equals(definition.Id, query, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(definition.DisplayName, query, StringComparison.OrdinalIgnoreCase))
+                    return CreateState(definition);
+            }
+            return null;
+        }
+
         public static DiceState GetReward(int index) =>
             GetRewardForRoll(index, UnityEngine.Random.value,
                 UnityEngine.Random.Range(0, int.MaxValue));

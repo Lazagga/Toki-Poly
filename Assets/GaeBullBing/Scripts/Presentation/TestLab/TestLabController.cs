@@ -8,7 +8,7 @@ using UnityEngine.SceneManagement;
 
 namespace GaeBullBing.Presentation.TestLab
 {
-    public sealed class TestLabController : MonoBehaviour
+    public sealed partial class TestLabController : MonoBehaviour
     {
         private GameController game;
         private TowerDefinition[] towers = Array.Empty<TowerDefinition>();
@@ -36,11 +36,6 @@ namespace GaeBullBing.Presentation.TestLab
         private int selectedMonsterId;
         private int moveDistance = 1;
         private string moveDistanceText = "1";
-        private string health = "100";
-        private string burn = "0";
-        private string frostbite = "0";
-        private string freeze = "0";
-        private bool shocked;
         private int tileEffectTile = 6;
         private string tileEffectTileText = "6";
         private int firstDiceIndex;
@@ -63,7 +58,7 @@ namespace GaeBullBing.Presentation.TestLab
             game = FindFirstObjectByType<GameController>();
             if (game == null)
             {
-                AddLog("GameController not found.");
+                AddLog("게임 제어기를 찾을 수 없습니다.");
                 return;
             }
             // GameFlowView가 타이틀 상태를 준비하면서 보드를 화면 위로 숨긴다.
@@ -81,38 +76,56 @@ namespace GaeBullBing.Presentation.TestLab
             selectedUpgrades = new bool[upgrades.Length];
             firstDiceIndex = Mathf.Clamp(firstDiceIndex, 0, Mathf.Max(0, dice.Length - 1));
             secondDiceIndex = Mathf.Clamp(secondDiceIndex, 0, Mathf.Max(0, dice.Length - 1));
-            AddLog("Test Lab ready. All actions use the live game state and JSON assets.");
+            AddLog("테스트랩 준비 완료. 실제 게임 상태와 JSON 데이터를 사용합니다.");
         }
 
-        private void OnGUI()
+        private void DrawLabGui()
         {
+            if (game?.State == null)
+            {
+                GUI.Box(new Rect(8, 8, 440, 60), "테스트랩을 사용할 수 없습니다. 필수 JSON 데이터와 콘솔을 확인하세요.");
+                return;
+            }
             if (collapsed)
             {
-                if (GUI.Button(new Rect(8, 8, 120, 32), "Open Test Lab")) collapsed = false;
+                if (GUI.Button(new Rect(8, 8, 180, 32), executing ? "테스트랩 실행 중..." : "테스트랩 열기")) collapsed = false;
                 return;
             }
             // 긴 강화 설명과 주사위 선택지가 가로 스크롤을 만들지 않도록 충분한 폭을 확보한다.
             var width = Mathf.Min(660f, Screen.width * .48f);
-            GUI.Box(new Rect(0, 0, width, Screen.height), "");
+            DrawPanelBackground(new Rect(0, 0, width, Screen.height));
             if (GUI.Button(new Rect(width - 142, 6, 64, 26),
-                    inspectorVisible ? "State On" : "State Off"))
+                    inspectorVisible ? "상태 닫기" : "상태 보기"))
                 inspectorVisible = !inspectorVisible;
-            if (GUI.Button(new Rect(width - 72, 6, 64, 26), "Map View")) collapsed = true;
+            if (GUI.Button(new Rect(width - 72, 6, 64, 26), "맵만 보기")) collapsed = true;
             GUILayout.BeginArea(new Rect(10, 8, width - 20, Screen.height - 16));
-            GUILayout.Label("DYNAMIC TEST LAB", HeaderStyle());
+            GUILayout.Label("동적 테스트랩", HeaderStyle());
+            GUILayout.Label(TestLabKoreanText.Translate(actionStatus), WrapStyle());
+            GUI.enabled = !executing && game?.State != null && !showTrace;
+            var newTab = GUILayout.SelectionGrid(labTab, new[] { "타워 설정", "공격 / 효과", "몬스터", "타일", "주사위", "지역 / 초기화" }, 3);
+            if (newTab != labTab) { labTab = newTab; leftScroll = Vector2.zero; }
             leftScroll = GUILayout.BeginScrollView(
                 leftScroll,
                 GUIStyle.none,
                 GUI.skin.verticalScrollbar,
-                GUILayout.Height(Screen.height * .72f));
-            DrawRegionSection();
-            DrawTowerSection();
-            DrawMonsterSection();
-            DrawTileSection();
-            DrawDiceSection();
+                GUILayout.Height(Screen.height * .63f));
+            switch (labTab)
+            {
+                case 0: DrawTowerSection(); break;
+                case 1: DrawAttackSection(); break;
+                case 2: DrawMonsterSection(); break;
+                case 3: DrawTileSection(); break;
+                case 4: DrawDiceSection(); break;
+                case 5: DrawRegionSection(); break;
+            }
             GUILayout.EndScrollView();
+            GUI.enabled = true;
             GUILayout.Space(4);
-            GUILayout.Label("Execution Log", SectionStyle());
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("실행 기록", SectionStyle());
+            if (GUILayout.Button("상세 전투 기록", GUILayout.Width(128))) showTrace = true;
+            if (GUILayout.Button("기록 지우기", GUILayout.Width(80)) && !executing) log.Clear();
+            GUILayout.EndHorizontal();
             logScroll = GUILayout.BeginScrollView(logScroll, GUI.skin.box,
                 GUILayout.Height(Screen.height * .2f));
             foreach (var entry in log) GUILayout.Label(entry, WrapStyle());
@@ -120,68 +133,76 @@ namespace GaeBullBing.Presentation.TestLab
             GUILayout.EndArea();
 
             if (inspectorVisible) DrawInspector(width);
+            if (showTrace) DrawTraceWindow();
         }
 
         private void DrawRegionSection()
         {
-            GUILayout.Label("Stage / Region", SectionStyle());
-            if (regions.Length == 0) { GUILayout.Label("No region data."); return; }
+            GUILayout.Label("스테이지 / 지역", SectionStyle());
+            if (regions.Length == 0) { GUILayout.Label("지역 데이터가 없습니다."); return; }
             var names = new string[regions.Length];
             for (var i = 0; i < regions.Length; i++) names[i] = $"{regions[i].Order}: {regions[i].DisplayName}";
             regionIndex = GUILayout.SelectionGrid(regionIndex, names, 2);
             GUILayout.Label(regions[regionIndex].Description, WrapStyle());
-            if (GUILayout.Button("Apply Region / Reset Lab", GUILayout.Height(28)))
-                AddLog(game.TestLabSetRegion(regions[regionIndex].Id, out var message) ? message : $"ERROR: {message}");
+            if (GUILayout.Button("지역 적용 / 테스트랩 초기화", GUILayout.Height(28)))
+                RunSync("지역 적용 / 테스트랩 초기화", () => {
+                    if (!game.TestLabSetRegion(regions[regionIndex].Id, out var message)) throw new InvalidOperationException(message);
+                    monsterEdit = null; towerEdit = null; AddLog(message);
+                });
         }
 
         private void DrawTowerSection()
         {
-            GUILayout.Label("Tower", SectionStyle());
-            if (towers.Length == 0) { GUILayout.Label("No tower data."); return; }
-            DrawIntField("Tile", ref towerTile, ref towerTileText, 0, 35);
+            GUILayout.Label("타워", SectionStyle());
+            if (towers.Length == 0) { GUILayout.Label("타워 데이터가 없습니다."); return; }
+            DrawIntField("타일 번호", ref towerTile, ref towerTileText, 0, 35);
+            DrawMapPicking();
             if (!SyncTowerSelectionToTile())
             {
-                GUILayout.Label("This tile has no buildable tower property.", WrapStyle());
+                GUILayout.Label("이 타일에는 타워를 건설할 수 없습니다.", WrapStyle());
                 return;
             }
             GUILayout.Label(
-                $"Build tower: {towers[towerIndex].DisplayName} ({towers[towerIndex].Element})",
+                $"건설할 타워: {towers[towerIndex].DisplayName} ({TestLabKoreanText.Element(towers[towerIndex].Element)})",
                 AutoTowerStyle());
-            bonusTile = GUILayout.Toggle(bonusTile, "Bonus tile (allows two tier-3 upgrades)");
-            if (!bonusTile) TrimUpgradeSelections(3, 1);
+            bonusTile = GUILayout.Toggle(bonusTile, "보너스 타일 (3티어 강화 2개 선택 가능)");
+            var tier3Limit = (bonusTile ? 2 : 1) +
+                (towers[towerIndex].Element == GaeBullBing.Core.TowerElement.Electric &&
+                 game.State.Dice.Exists(d => d != null && d.HasEffect("electric_maxtier_extra_upgrade_choice")) ? 1 : 0);
+            TrimUpgradeSelections(3, tier3Limit);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Upgrades", SectionStyle());
+            GUILayout.Label("강화 선택", SectionStyle());
             var selectedCount = 0;
             for (var index = 0; index < selectedUpgrades.Length; index++)
                 if (selectedUpgrades[index]) selectedCount++;
             GUILayout.FlexibleSpace();
-            GUILayout.Label($"Selected: {selectedCount}", GUILayout.Width(82));
-            if (GUILayout.Button("Clear", GUILayout.Width(58)))
+            GUILayout.Label($"선택: {selectedCount}개", GUILayout.Width(82));
+            if (GUILayout.Button("선택 해제", GUILayout.Width(58)))
                 Array.Clear(selectedUpgrades, 0, selectedUpgrades.Length);
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("검색", GUILayout.Width(60));
+            upgradeSearch = GUILayout.TextField(upgradeSearch);
+            if (GUILayout.Button("X", GUILayout.Width(30))) upgradeSearch = "";
+            GUILayout.EndHorizontal();
+            DrawSelectedUpgradeSummary();
 
             DrawUpgradeTier(2, 1);
-            DrawUpgradeTier(3, bonusTile ? 2 : 1);
+            DrawUpgradeTier(3, tier3Limit);
 
-            if (GUILayout.Button("Create / Replace Tower", GUILayout.Height(28)))
+            if (GUILayout.Button("타워 생성 / 교체", GUILayout.Height(28)))
             {
                 var ids = new List<string>();
                 for (var index = 0; index < selectedUpgrades.Length; index++)
                     if (selectedUpgrades[index]) ids.Add(upgrades[index].Id);
-                AddLog(game.TestLabConfigureTower(
-                    towerTile, towers[towerIndex].Id, ids, bonusTile, out var message)
-                    ? message : $"ERROR: {message}");
+                RunSync("타워 생성 / 교체", () => {
+                    RequireTileInput(towerTileText);
+                    if (!game.TestLabConfigureTower(towerTile, towers[towerIndex].Id, ids, bonusTile, out var message))
+                        throw new InvalidOperationException(message);
+                    towerEdit = null; AddLog(message);
+                });
             }
-            GUILayout.BeginHorizontal();
-            DrawIntField("Attacks", ref attackCount, ref attackCountText, 1, 99);
-            ignoreRange = GUILayout.Toggle(ignoreRange, "Ignore range");
-            GUILayout.EndHorizontal();
-            if (GUILayout.Button("Attack Now", GUILayout.Height(30)))
-            {
-                StartCoroutine(game.TestLabAttack(
-                    towerTile, attackCount, selectedMonsterId, ignoreRange));
-                AddLog($"Tower {towerTile}: requested {attackCount} attack(s)." );
-            }
+            DrawTowerStateEditor();
         }
 
         private void DrawUpgradeTier(int tier, int selectionLimit)
@@ -197,19 +218,22 @@ namespace GaeBullBing.Presentation.TestLab
                 var upgrade = upgrades[index];
                 if (upgrade == null || upgrade.Tier != tier ||
                     upgrade.Element != towers[towerIndex].Element || upgrade.Weight <= 0) continue;
+                if (!MatchesUpgradeSearch(upgrade)) continue;
 
                 if (!hasChoice)
                 {
-                    GUILayout.Label($"Tier {tier}", UpgradeTierStyle());
+                    GUILayout.Label($"{tier}티어", UpgradeTierStyle());
                     hasChoice = true;
                 }
 
                 var selected = selectedUpgrades[index];
-                var label = selected
-                    ? $"✓ SELECTED  {upgrade.Description}"
-                    : $"○  {upgrade.Description}";
-                if (!GUILayout.Button(label, selected ? SelectedUpgradeStyle() : UpgradeStyle(),
-                        GUILayout.MinHeight(42))) continue;
+                var warning = UpgradeWarning(upgrade);
+                var label = (selected ? "[선택됨] " : "[ ] ") + upgrade.DisplayName + "\n" + upgrade.Description +
+                    (warning.Length == 0 ? "" : "\n안내: " + warning);
+                var style = selected ? SelectedUpgradeStyle() : UpgradeStyle();
+                var contentWidth = Mathf.Min(660f, Screen.width * .48f) - 62f;
+                var height = Mathf.Max(52f, style.CalcHeight(new GUIContent(label), contentWidth) + 12f);
+                if (!GUILayout.Button(label, style, GUILayout.Height(height))) continue;
 
                 if (selected)
                 {
@@ -220,7 +244,7 @@ namespace GaeBullBing.Presentation.TestLab
 
                 if (selectedInTier >= selectionLimit)
                 {
-                    AddLog($"Tier-{tier} selection limit ({selectionLimit}) reached.");
+                    AddLog($"{tier}티어는 최대 {selectionLimit}개까지 선택할 수 있습니다.");
                     continue;
                 }
 
@@ -265,80 +289,74 @@ namespace GaeBullBing.Presentation.TestLab
         private void DrawMonsterSection()
         {
             GUILayout.Space(8);
-            GUILayout.Label("Monster / Boss", SectionStyle());
-            if (monsters.Length == 0) { GUILayout.Label("No monster data."); return; }
+            GUILayout.Label("몬스터 / 보스", SectionStyle());
+            if (monsters.Length == 0) { GUILayout.Label("몬스터 데이터가 없습니다."); return; }
             monsterIndex = GUILayout.SelectionGrid(monsterIndex, Names(monsters), 2);
-            DrawIntField("Spawn tile", ref monsterTile, ref monsterTileText, 0, 35);
-            stationary = GUILayout.Toggle(stationary, "Stationary after spawn");
-            if (GUILayout.Button("Spawn Monster", GUILayout.Height(28)))
+            DrawIntField("소환 타일", ref monsterTile, ref monsterTileText, 0, 35);
+            stationary = GUILayout.Toggle(stationary, "소환 후 정지 상태 유지");
+            if (GUILayout.Button("몬스터 소환", GUILayout.Height(28)))
             {
-                if (game.TestLabSpawnMonster(monsters[monsterIndex].Id, monsterTile,
-                        stationary, out var id, out var message))
-                {
-                    selectedMonsterId = id;
-                    AddLog(message);
-                }
-                else AddLog($"ERROR: {message}");
+                RunAction("몬스터 소환", () => {
+                    RequireTileInput(monsterTileText);
+                    return game.TestLabSpawnWithPresentation(monsters[monsterIndex].Id, monsterTile, stationary,
+                        id => { selectedMonsterId = id; monsterEdit = null; });
+                });
             }
             DrawMonsterSelector();
+            DrawMonsterStateEditor();
+            DrawIntField("이동 칸 수", ref moveDistance, ref moveDistanceText, 1, 35);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("HP", GUILayout.Width(28)); health = GUILayout.TextField(health);
-            GUILayout.Label("Burn", GUILayout.Width(34)); burn = GUILayout.TextField(burn);
-            GUILayout.Label("Frost", GUILayout.Width(34)); frostbite = GUILayout.TextField(frostbite);
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Freeze", GUILayout.Width(45)); freeze = GUILayout.TextField(freeze);
-            shocked = GUILayout.Toggle(shocked, "Shock");
-            if (GUILayout.Button("Apply State")) ApplyMonsterState();
-            GUILayout.EndHorizontal();
-            DrawIntField("Move", ref moveDistance, ref moveDistanceText, 1, 35);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Move 1")) MoveSelected(1);
-            if (GUILayout.Button("Move N")) MoveSelected(moveDistance);
-            if (GUILayout.Button("Boss Next Pattern")) MoveSelected(1);
+            if (GUILayout.Button("1칸 이동")) MoveSelected(1);
+            if (GUILayout.Button("지정 칸 이동"))
+            {
+                if (int.TryParse(moveDistanceText, out var distance) && distance >= 1 && distance <= 35) MoveSelected(distance);
+                else ReportFailure("이동 거리를 1~35칸으로 입력하세요.");
+            }
+            if (GUILayout.Button("보스 다음 패턴")) MoveSelected(1);
             GUILayout.EndHorizontal();
         }
 
         private void DrawTileSection()
         {
             GUILayout.Space(8);
-            GUILayout.Label("Tile Effects", SectionStyle());
-            DrawIntField("Tile", ref tileEffectTile, ref tileEffectTileText, 0, 35);
+            GUILayout.Label("타일 효과", SectionStyle());
+            DrawIntField("타일 번호", ref tileEffectTile, ref tileEffectTileText, 0, 35);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Place Fire")) SetTileEffect("ignite");
-            if (GUILayout.Button("Place Ice")) SetTileEffect("frozen");
+            if (GUILayout.Button("불 장판 설치")) SetTileEffect("ignite");
+            if (GUILayout.Button("얼음 장판 설치")) SetTileEffect("frozen");
             GUILayout.EndHorizontal();
-            GUILayout.Label("Use Move 1 / Move N to test tile entry, traversal and arrival with real movement logic.", WrapStyle());
+            GUILayout.Label("몬스터의 ‘1칸 이동 / 지정 칸 이동’으로 진입·통과·도착 효과를 시험할 수 있습니다.", WrapStyle());
         }
 
         private void DrawDiceSection()
         {
             GUILayout.Space(8);
-            GUILayout.Label("Dice", SectionStyle());
-            if (dice.Length == 0) { GUILayout.Label("No dice data."); return; }
+            GUILayout.Label("주사위", SectionStyle());
+            if (dice.Length == 0) { GUILayout.Label("주사위 데이터가 없습니다."); return; }
             var names = Names(dice);
-            GUILayout.Label("Equipped A", UpgradeTierStyle());
+            GUILayout.Label("장착 주사위 1", UpgradeTierStyle());
             firstDiceIndex = GUILayout.SelectionGrid(
                 firstDiceIndex, names, Mathf.Min(3, names.Length));
-            GUILayout.Label("Equipped B", UpgradeTierStyle());
+            GUILayout.Label("장착 주사위 2", UpgradeTierStyle());
             secondDiceIndex = GUILayout.SelectionGrid(
                 secondDiceIndex, names, Mathf.Min(3, names.Length));
-            if (GUILayout.Button("Apply Equipped Dice", GUILayout.Height(30)))
+            if (GUILayout.Button("선택한 주사위 장착", GUILayout.Height(30)))
             {
-                AddLog(game.TestLabSetDice(
-                    dice[firstDiceIndex].Id, dice[secondDiceIndex].Id, out var message)
-                    ? message : $"ERROR: {message}");
+                RunSync("선택한 주사위 장착", () => {
+                    if (!game.TestLabSetDice(dice[firstDiceIndex].Id, dice[secondDiceIndex].Id, out var message))
+                        throw new InvalidOperationException(message);
+                    AddLog(message);
+                });
             }
 #if UNITY_EDITOR
-            if (GUILayout.Button("Reload JSON Assets"))
+            if (GUILayout.Button("JSON 데이터 다시 불러오기"))
             {
-                UnityEditor.EditorApplication.ExecuteMenuItem(
-                    "GaeBullBing/Data/Import Tiles and Towers JSON");
-                UnityEditor.EditorApplication.ExecuteMenuItem(
-                    "GaeBullBing/Data/Import Monsters JSON");
-                UnityEditor.EditorApplication.ExecuteMenuItem(
-                    "GaeBullBing/Data/Import Dice JSON");
-                AddLog("Requested JSON reimport. Restart TestLab play mode to reload definitions.");
+                RunSync("JSON 데이터 다시 불러오기", () => {
+                    UnityEditor.EditorApplication.ExecuteMenuItem("GaeBullBing/Data/Import Tiles and Towers JSON");
+                    UnityEditor.EditorApplication.ExecuteMenuItem("GaeBullBing/Data/Import Monsters JSON");
+                    UnityEditor.EditorApplication.ExecuteMenuItem("GaeBullBing/Data/Import Dice JSON");
+                    AddLog("JSON 재가져오기를 요청했습니다. 새 데이터를 반영하려면 테스트랩 실행을 다시 시작하세요.");
+                });
             }
 #endif
         }
@@ -347,48 +365,62 @@ namespace GaeBullBing.Presentation.TestLab
         {
             var width = Mathf.Min(370f, Screen.width * .28f);
             var x = Screen.width - width;
-            GUI.Box(new Rect(x, 0, width, Screen.height), "");
+            DrawPanelBackground(new Rect(x, 0, width, Screen.height));
             GUILayout.BeginArea(new Rect(x + 10, 10, width - 20, Screen.height - 20));
-            GUILayout.Label("LIVE STATE", HeaderStyle());
+            GUILayout.Label("실시간 상태", HeaderStyle());
             rightScroll = GUILayout.BeginScrollView(rightScroll);
             if (game?.State != null)
             {
                 if (towerTile >= 0 && towerTile < game.State.Board.TileCount)
                 {
                     var tile = game.State.Board.Tiles[towerTile];
-                    GUILayout.Label($"Tile {towerTile}", SectionStyle());
-                    GUILayout.Label($"Fire: {tile.FireTurnsRemaining} / Ice: {tile.IceTurnsRemaining}");
+                    GUILayout.Label($"타일 {towerTile}", SectionStyle());
+                    GUILayout.Label($"불 장판: {tile.FireTurnsRemaining} / 얼음 장판: {tile.IceTurnsRemaining}");
                     if (tile.HasTower)
                     {
                         var tower = tile.Tower;
-                        GUILayout.Label($"Tower: {tower.DefinitionId}  Tier {tower.UpgradeTier}");
-                        GUILayout.Label($"Last damage: {tower.LastResolvedDamage}");
-                        GUILayout.Label("Upgrades: " + string.Join(", ", tower.AppliedUpgradeIds), WrapStyle());
-                        GUILayout.Label("Effects: " + string.Join(", ", tower.AppliedEffectIds), WrapStyle());
+                        GUILayout.Label($"타워: {tower.DefinitionId}  {tower.UpgradeTier}티어");
+                        var calculation = game.TestLabTowerStats(towerTile);
+                        if (calculation.HasValue)
+                            GUILayout.Label($"공격력: {calculation.Value.DamageFormula} = {calculation.Value.CombatStats.Damage}", WrapStyle());
+                        GUILayout.Label($"쿨다운 {tower.AttackCooldownRounds}, 충전 {tower.ChargeCount}, 과열 {tower.OverheatAttackTurns}, 주기 {tower.PeriodicTurnCount}", WrapStyle());
+                        GUILayout.Label("적용된 강화: " + string.Join(", ", tower.AppliedUpgradeIds), WrapStyle());
+                        GUILayout.Label("적용된 효과: " + string.Join(", ", tower.AppliedEffectIds), WrapStyle());
                     }
                 }
                 var selected = FindMonster(selectedMonsterId);
                 if (selected != null)
                 {
                     GUILayout.Space(8);
-                    GUILayout.Label($"Monster #{selected.InstanceId}", SectionStyle());
-                    GUILayout.Label($"{selected.DefinitionId} / Tile {selected.CurrentTileIndex}");
-                    GUILayout.Label($"HP {selected.CurrentHealth:0.##} / {selected.MaxHealth:0.##}");
-                    GUILayout.Label($"Move {selected.MoveDistance} / Distance {selected.DistanceTravelled}");
-                    GUILayout.Label($"Burn {selected.BurnStacks} / Frostbite {selected.FrostbiteStacks}");
-                    GUILayout.Label($"Freeze {selected.FrozenMovesRemaining} / Shock {selected.Shocked}");
-                    GUILayout.Label($"Boss {selected.IsBoss} / Immunities {string.Join(", ", selected.StatusImmunities)}", WrapStyle());
+                    GUILayout.Label($"몬스터 #{selected.InstanceId}", SectionStyle());
+                    GUILayout.Label($"{MonsterName(selected.DefinitionId)} / 타일 {selected.CurrentTileIndex}");
+                    GUILayout.Label($"체력 {selected.CurrentHealth:0.##} / {selected.MaxHealth:0.##}");
+                    GUILayout.Label($"이동력 {selected.MoveDistance} / 누적 이동거리 {selected.DistanceTravelled}");
+                    GUILayout.Label($"화상 {selected.BurnStacks} / 동상 {selected.FrostbiteStacks}");
+                    GUILayout.Label($"빙결 {selected.FrozenMovesRemaining} / 감전 {TestLabKoreanText.YesNo(selected.Shocked)}");
+                    GUILayout.Label($"방어력 {selected.GetDefense(game.State.Difficulty):0.##}, 감속 {selected.NextMoveReduction}, 기절 {selected.StunnedMovesRemaining}");
+                    GUILayout.Label($"피해 저장 {TestLabKoreanText.YesNo(selected.DamageStoreMarked)}: {selected.StoredDamage:0.##}");
+                    GUILayout.Label($"빙결 면역 현재/대기: {TestLabKoreanText.YesNo(selected.FreezeImmuneThisTurn)}/{TestLabKoreanText.YesNo(selected.FreezeImmunityPending)}", WrapStyle());
+                    GUILayout.Label($"넉백 면역 현재/대기: {TestLabKoreanText.YesNo(selected.KnockbackConsumed)}/{TestLabKoreanText.YesNo(selected.KnockbackImmunityPending)}", WrapStyle());
+                    GUILayout.Label($"보스 {TestLabKoreanText.YesNo(selected.IsBoss)} / 면역 {TestLabKoreanText.StatusNames(selected.StatusImmunities)}", WrapStyle());
                 }
             }
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
 
+        private string MonsterName(string id)
+        {
+            foreach (var definition in monsters)
+                if (definition != null && definition.Id == id) return definition.DisplayName;
+            return id;
+        }
+
         private void DrawMonsterSelector()
         {
             if (game?.State == null || game.State.Monsters.Count == 0)
             {
-                GUILayout.Label("No active monsters.");
+                GUILayout.Label("소환된 몬스터가 없습니다.");
                 selectedMonsterId = 0;
                 return;
             }
@@ -397,37 +429,26 @@ namespace GaeBullBing.Presentation.TestLab
             for (var index = 0; index < labels.Length; index++)
             {
                 var monster = game.State.Monsters[index];
-                labels[index] = $"#{monster.InstanceId} {monster.DefinitionId}@{monster.CurrentTileIndex}";
+                labels[index] = $"#{monster.InstanceId} {MonsterName(monster.DefinitionId)} / 타일 {monster.CurrentTileIndex}";
                 if (monster.InstanceId == selectedMonsterId) selected = index;
             }
             selected = GUILayout.SelectionGrid(selected, labels, 1);
             selectedMonsterId = game.State.Monsters[selected].InstanceId;
         }
 
-        private void ApplyMonsterState()
-        {
-            var monster = FindMonster(selectedMonsterId);
-            if (monster == null) return;
-            if (float.TryParse(health, out var hp)) monster.CurrentHealth = Mathf.Clamp(hp, 1f, monster.MaxHealth);
-            if (int.TryParse(burn, out var burnValue)) monster.BurnStacks = burnValue;
-            if (int.TryParse(frostbite, out var frostValue)) monster.FrostbiteStacks = Mathf.Max(0, frostValue);
-            if (int.TryParse(freeze, out var freezeValue)) monster.FrozenMovesRemaining = Mathf.Max(0, freezeValue);
-            monster.Shocked = shocked;
-            game.TestLabRefreshViews();
-            AddLog($"Updated monster #{monster.InstanceId} state.");
-        }
-
         private void MoveSelected(int distance)
         {
             if (selectedMonsterId <= 0) return;
-            StartCoroutine(game.TestLabMoveMonster(selectedMonsterId, distance));
-            AddLog($"Monster #{selectedMonsterId}: requested movement {distance}.");
+            RunAction($"몬스터 #{selectedMonsterId}: {distance}칸 이동",
+                () => game.TestLabMoveMonster(selectedMonsterId, distance));
         }
 
         private void SetTileEffect(string effect)
         {
-            AddLog(game.SetTileEffectFromConsole(tileEffectTile, effect, out var message)
-                ? message : $"ERROR: {message}");
+            RunAction("타일 효과 설치: " + (effect == "ignite" ? "불" : "얼음"), () => {
+                RequireTileInput(tileEffectTileText);
+                return game.TestLabPlaceField(tileEffectTile, effect);
+            });
         }
 
         private MonsterState FindMonster(int id) =>
@@ -435,7 +456,7 @@ namespace GaeBullBing.Presentation.TestLab
 
         private void AddLog(string value)
         {
-            log.Add($"[{DateTime.Now:HH:mm:ss}] {value}");
+            log.Add($"[{DateTime.Now:HH:mm:ss}] {TestLabKoreanText.Translate(value)}");
             if (log.Count > 100) log.RemoveAt(0);
             logScroll.y = float.MaxValue;
         }
@@ -462,7 +483,15 @@ namespace GaeBullBing.Presentation.TestLab
         {
             var result = new string[values.Count];
             for (var index = 0; index < result.Length; index++)
-                result[index] = values[index] != null ? values[index].name : "(null)";
+                result[index] = values[index] switch
+                {
+                    MonsterDefinition monster => monster.DisplayName,
+                    DiceDefinition die => die.DisplayName,
+                    TowerDefinition tower => tower.DisplayName,
+                    RegionDefinition region => region.DisplayName,
+                    null => "(없음)",
+                    _ => values[index].name
+                };
             return result;
         }
 

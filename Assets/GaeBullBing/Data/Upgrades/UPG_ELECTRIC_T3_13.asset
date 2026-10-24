@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
+  m_Name: UPG_ELECTRIC_T3_13
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
+  id: UPG_ELECTRIC_T3_13
+  displayName: "TOW_04_\uC804\uAE30_T3_13"
+  description: "\uC0AC\uAC70\uB9AC \uC548\uC5D0 \uC801\uC774 \uC5C6\uC5B4 \uACF5\uACA9\uD558\uC9C0
+    \uBABB\uD55C \uD134\uB9C8\uB2E4 \uCDA9\uC804\uC744 1 \uC5BB\uC2B5\uB2C8\uB2E4(\uCD5C\uB300
+    3). \uB2E4\uC74C \uACF5\uACA9 \uC2DC \uCDA9\uC804 1\uB2F9 \uD53C\uD574\uAC00
+    100% \uC99D\uAC00\uD558\uACE0 \uCDA9\uC804\uC774 \uBAA8\uB450 \uC18C\uBAA8\uB429\uB2C8\uB2E4."
+  element: 4
+  tier: 3
+  weight: 1
+  statModifiers:
+  - Stat: damage
+    Operation: add
+    Value: 25
+  effects:
+  - Id: charge_damage
+    Value: 100
+  - Id: charge_cap
+    Value: 3

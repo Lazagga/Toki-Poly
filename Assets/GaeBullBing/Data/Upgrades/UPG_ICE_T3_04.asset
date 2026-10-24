@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
+  m_Name: UPG_ICE_T3_04
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
+  id: UPG_ICE_T3_04
+  displayName: "TOW_02_\uC5BC\uC74C_T3_04"
+  description: "\uACF5\uACA9 \uB300\uC0C1\uC5D0\uAC8C \uD53C\uD574 \uC800\uC7A5 \uD45C\uC2DD\uC744
+    \uBD80\uC5EC\uD569\uB2C8\uB2E4. \uD45C\uC2DD\uC774 \uC788\uB294 \uC801\uC740
+    \uD45C\uC2DD\uC744 \uBD80\uC5EC\uD55C \uACF5\uACA9\uC758 \uD53C\uD574\uB97C \uD3EC\uD568\uD574
+    \uC774\uBC88 \uD134 \uB3D9\uC548 \uBC1B\uC740 \uBAA8\uB4E0 \uD53C\uD574(\uBAA8\uB4E0
+    \uD0C0\uC6CC\uC758 \uD53C\uD574 \uBC0F \uC9C0\uC18D \uD53C\uD574 \uD3EC\uD568)\uB97C
+    \uC800\uC7A5\uD558\uBA70, \uD134 \uC885\uB8CC \uC2DC \uC800\uC7A5\uB41C \uD53C\uD574\uC758
+    150%\uB97C \uCD94\uAC00 \uD53C\uD574\uB85C \uC785\uC2B5\uB2C8\uB2E4. \uD45C\uC2DD
+    \uAE30\uAC04 \uC911\uC5D0\uB294 \uB2E4\uC2DC \uACF5\uACA9\uBC1B\uC544\uB3C4 \uD45C\uC2DD\uC774
+    \uAC31\uC2E0\uB418\uC9C0 \uC54A\uC73C\uBA70, \uBC29\uCD9C\uB41C \uCD94\uAC00
+    \uD53C\uD574\uB294 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4."
+  element: 2
+  tier: 3
+  weight: 1
+  statModifiers:
+  - Stat: damage
+    Operation: add
+    Value: 25
+  effects:
+  - Id: damage_store
+    Value: 150

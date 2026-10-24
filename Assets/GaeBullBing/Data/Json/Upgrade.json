@@ -8,10 +8,17 @@
       "weight": 1,
       "description": "공격 대상의 타일과 양옆 1타일의 모든 적에게 폭발 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 10 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        }
       ],
       "effect_ids": [
-        { "id": "explode", "value": 1 }
+        {
+          "id": "explode",
+          "value": 1
+        }
       ]
     },
     {
@@ -22,8 +29,16 @@
       "weight": 1,
       "description": "공격 횟수가 3배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 10 },
-        { "stat": "attack_count", "operation": "Multiply", "value": 3 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        },
+        {
+          "stat": "attack_count",
+          "operation": "Multiply",
+          "value": 3
+        }
       ],
       "effect_ids": []
     },
@@ -35,8 +50,16 @@
       "weight": 1,
       "description": "피해량이 3배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 10 },
-        { "stat": "damage", "operation": "Multiply", "value": 3 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 3
+        }
       ],
       "effect_ids": []
     },
@@ -48,11 +71,22 @@
       "weight": 1,
       "description": "피해량이 1.5배 증가하며, 공격 대상의 타일 내 모든 적에게 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 10 },
-        { "stat": "damage", "operation": "Multiply", "value": 1.5 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 1.5
+        }
       ],
       "effect_ids": [
-        { "id": "aoe_tile", "value": 1 }
+        {
+          "id": "aoe_tile",
+          "value": 1
+        }
       ]
     },
     {
@@ -63,8 +97,16 @@
       "weight": 1,
       "description": "두 명의 대상을 추가로 공격합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 10 },
-        { "stat": "target_count", "operation": "add", "value": 2 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        },
+        {
+          "stat": "target_count",
+          "operation": "add",
+          "value": 2
+        }
       ],
       "effect_ids": []
     },
@@ -76,7 +118,11 @@
       "weight": 0,
       "description": "신규 효과 확정 전 비활성화된 선택지입니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": []
     },
@@ -88,10 +134,17 @@
       "weight": 1,
       "description": "피해를 입힌 타일에 1턴간 불을 붙입니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "tile_burn", "value": 1 }
+        {
+          "id": "tile_burn",
+          "value": 1
+        }
       ]
     },
     {
@@ -102,10 +155,17 @@
       "weight": 1,
       "description": "공격 이전 화상 중첩이 20 이상인 경우, 공격 후 폭발하며 해당 타일 및 양옆 1타일에 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "burn_explode", "value": 20 }
+        {
+          "id": "burn_explode",
+          "value": 20
+        }
       ]
     },
     {
@@ -116,10 +176,17 @@
       "weight": 1,
       "description": "공격 이전 화상 중첩당, 공격력의 10% 추가 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "burn_damage", "value": 0.1 }
+        {
+          "id": "burn_damage",
+          "value": 0.1
+        }
       ]
     },
     {
@@ -130,10 +197,17 @@
       "weight": 1,
       "description": "공격한 대상의 화상 수치를 두 배로 만듭니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "double_burn", "value": 1 }
+        {
+          "id": "double_burn",
+          "value": 1
+        }
       ]
     },
     {
@@ -144,8 +218,16 @@
       "weight": 1,
       "description": "공격 횟수가 3배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 },
-        { "stat": "attack_count", "operation": "Multiply", "value": 3 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        },
+        {
+          "stat": "attack_count",
+          "operation": "Multiply",
+          "value": 3
+        }
       ],
       "effect_ids": []
     },
@@ -157,8 +239,16 @@
       "weight": 1,
       "description": "피해량이 3배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 },
-        { "stat": "damage", "operation": "Multiply", "value": 3 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 3
+        }
       ],
       "effect_ids": []
     },
@@ -170,11 +260,22 @@
       "weight": 1,
       "description": "피해량이 1.5배 증가하며, 공격 대상의 타일 내 모든 적에게 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 },
-        { "stat": "damage", "operation": "Multiply", "value": 1.5 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 1.5
+        }
       ],
       "effect_ids": [
-        { "id": "aoe_tile", "value": 1 }
+        {
+          "id": "aoe_tile",
+          "value": 1
+        }
       ]
     },
     {
@@ -185,8 +286,16 @@
       "weight": 1,
       "description": "두 명의 대상을 추가로 공격합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 },
-        { "stat": "target_count", "operation": "add", "value": 2 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        },
+        {
+          "stat": "target_count",
+          "operation": "add",
+          "value": 2
+        }
       ],
       "effect_ids": []
     },
@@ -198,10 +307,17 @@
       "weight": 1,
       "description": "일반 공격을 사거리 내의 모든 적에 대한 범위 공격으로 전환합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
       ],
       "effect_ids": [
-        { "id": "range_attack", "value": 1 }
+        {
+          "id": "range_attack",
+          "value": 1
+        }
       ]
     },
     {
@@ -212,10 +328,17 @@
       "weight": 1,
       "description": "공격 대상을 1턴간 빙결시킵니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "freeze", "value": 1 }
+        {
+          "id": "freeze",
+          "value": 1
+        }
       ]
     },
     {
@@ -226,10 +349,17 @@
       "weight": 1,
       "description": "공격한 타일이 빙판 타일인 경우, 빙판을 제거하고 타일 내의 적에게 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "tile_break", "value": 1 }
+        {
+          "id": "tile_break",
+          "value": 1
+        }
       ]
     },
     {
@@ -240,10 +370,17 @@
       "weight": 1,
       "description": "빙결 상태의 적 공격 시 5배의 추가 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "freeze_damage_multiply", "value": 5 }
+        {
+          "id": "freeze_damage_multiply",
+          "value": 5
+        }
       ]
     },
     {
@@ -254,10 +391,17 @@
       "weight": 1,
       "description": "공격한 타일에 1턴간 빙판 타일을 생성합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "tile_freeze", "value": 5 }
+        {
+          "id": "tile_freeze",
+          "value": 5
+        }
       ]
     },
     {
@@ -268,10 +412,17 @@
       "weight": 1,
       "description": "반시계방향으로 돌이 굴러가며 점차 감소하는 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "rolling_stone", "value": 1 }
+        {
+          "id": "rolling_stone",
+          "value": 1
+        }
       ]
     },
     {
@@ -282,11 +433,22 @@
       "weight": 1,
       "description": "3턴당 한 번 공격하는 대신, 피해량이 9배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 },
-        { "stat": "damage", "operation": "Multiply", "value": 9 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 9
+        }
       ],
       "effect_ids": [
-        { "id": "cooldown", "value": 2 }
+        {
+          "id": "cooldown",
+          "value": 2
+        }
       ]
     },
     {
@@ -297,8 +459,16 @@
       "weight": 1,
       "description": "공격 횟수가 3배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 },
-        { "stat": "attack_count", "operation": "Multiply", "value": 3 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        },
+        {
+          "stat": "attack_count",
+          "operation": "Multiply",
+          "value": 3
+        }
       ],
       "effect_ids": []
     },
@@ -310,10 +480,17 @@
       "weight": 1,
       "description": "공격을 하지 않는 대신, 이 라인의 다른 모든 타워 피해량이 20% 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "line_tower_buff", "value": 20 }
+        {
+          "id": "line_tower_buff",
+          "value": 20
+        }
       ]
     },
     {
@@ -324,10 +501,17 @@
       "weight": 1,
       "description": "앞으로 이 타일을 밟을 때마다 이 라인의 모든 타워 피해량이 15% 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 20 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
       ],
       "effect_ids": [
-        { "id": "tile_step_line_buff", "value": 15 }
+        {
+          "id": "tile_step_line_buff",
+          "value": 15
+        }
       ]
     },
     {
@@ -338,11 +522,22 @@
       "weight": 1,
       "description": "사거리가 0이 되며, 이 타워를 지나가는 몬스터는 타워 공격력만큼의 피해를 입은 뒤 한 턴 정지합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 30 },
-        { "stat": "range", "operation": "set", "value": 0 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        },
+        {
+          "stat": "range",
+          "operation": "set",
+          "value": 0
+        }
       ],
       "effect_ids": [
-        { "id": "wall", "value": 1 }
+        {
+          "id": "wall",
+          "value": 1
+        }
       ]
     },
     {
@@ -353,8 +548,16 @@
       "weight": 1,
       "description": "피해량이 9배 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 30 },
-        { "stat": "damage", "operation": "Multiply", "value": 9 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 9
+        }
       ],
       "effect_ids": []
     },
@@ -366,10 +569,17 @@
       "weight": 1,
       "description": "피해를 받은 몬스터는 1타일 뒤로 넉백됩니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 30 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
       ],
       "effect_ids": [
-        { "id": "knockback", "value": 1 }
+        {
+          "id": "knockback",
+          "value": 1
+        }
       ]
     },
     {
@@ -380,10 +590,17 @@
       "weight": 1,
       "description": "공격한 타일에 장판이 있다면 지속시간을 갱신하고 양옆 타일로 확산합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
       ],
       "effect_ids": [
-        { "id": "field_spread", "value": 1 }
+        {
+          "id": "field_spread",
+          "value": 1
+        }
       ]
     },
     {
@@ -394,10 +611,17 @@
       "weight": 1,
       "description": "피해를 입힐 때마다, 그 라인에 있는 모든 타일에 피해를 입힙니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
       ],
       "effect_ids": [
-        { "id": "chain_line", "value": 3 }
+        {
+          "id": "chain_line",
+          "value": 3
+        }
       ]
     },
     {
@@ -408,10 +632,17 @@
       "weight": 1,
       "description": "가하는 피해가 앞번호 3타일까지 전이됩니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
       ],
       "effect_ids": [
-        { "id": "chain_tile", "value": 3 }
+        {
+          "id": "chain_tile",
+          "value": 3
+        }
       ]
     },
     {
@@ -422,10 +653,17 @@
       "weight": 1,
       "description": "공격한 타일의 효과 전이 범위가 1 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
       ],
       "effect_ids": [
-        { "id": "spread_range_add", "value": 1 }
+        {
+          "id": "spread_range_add",
+          "value": 1
+        }
       ]
     },
     {
@@ -436,8 +674,16 @@
       "weight": 1,
       "description": "피해량이 120 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 15 },
-        { "stat": "damage", "operation": "add", "value": 120 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        },
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 120
+        }
       ],
       "effect_ids": []
     },
@@ -449,10 +695,17 @@
       "weight": 1,
       "description": "공격한 타일에 설치된 타워의 공격 횟수가 1회 증가합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "tower_buff", "value": 1 }
+        {
+          "id": "tower_buff",
+          "value": 1
+        }
       ]
     },
     {
@@ -463,10 +716,17 @@
       "weight": 1,
       "description": "이 타워는 매 턴 무작위 다른 전기 타워가 있는 타일을 3번 공격합니다. (몬스터가 있는 타일 우선)",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "chain_lightning", "value": 3 }
+        {
+          "id": "chain_lightning",
+          "value": 3
+        }
       ]
     },
     {
@@ -477,10 +737,1141 @@
       "weight": 1,
       "description": "피해를 받은 적에게 감전 상태이상을 부여합니다.",
       "stat_modifiers": [
-        { "stat": "damage", "operation": "add", "value": 25 }
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
       ],
       "effect_ids": [
-        { "id": "shock", "value": 1 }
+        {
+          "id": "shock",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_05",
+      "name": "TOW_01_불_T3_05",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "화상 중첩이 있는 적을 처치하면, 그 중첩을 같은 타일 및 양옆 1타일의 적에게 옮깁니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "burn_inherit_on_kill",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_06",
+      "name": "TOW_01_불_T3_06",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격할 때마다 열풍을 일으켜 이 타워가 있는 라인의 모든 몬스터를 동시에 1타일 뒤로 밀쳐내고, 밀쳐진 몬스터에게 화상을 1중첩씩 추가로 부여합니다. 공격 횟수나 공격 대상 수가 늘어나면 열풍도 그만큼 추가로 발생합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "knockback_line",
+          "value": 1
+        },
+        {
+          "id": "knockback_line_burn",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_04",
+      "name": "TOW_02_얼음_T3_04",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격 대상에게 피해 저장 표식을 부여합니다. 표식이 있는 적은 표식을 부여한 공격의 피해를 포함해 이번 턴 동안 받은 모든 피해(모든 타워의 피해 및 지속 피해 포함)를 저장하며, 턴 종료 시 저장된 피해의 150%를 추가 피해로 입습니다. 표식 기간 중에는 다시 공격받아도 표식이 갱신되지 않으며, 방출된 추가 피해는 저장되지 않습니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "damage_store",
+          "value": 150
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_03",
+      "name": "TOW_03_물리_T3_03",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "플레이어가 이 타워를 밟으면, 다음 완주 시까지 플레이어가 이동할 때마다 출발 타일부터 도착 타일 직전 타일까지의 모든 몬스터에게 피해를 입힙니다. 피해량은 밟은 시점의 이 타워 공격력으로 고정되며, 효과는 중첩됩니다. 순간이동으로 이동한 경우에는 피해를 입히지 않습니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "path_damage",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_03",
+      "name": "TOW_04_전기_T3_03",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "피해를 입힌 타일에 타워가 있으면, 그 타워의 공격력을 다음 턴 종료 시까지 30% 증가시킵니다. 이 효과는 중첩되며, 체인 등 광역 피해를 입힌 타일에도 모두 적용됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "tile_tower_damage_buff",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_04",
+      "name": "TOW_03_물리_T3_04",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "피해를 입힌 몬스터를 그 몬스터가 있는 라인의 출발 타일(0·10·19·28번)로 순간이동시킵니다. 넉백 면역인 몬스터에게도 적용되며, 도착한 타일의 타일 효과가 발동합니다. 이 효과는 몬스터마다 1번만 적용되며, 이미 출발 타일에 있는 몬스터에게는 적용되지 않고 횟수도 소모하지 않습니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "teleport_line_start",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_07",
+      "name": "TOW_01_불_T3_07",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워는 어떤 방식으로도 화상을 부여하지 않는 대신, 기본 피해량이 180 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        },
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 180
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "disable_burn",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_04",
+      "name": "TOW_04_전기_T3_04",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "피해를 입힌 몬스터가 보유한 상태이상(화상·동상·감전·빙결) 1종류당 이 타워 공격력의 10%만큼 추가 피해를 입힙니다. 상태이상 수는 피격 직전에 판정하며, 체인이나 상태이상 전이로 피해를 입힌 몬스터에게도 적용됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "status_count_damage",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_08",
+      "name": "TOW_01_불_T3_08",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "보드 위에서 이 업그레이드를 보유한 타워 1개당(이 타워 포함, 속성 무관) 이 타워의 기본 공격력이 30 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "upgrade_count_damage",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_05",
+      "name": "TOW_02_얼음_T3_05",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "보드 위에서 이 업그레이드를 보유한 타워 1개당(이 타워 포함, 속성 무관) 이 타워의 기본 공격력이 30 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "upgrade_count_damage",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_05",
+      "name": "TOW_03_물리_T3_05",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "보드 위에서 이 업그레이드를 보유한 타워 1개당(이 타워 포함, 속성 무관) 이 타워의 기본 공격력이 30 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "upgrade_count_damage",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_05",
+      "name": "TOW_04_전기_T3_05",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "보드 위에서 이 업그레이드를 보유한 타워 1개당(이 타워 포함, 속성 무관) 이 타워의 기본 공격력이 30 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "upgrade_count_damage",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_09",
+      "name": "TOW_01_불_T3_09",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "화상이 10중첩 이상인 적을 공격하면, 화상을 모두 소모하고 소모한 중첩 1당 이 타워 공격력의 30%만큼 추가 피해를 입힙니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "burn_consume_burst",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_10",
+      "name": "TOW_01_불_T3_10",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "불 타일 위에 있는 적을 공격하면 피해가 50% 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "fire_tile_damage_bonus",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_11",
+      "name": "TOW_01_불_T3_11",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "같은 적을 연속으로 공격할 때마다 그 적에게 입히는 피해가 20%씩 증가합니다(최대 100%). 다른 적을 공격하면 초기화됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "consecutive_target_damage",
+          "value": 20
+        },
+        {
+          "id": "consecutive_target_damage_cap",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_12",
+      "name": "TOW_01_불_T3_12",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워가 부여한 화상으로 적이 피해를 입으면, 같은 타일에 있는 다른 모든 적도 같은 양의 피해를 입습니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "burn_tick_splash",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_13",
+      "name": "TOW_01_불_T3_13",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워가 공격한 적의 화상 최대 중첩이 20에서 40으로 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "burn_max_stack_add",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_14",
+      "name": "TOW_01_불_T3_14",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "화상 중첩이 있는 적을 처치하면, 처치한 타일과 양옆 1타일에 1턴간 불 타일을 생성합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "burn_kill_fire_tile",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_15",
+      "name": "TOW_01_불_T3_15",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격 횟수가 2회 증가하는 대신, 2턴 공격한 뒤 1턴은 공격하지 않습니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        },
+        {
+          "stat": "attack_count",
+          "operation": "add",
+          "value": 2
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "overheat_cycle",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T3_16",
+      "name": "TOW_01_불_T3_16",
+      "element": "Fire",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워가 있는 라인에 생성되는 불 타일의 지속 시간이 1턴 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "line_fire_tile_duration_add",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T2_05",
+      "name": "TOW_01_불_T2_05",
+      "element": "Fire",
+      "tier": 2,
+      "weight": 1,
+      "description": "공격할 때 화상을 1중첩 추가로 부여합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "burn",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_FIRE_T2_06",
+      "name": "TOW_01_불_T2_06",
+      "element": "Fire",
+      "tier": 2,
+      "weight": 1,
+      "description": "공격 대상과 같은 타일에 있는 다른 모든 적에게 화상을 1중첩 부여합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 10
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "tile_burn_spread",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_06",
+      "name": "TOW_02_얼음_T3_06",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워의 공격으로 동상이 터질 때 입히는 피해가 공격력의 300%에서 500%로 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "frostbite_burst_multiplier",
+          "value": 500
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_07",
+      "name": "TOW_02_얼음_T3_07",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "동상이 터질 때, 같은 타일에 있는 다른 모든 적에게 동상을 1중첩 부여합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "frostbite_burst_spread",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_08",
+      "name": "TOW_02_얼음_T3_08",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "동상이 터진 뒤 동상이 0이 아닌 1중첩으로 남습니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "frostbite_residual",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_09",
+      "name": "TOW_02_얼음_T3_09",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격 대상을 2턴간 빙결시킵니다. 대신 이 타워의 공격 횟수는 1회로 고정됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        },
+        {
+          "stat": "attack_count",
+          "operation": "set",
+          "value": 1
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "freeze",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_10",
+      "name": "TOW_02_얼음_T3_10",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "빙결 상태인 적을 처치하면, 같은 타일과 양옆 1타일의 모든 적에게 처치한 적 최대 체력의 10%만큼 피해를 입힙니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "shatter_on_kill",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_11",
+      "name": "TOW_02_얼음_T3_11",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워 사거리 안의 빙판 타일 위에 있는 적은 받는 모든 피해가 30% 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "ice_tile_vulnerability",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_12",
+      "name": "TOW_02_얼음_T3_12",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격받은 적은 다음 이동 시 이동 거리가 1 감소합니다(최소 1).",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "move_reduce",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T3_13",
+      "name": "TOW_02_얼음_T3_13",
+      "element": "Ice",
+      "tier": 3,
+      "weight": 1,
+      "description": "3턴마다 이 타워가 있는 라인의 모든 적에게 동상을 1중첩 부여하고 이 타워 공격력의 100%만큼 피해를 입힙니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "blizzard_line",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T2_05",
+      "name": "TOW_02_얼음_T2_05",
+      "element": "Ice",
+      "tier": 2,
+      "weight": 1,
+      "description": "공격할 때 동상을 1중첩 추가로 부여합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "frostbite",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ICE_T2_06",
+      "name": "TOW_02_얼음_T2_06",
+      "element": "Ice",
+      "tier": 2,
+      "weight": 1,
+      "description": "동상 중첩이 있는 적을 공격하면 피해가 50% 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "frostbite_damage_bonus",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_06",
+      "name": "TOW_03_물리_T3_06",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "남은 체력이 20% 이하인 적을 공격하면 즉시 처치합니다. 보스에게는 대신 피해가 2배가 됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "execute_threshold",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_07",
+      "name": "TOW_03_물리_T3_07",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격이 대상 바로 뒤 1타일에 있는 모든 적에게도 같은 피해를 입힙니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "pierce",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_08",
+      "name": "TOW_03_물리_T3_08",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "플레이어가 이 타워를 밟으면, 이 타워가 있는 라인의 모든 적이 1턴간 이동하지 못합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "quake_line_stun",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_09",
+      "name": "TOW_03_물리_T3_09",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "피격된 적을 2타일 뒤로 넉백시키는 대신, 피해량이 30% 감소합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        },
+        {
+          "stat": "damage",
+          "operation": "Multiply",
+          "value": 0.7
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "knockback",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_10",
+      "name": "TOW_03_물리_T3_10",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "적이 넉백되면, 밀려난 타일에 있는 다른 모든 적에게 이 타워 공격력의 50%만큼 피해를 입힙니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "knockback_impact",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_11",
+      "name": "TOW_03_물리_T3_11",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "한 턴에 공격할 때마다 이번 턴 다음 공격의 피해가 15%씩 증가합니다. 턴이 끝나면 초기화됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "attack_ramp_turn",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_12",
+      "name": "TOW_03_물리_T3_12",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "구르는 돌에 맞은 적을 1턴간 이동하지 못하게 합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "rolling_stone_stun",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T3_13",
+      "name": "TOW_03_물리_T3_13",
+      "element": "Physics",
+      "tier": 3,
+      "weight": 1,
+      "description": "플레이어가 완주할 때마다 이 타워의 기본 공격력이 영구히 15 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 30
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "lap_damage_stack",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T2_05",
+      "name": "TOW_03_물리_T2_05",
+      "element": "Physics",
+      "tier": 2,
+      "weight": 1,
+      "description": "남은 체력이 50% 이하인 적을 공격하면 피해가 50% 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "low_hp_damage_bonus",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "UPG_PHYSICS_T2_06",
+      "name": "TOW_03_물리_T2_06",
+      "element": "Physics",
+      "tier": 2,
+      "weight": 1,
+      "description": "플레이어가 이 타워를 밟으면, 이 타워의 이번 턴 공격 피해가 2배가 됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 20
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "step_damage_double",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_06",
+      "name": "TOW_04_전기_T3_06",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "공격 대상에게 강화 감전을 부여합니다. 강화 감전은 받는 피해를 30%가 아닌 60% 증가시킵니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "shock_amplify",
+          "value": 60
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_07",
+      "name": "TOW_04_전기_T3_07",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "이 타워가 감전된 적에게 피해를 입히면, 같은 라인의 다른 감전된 적 1명에게 그 피해의 30%를 전달합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "shock_link",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_08",
+      "name": "TOW_04_전기_T3_08",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "턴 시작 시 이 타워 사거리 안의 모든 적에게 감전을 부여합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "shock_aura",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_09",
+      "name": "TOW_04_전기_T3_09",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "같은 라인에 있는 전기 타워 1개당(이 타워 포함) 이 타워의 공격력이 15% 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "line_element_count_damage",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_10",
+      "name": "TOW_04_전기_T3_10",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "3턴마다 보드에서 남은 체력이 가장 높은 적에게 이 타워 공격력의 300%만큼 피해를 입히고 감전을 부여합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "lightning_strike",
+          "value": 300
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_11",
+      "name": "TOW_04_전기_T3_11",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "상태이상을 전이할 때, 전이받은 모든 적에게 이 타워 공격력의 50%만큼 피해를 입힙니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "transfer_damage",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_12",
+      "name": "TOW_04_전기_T3_12",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "플레이어가 이동 중 이 타워를 지나가거나 밟으면, 이 타워의 이번 턴 공격 횟수가 1 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "pass_attack_count",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T3_13",
+      "name": "TOW_04_전기_T3_13",
+      "element": "Electric",
+      "tier": 3,
+      "weight": 1,
+      "description": "사거리 안에 적이 없어 공격하지 못한 턴마다 충전을 1 얻습니다(최대 3). 다음 공격 시 충전 1당 피해가 100% 증가하고 충전이 모두 소모됩니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 25
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "charge_damage",
+          "value": 100
+        },
+        {
+          "id": "charge_cap",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T2_05",
+      "name": "TOW_04_전기_T2_05",
+      "element": "Electric",
+      "tier": 2,
+      "weight": 1,
+      "description": "감전된 적을 공격하면 피해가 30% 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "shock_damage_bonus",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "UPG_ELECTRIC_T2_06",
+      "name": "TOW_04_전기_T2_06",
+      "element": "Electric",
+      "tier": 2,
+      "weight": 1,
+      "description": "상태이상을 전이할 때 전이되는 중첩이 1 증가합니다.",
+      "stat_modifiers": [
+        {
+          "stat": "damage",
+          "operation": "add",
+          "value": 15
+        }
+      ],
+      "effect_ids": [
+        {
+          "id": "transfer_stack_add",
+          "value": 1
+        }
       ]
     }
   ]

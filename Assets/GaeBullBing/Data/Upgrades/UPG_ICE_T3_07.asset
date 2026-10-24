@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
+  m_Name: UPG_ICE_T3_07
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
+  id: UPG_ICE_T3_07
+  displayName: "TOW_02_\uC5BC\uC74C_T3_07"
+  description: "\uB3D9\uC0C1\uC774 \uD130\uC9C8 \uB54C, \uAC19\uC740 \uD0C0\uC77C\uC5D0
+    \uC788\uB294 \uB2E4\uB978 \uBAA8\uB4E0 \uC801\uC5D0\uAC8C \uB3D9\uC0C1\uC744
+    1\uC911\uCCA9 \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+  element: 2
+  tier: 3
+  weight: 1
+  statModifiers:
+  - Stat: damage
+    Operation: add
+    Value: 25
+  effects:
+  - Id: frostbite_burst_spread
+    Value: 1

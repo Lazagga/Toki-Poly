@@ -21,6 +21,7 @@ namespace GaeBullBing.Core.Board
         public TowerState Tower { get; set; }
         public int IceTurnsRemaining { get; set; }
         public int FireTurnsRemaining { get; set; }
+        public int FireSourceTowerId { get; set; }
         public bool HasBossFeather { get; set; }
         public bool IsBonusTile { get; set; }
 

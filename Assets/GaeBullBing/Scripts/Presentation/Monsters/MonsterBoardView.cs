@@ -425,6 +425,17 @@ public void UpdateStatus(MonsterState state)
             shadowGroundPosition = GetShadowPosition(CurrentTileIndex);
         }
 
+        public void TeleportToTile(int tileIndex)
+        {
+            var previous = CurrentTileIndex;
+            CurrentTileIndex = tileIndex;
+            transform.position = GetStandingPosition(tileIndex);
+            shadowGroundPosition = GetShadowPosition(tileIndex);
+            CameraFollowPosition = GetCameraTilePosition(tileIndex);
+            ApplyDirectionForDeparture(tileIndex);
+            TileChanged?.Invoke(previous, tileIndex);
+        }
+
         public IEnumerator PlayKnockback(int fromTileIndex, int toTileIndex)
         {
             if (fromTileIndex == toTileIndex) yield break;

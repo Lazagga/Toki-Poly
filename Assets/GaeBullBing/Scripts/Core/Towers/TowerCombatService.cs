@@ -69,7 +69,9 @@ namespace GaeBullBing.Core.Towers
             int targetTileIndex = -1, TowerAttackVisualKind visualKind = TowerAttackVisualKind.None,
             IReadOnlyList<TileEffectVisualChange> tileEffectVisualChanges = null,
             int preAttackBurnStacks = 0, int preAttackFrostbiteStacks = 0,
-            bool preAttackFrozen = false)
+            bool preAttackFrozen = false, bool preAttackShocked = false,
+            float preAttackHealthRatio = 1f, bool preAttackFireTile = false,
+            bool teleportApplied = false)
         {
             TowerInstanceId = towerInstanceId;
             TargetInstanceId = targetInstanceId;
@@ -84,6 +86,10 @@ namespace GaeBullBing.Core.Towers
             PreAttackBurnStacks = preAttackBurnStacks;
             PreAttackFrostbiteStacks = preAttackFrostbiteStacks;
             PreAttackFrozen = preAttackFrozen;
+            PreAttackShocked = preAttackShocked;
+            PreAttackHealthRatio = preAttackHealthRatio;
+            PreAttackFireTile = preAttackFireTile;
+            TeleportApplied = teleportApplied;
         }
 
         public int TowerInstanceId { get; }
@@ -99,15 +105,26 @@ namespace GaeBullBing.Core.Towers
         public int PreAttackBurnStacks { get; }
         public int PreAttackFrostbiteStacks { get; }
         public bool PreAttackFrozen { get; }
+        public bool PreAttackShocked { get; }
+        public float PreAttackHealthRatio { get; }
+        public bool PreAttackFireTile { get; }
+        public bool TeleportApplied { get; }
+        public TowerAttackResult WithTeleport(int fromTile, int toTile) =>
+            new(TowerInstanceId, TargetInstanceId, Damage, Killed, true, fromTile, toTile,
+                TargetTileIndex, VisualKind, TileEffectVisualChanges,
+                PreAttackBurnStacks, PreAttackFrostbiteStacks, PreAttackFrozen,
+                PreAttackShocked, PreAttackHealthRatio, PreAttackFireTile, true);
         public TowerAttackResult WithKnockback(int fromTile, int toTile) =>
             new(TowerInstanceId, TargetInstanceId, Damage, Killed, true, fromTile, toTile,
                 TargetTileIndex, VisualKind, TileEffectVisualChanges,
-                PreAttackBurnStacks, PreAttackFrostbiteStacks, PreAttackFrozen);
+                PreAttackBurnStacks, PreAttackFrostbiteStacks, PreAttackFrozen,
+                PreAttackShocked, PreAttackHealthRatio, PreAttackFireTile, TeleportApplied);
         public TowerAttackResult WithTileEffectVisualChanges(
             IReadOnlyList<TileEffectVisualChange> changes) =>
             new(TowerInstanceId, TargetInstanceId, Damage, Killed, KnockbackApplied,
                 KnockbackFromTile, KnockbackToTile, TargetTileIndex, VisualKind, changes,
-                PreAttackBurnStacks, PreAttackFrostbiteStacks, PreAttackFrozen);
+                PreAttackBurnStacks, PreAttackFrostbiteStacks, PreAttackFrozen,
+                PreAttackShocked, PreAttackHealthRatio, PreAttackFireTile, TeleportApplied);
     }
 
     public sealed class TowerCombatService
@@ -141,7 +158,9 @@ namespace GaeBullBing.Core.Towers
             GameState state,
             IReadOnlyDictionary<int, TowerCombatStats> statsByTowerInstanceId,
             Func<IReadOnlyList<TowerAttackResult>, IReadOnlyList<TowerAttackResult>> effectResolver = null,
-            int preferredTargetInstanceId = 0)
+            int preferredTargetInstanceId = 0,
+            bool bypassRestrictions = false,
+            bool attackCountIncludesBonuses = false)
         {
             var results = new List<TowerAttackResult>();
             ActivatePendingAttackBonuses(state);
@@ -152,11 +171,45 @@ namespace GaeBullBing.Core.Towers
                     !statsByTowerInstanceId.TryGetValue(tile.Tower.InstanceId, out var stats))
                     continue;
                 var tower = tile.Tower; var upgrades = tower.AppliedUpgradeIds;
+                tower.LastResolvedDamage = stats.Damage;
+                tower.LastResolvedRange = stats.Range;
+                tower.LastResolvedTargetCount = stats.TargetCount;
+                tower.AttacksThisTurn = 0;
+                tower.ActiveChargeBonus = 0f;
                 var cooldownBlocked = tower.AttackCooldownRounds > 0;
-                if (cooldownBlocked) tower.AttackCooldownRounds--;
-                if (tower.IsFeatherSealed || cooldownBlocked) continue;
+                if (cooldownBlocked && !bypassRestrictions) tower.AttackCooldownRounds--;
+                if (!bypassRestrictions && (tower.IsFeatherSealed || cooldownBlocked))
+                {
+                    state.CombatTrace?.Add(tower.IsFeatherSealed ? "No ordinary attack: feather sealed" : "No ordinary attack: cooldown", tower.InstanceId);
+                    continue;
+                }
+                if (!bypassRestrictions && tower.HasEffect("overheat_cycle") && tower.OverheatAttackTurns >=
+                    Math.Max(1, (int)Math.Round(tower.GetEffectValue("overheat_cycle"))))
+                {
+                    tower.OverheatAttackTurns = 0;
+                    state.CombatTrace?.Add("No ordinary attack: overheat rest phase", tower.InstanceId);
+                    continue;
+                }
+                var hasTargetInRange = state.Monsters.Exists(m => !m.IsDead &&
+                    GetBoardDistance(tile.Index, m.CurrentTileIndex) <= stats.Range);
+                if (HasEffect(tower, TowerEffectCatalog.ChainLine))
+                    hasTargetInRange = state.Monsters.Exists(m => !m.IsDead &&
+                        MonsterService.GetLine(tile.Index) == MonsterService.GetLine(m.CurrentTileIndex));
+                if (tower.HasEffect("charge_damage") && !hasTargetInRange)
+                {
+                    tower.ChargeCount = Math.Min((int)Math.Round(tower.GetEffectValue("charge_cap", 3f)),
+                        tower.ChargeCount + 1);
+                    state.CombatTrace?.Add($"No target in range: charge -> {tower.ChargeCount}", tower.InstanceId);
+                }
+                if (!hasTargetInRange && !HasEffect(tower, TowerEffectCatalog.RollingStone) &&
+                    !HasEffect(tower, TowerEffectCatalog.ChainLine) && !HasEffect(tower, TowerEffectCatalog.ChainLightning))
+                {
+                    state.CombatTrace?.Add("No ordinary attack: no living target in range", tower.InstanceId);
+                    continue;
+                }
                 if (HasEffect(tower, TowerEffectCatalog.RollingStone) && !tower.StoneActive)
                 {
+                    TowerUpgradeRules.BeginVolley(tower);
                     tower.StoneActive = true;
                     tower.StoneTileIndex = tile.Index;
                     tower.StoneDamageMultiplier = 1f;
@@ -168,12 +221,20 @@ namespace GaeBullBing.Core.Towers
                 }
                 if (HasEffect(tower, TowerEffectCatalog.Wall) ||
                     HasEffect(tower, TowerEffectCatalog.LineTowerBuff))
+                {
+                    state.CombatTrace?.Add("No ordinary attack: passive wall / line-buff tower", tower.InstanceId);
                     continue;
+                }
+                var volleyCount = Math.Max(1, stats.AttackCount +
+                    (attackCountIncludesBonuses || tower.AttackCountLocked ? 0 : tower.BonusAttackCount));
+                state.CombatTrace?.Add($"Ordinary attack volleys {volleyCount}; targeting " +
+                    (preferredTargetInstanceId > 0 ? $"preferred #{preferredTargetInstanceId} (if eligible)" : "automatic: boss > distance > HP"), tower.InstanceId);
                 if (HasEffect(tower, TowerEffectCatalog.ChainLine))
                 {
                     var attacked = false;
-                    for (var attack = 0; attack < Math.Max(1, stats.AttackCount + tower.BonusAttackCount); attack++)
+                    for (var attack = 0; attack < volleyCount; attack++)
                     {
+                        TowerUpgradeRules.BeginVolley(tower);
                         var batch = new List<TowerAttackResult>();
                         ResolveLineAttack(state, tile, stats.Damage, batch);
                         if (batch.Count == 0) continue;
@@ -189,6 +250,7 @@ namespace GaeBullBing.Core.Towers
                 }
                 if (HasEffect(tower, TowerEffectCatalog.ChainLightning))
                 {
+                    TowerUpgradeRules.BeginVolley(tower);
                     var batch = new List<TowerAttackResult>();
                     ResolveRandomElectric(state, tile, stats.Damage,
                         Math.Max(1, (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.ChainLightning, 3f))), batch);
@@ -201,8 +263,9 @@ namespace GaeBullBing.Core.Towers
                     continue;
                 }
                 var attackedNormally = false;
-                for (var attack = 0; attack < Math.Max(1, stats.AttackCount+tower.BonusAttackCount); attack++)
+                for (var attack = 0; attack < volleyCount; attack++)
                 {
+                    TowerUpgradeRules.BeginVolley(tower);
                     var batch = new List<TowerAttackResult>();
                     if (HasEffect(tower, TowerEffectCatalog.Explode))
                         ResolveExplodeAttack(state, tile, stats, batch, preferredTargetInstanceId);
@@ -236,6 +299,7 @@ namespace GaeBullBing.Core.Towers
 
         private static void FinishTowerAttack(TowerState tower)
         {
+            if (tower.HasEffect("overheat_cycle")) tower.OverheatAttackTurns++;
             if (HasEffect(tower, TowerEffectCatalog.Cooldown))
                 tower.AttackCooldownRounds = Math.Max(1,
                     (int)Math.Round(tower.GetEffectValue(TowerEffectCatalog.Cooldown, 2f)));
@@ -301,14 +365,9 @@ namespace GaeBullBing.Core.Towers
         private static void Damage(GameState state,MonsterState monster,float damage,int tower,ICollection<TowerAttackResult> results,
             TowerAttackVisualKind visualKind = TowerAttackVisualKind.None)
         {
-            var burn = monster.BurnStacks;
-            var frostbite = monster.FrostbiteStacks;
-            var frozen = monster.FrozenMovesRemaining > 0;
-            var actual=monster.ReceiveDamage(damage,state.Difficulty);
-            results.Add(new TowerAttackResult(tower,monster.InstanceId,actual,monster.IsDead,
-                targetTileIndex:monster.CurrentTileIndex,visualKind:visualKind,
-                preAttackBurnStacks:burn,preAttackFrostbiteStacks:frostbite,
-                preAttackFrozen:frozen));
+            var source = TowerUpgradeRules.FindTower(state, tower)?.Tower;
+            if (source == null || monster.IsDead) return;
+            results.Add(TowerUpgradeRules.PrimaryHit(state, source, monster, damage, visualKind));
         }
 
         private static void ResolveTowerAttack(
@@ -334,16 +393,8 @@ namespace GaeBullBing.Core.Towers
             for (var index = 0; index < selectedCount; index++)
             {
                 var target = candidates[index];
-                var burn = target.BurnStacks;
-                var frostbite = target.FrostbiteStacks;
-                var frozen = target.FrozenMovesRemaining > 0;
-                var actualDamage = target.ReceiveDamage(stats.Damage, state.Difficulty);
-                var killed = target.IsDead;
-                results.Add(new TowerAttackResult(tower.InstanceId, target.InstanceId, actualDamage, killed,
-                    targetTileIndex: target.CurrentTileIndex, visualKind: TowerAttackVisualKind.Projectile,
-                    preAttackBurnStacks: burn, preAttackFrostbiteStacks: frostbite,
-                    preAttackFrozen: frozen));
-                if (!killed)
+                Damage(state, target, stats.Damage, tower.InstanceId, results, TowerAttackVisualKind.Projectile);
+                if (!target.IsDead)
                     tower.TargetInstanceIds.Add(target.InstanceId);
             }
 
@@ -376,15 +427,8 @@ namespace GaeBullBing.Core.Towers
             foreach (var monster in new List<MonsterState>(state.Monsters))
             {
                 if (monster.IsDead || !selectedTiles.Contains(monster.CurrentTileIndex)) continue;
-                var burn = monster.BurnStacks;
-                var frostbite = monster.FrostbiteStacks;
-                var frozen = monster.FrozenMovesRemaining > 0;
-                var actualDamage = monster.ReceiveDamage(stats.Damage, state.Difficulty);
-                results.Add(new TowerAttackResult(tower.InstanceId, monster.InstanceId, actualDamage,
-                    monster.IsDead, targetTileIndex: monster.CurrentTileIndex,
-                    preAttackBurnStacks: burn, preAttackFrostbiteStacks: frostbite,
-                    preAttackFrozen: frozen));
-                if (!monster.IsDead) tower.TargetInstanceIds.Add(monster.InstanceId);
+                Damage(state, monster, stats.Damage, tile.Tower.InstanceId, results);
+                if (!monster.IsDead) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
             }
         }
 
@@ -416,14 +460,7 @@ namespace GaeBullBing.Core.Towers
             foreach (var monster in new List<MonsterState>(state.Monsters))
             {
                 if (monster.IsDead || !attackedTiles.Contains(monster.CurrentTileIndex)) continue;
-                var burn = monster.BurnStacks;
-                var frostbite = monster.FrostbiteStacks;
-                var frozen = monster.FrozenMovesRemaining > 0;
-                var actualDamage = monster.ReceiveDamage(stats.Damage, state.Difficulty);
-                results.Add(new TowerAttackResult(tile.Tower.InstanceId, monster.InstanceId, actualDamage,
-                    monster.IsDead, targetTileIndex: monster.CurrentTileIndex,
-                    preAttackBurnStacks: burn, preAttackFrostbiteStacks: frostbite,
-                    preAttackFrozen: frozen));
+                Damage(state, monster, stats.Damage, tile.Tower.InstanceId, results);
                 if (!monster.IsDead) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
             }
         }
@@ -447,14 +484,7 @@ namespace GaeBullBing.Core.Towers
             tile.Tower.TargetInstanceIds.Clear();
             foreach (var monster in targets)
             {
-                var burn = monster.BurnStacks;
-                var frostbite = monster.FrostbiteStacks;
-                var frozen = monster.FrozenMovesRemaining > 0;
-                var actualDamage = monster.ReceiveDamage(stats.Damage, state.Difficulty);
-                results.Add(new TowerAttackResult(tile.Tower.InstanceId, monster.InstanceId, actualDamage,
-                    monster.IsDead, targetTileIndex: monster.CurrentTileIndex,
-                    preAttackBurnStacks: burn, preAttackFrostbiteStacks: frostbite,
-                    preAttackFrozen: frozen));
+                Damage(state, monster, stats.Damage, tile.Tower.InstanceId, results);
                 if (!monster.IsDead) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
             }
         }

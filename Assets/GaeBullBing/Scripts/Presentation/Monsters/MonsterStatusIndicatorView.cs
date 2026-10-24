@@ -20,6 +20,7 @@ namespace GaeBullBing.Presentation.Monsters
         private Icon freeze;
         private Icon knockback;
         private Icon shock;
+        private Icon damageStore;
         private Transform iconRoot;
         private Sprite squareSprite;
         private bool visible = true;
@@ -36,6 +37,7 @@ namespace GaeBullBing.Presentation.Monsters
             freeze = CreateIcon("Freeze", new Color(.12f, .46f, .95f, 1f), false);
             knockback = CreateIcon("Knockback Immunity", new Color(.18f, .72f, .28f, 1f), false);
             shock = CreateIcon("Shock", new Color(.64f, .20f, .86f, 1f), false);
+            damageStore = CreateIcon("Damage Store", new Color(1f, .72f, .16f, 1f), true);
         }
 
         public void Refresh(MonsterState state)
@@ -65,6 +67,12 @@ namespace GaeBullBing.Presentation.Monsters
             knockback.Slash.gameObject.SetActive(knockback.Root.activeSelf);
 
             SetIconActive(shock, state.Shocked);
+            SetIconActive(damageStore, state.DamageStoreMarked);
+            if (damageStore.Count != null)
+            {
+                damageStore.Count.text = Mathf.FloorToInt(state.StoredDamage).ToString();
+                damageStore.Count.gameObject.SetActive(state.DamageStoreMarked);
+            }
             LayoutActiveIcons();
         }
 

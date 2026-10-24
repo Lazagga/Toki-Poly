@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
+  m_Name: UPG_PHYSICS_T3_04
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
+  id: UPG_PHYSICS_T3_04
+  displayName: "TOW_03_\uBB3C\uB9AC_T3_04"
+  description: "\uD53C\uD574\uB97C \uC785\uD78C \uBAAC\uC2A4\uD130\uB97C \uADF8 \uBAAC\uC2A4\uD130\uAC00
+    \uC788\uB294 \uB77C\uC778\uC758 \uCD9C\uBC1C \uD0C0\uC77C(0\xB710\xB719\xB728\uBC88)\uB85C
+    \uC21C\uAC04\uC774\uB3D9\uC2DC\uD0B5\uB2C8\uB2E4. \uB109\uBC31 \uBA74\uC5ED\uC778
+    \uBAAC\uC2A4\uD130\uC5D0\uAC8C\uB3C4 \uC801\uC6A9\uB418\uBA70, \uB3C4\uCC29\uD55C
+    \uD0C0\uC77C\uC758 \uD0C0\uC77C \uD6A8\uACFC\uAC00 \uBC1C\uB3D9\uD569\uB2C8\uB2E4.
+    \uC774 \uD6A8\uACFC\uB294 \uBAAC\uC2A4\uD130\uB9C8\uB2E4 1\uBC88\uB9CC \uC801\uC6A9\uB418\uBA70,
+    \uC774\uBBF8 \uCD9C\uBC1C \uD0C0\uC77C\uC5D0 \uC788\uB294 \uBAAC\uC2A4\uD130\uC5D0\uAC8C\uB294
+    \uC801\uC6A9\uB418\uC9C0 \uC54A\uACE0 \uD69F\uC218\uB3C4 \uC18C\uBAA8\uD558\uC9C0
+    \uC54A\uC2B5\uB2C8\uB2E4."
+  element: 3
+  tier: 3
+  weight: 1
+  statModifiers:
+  - Stat: damage
+    Operation: add
+    Value: 30
+  effects:
+  - Id: teleport_line_start
+    Value: 1

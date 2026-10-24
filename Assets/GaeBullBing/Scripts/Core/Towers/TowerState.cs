@@ -14,7 +14,10 @@ namespace GaeBullBing.Core.Towers
         public int InstanceId { get; set; }
         public string DefinitionId { get; set; } = string.Empty;
         public int UpgradeTier { get; set; } = 1;
-        public bool BonusTier3UpgradeClaimed { get; set; }
+        // Bonus tiles and equipped-dice passives can independently grant an
+        // additional tier-3 choice. Track consumed grants as a count so those
+        // sources can stack instead of incorrectly sharing a single flag.
+        public int AdditionalTier3UpgradesClaimed { get; set; }
         public List<string> AppliedUpgradeIds { get; } = new();
         public List<string> AppliedEffectIds { get; } = new();
         public Dictionary<string, float> EffectValues { get; } = new();
@@ -36,11 +39,32 @@ namespace GaeBullBing.Core.Towers
         public float PersonalDamageRateBonus { get; set; }
         public int PersonalDamageFlatBonus { get; set; }
         public int PermanentBonusAttackCount { get; set; }
+        public TowerElement Element { get; set; }
+        public int LastResolvedRange { get; set; }
+        public int LastResolvedTargetCount { get; set; } = 1;
+        public bool AttackCountLocked { get; set; }
+        public int LastAttackTargetId { get; set; }
+        public float ConsecutiveDamageBonus { get; set; }
+        public int AttacksThisTurn { get; set; }
+        public int OverheatAttackTurns { get; set; }
+        public int PeriodicTurnCount { get; set; }
+        public int ChargeCount { get; set; }
+        public float ActiveChargeBonus { get; set; }
+        public int StepDamageRound { get; set; } = -1;
+        public int PassAttackRound { get; set; } = -1;
+        public int LapGrowthDamage { get; set; }
+        public List<TimedTowerDamageBuff> TemporaryDamageBuffs { get; } = new();
 
         public bool HasEffect(string effectId) =>
             !string.IsNullOrWhiteSpace(effectId) && AppliedEffectIds.Contains(effectId);
 
         public float GetEffectValue(string effectId, float fallback = 0f) =>
             EffectValues.TryGetValue(effectId, out var value) ? value : fallback;
+    }
+
+    public sealed class TimedTowerDamageBuff
+    {
+        public float Rate { get; set; }
+        public int ExpiresAfterRound { get; set; }
     }
 }

@@ -322,10 +322,10 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
-        public void MonsterState_BurnStacksAreClampedBetweenZeroAndTen()
+        public void MonsterState_BurnStacksAreClampedBetweenZeroAndTwenty()
         {
             var monster = new GaeBullBing.Core.Monsters.MonsterState { BurnStacks = 25 };
-            Assert.That(monster.BurnStacks, Is.EqualTo(10));
+            Assert.That(monster.BurnStacks, Is.EqualTo(20));
 
             monster.BurnStacks = -3;
             Assert.That(monster.BurnStacks, Is.EqualTo(0));
@@ -480,7 +480,7 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
-        public void TowerService_BonusTileAcceptsOneAdditionalTier3Upgrade()
+        public void TowerService_TracksStackedAdditionalTier3Upgrades()
         {
             var tile = new TileState
             {
@@ -493,18 +493,17 @@ namespace GaeBullBing.Tests.EditMode
             service.Upgrade(tile, "UPG_T2", 2);
             service.Upgrade(tile, "UPG_T3_FIRST", 3);
 
-            service.ApplyBonusTier3Upgrade(tile, "UPG_T3_SECOND", 3);
+            service.ApplyAdditionalTier3Upgrade(tile, "UPG_T3_SECOND", 3);
+            service.ApplyAdditionalTier3Upgrade(tile, "UPG_T3_THIRD", 3);
 
             Assert.That(tower.UpgradeTier, Is.EqualTo(3));
-            Assert.That(tower.BonusTier3UpgradeClaimed, Is.True);
+            Assert.That(tower.AdditionalTier3UpgradesClaimed, Is.EqualTo(2));
             Assert.That(tower.AppliedUpgradeIds,
-                Is.EqualTo(new[] { "UPG_T2", "UPG_T3_FIRST", "UPG_T3_SECOND" }));
-            Assert.Throws<System.InvalidOperationException>(() =>
-                service.ApplyBonusTier3Upgrade(tile, "UPG_T3_THIRD", 3));
+                Is.EqualTo(new[] { "UPG_T2", "UPG_T3_FIRST", "UPG_T3_SECOND", "UPG_T3_THIRD" }));
         }
 
         [Test]
-        public void TowerService_RejectsAdditionalTier3UpgradeOnNormalTile()
+        public void TowerService_AllowsDiceGrantedTier3UpgradeOnNormalTile()
         {
             var tile = new TileState { Index = 3, BuildTowerDefinitionId = "TOW_01" };
             var service = new GaeBullBing.Core.Towers.TowerService();
@@ -512,8 +511,10 @@ namespace GaeBullBing.Tests.EditMode
             service.Upgrade(tile, "UPG_T2", 2);
             service.Upgrade(tile, "UPG_T3_FIRST", 3);
 
-            Assert.Throws<System.InvalidOperationException>(() =>
-                service.ApplyBonusTier3Upgrade(tile, "UPG_T3_SECOND", 3));
+            service.ApplyAdditionalTier3Upgrade(tile, "UPG_T3_SECOND", 3);
+
+            Assert.That(tile.Tower.AdditionalTier3UpgradesClaimed, Is.EqualTo(1));
+            Assert.That(tile.Tower.AppliedUpgradeIds, Contains.Item("UPG_T3_SECOND"));
         }
 
         [Test]
@@ -704,7 +705,7 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
-        public void ElectricTransferRangeUpgradeOnlyExpandsBuiltInTileFieldTransfer()
+        public void ElectricTransferRangeUpgradeExpandsDeclaredFieldAndStatusTransfer()
         {
             var state = new GameState();
             new BoardService().Initialize(state.Board);
@@ -713,7 +714,8 @@ namespace GaeBullBing.Tests.EditMode
                 InstanceId = 1,
                 DefinitionId = "TOW_04"
             };
-            tower.AppliedEffectIds.Add("spread_debuff");
+            tower.AppliedEffectIds.Add("status_transfer");
+            tower.AppliedEffectIds.Add("field_spread");
             tower.AppliedEffectIds.Add("chain_tile");
             tower.AppliedEffectIds.Add("spread_range_add");
             tower.EffectValues["spread_range_add"] = 1f;
@@ -741,7 +743,7 @@ namespace GaeBullBing.Tests.EditMode
             Assert.That(state.Board.Tiles[3].FireTurnsRemaining, Is.GreaterThan(0));
             Assert.That(state.Board.Tiles[7].FireTurnsRemaining, Is.GreaterThan(0));
             Assert.That(adjacent.Shocked, Is.True);
-            Assert.That(twoTilesAway.Shocked, Is.False);
+            Assert.That(twoTilesAway.Shocked, Is.True);
             Assert.That(fourTilesAway.CurrentHealth, Is.EqualTo(100f));
         }
 
@@ -751,6 +753,7 @@ namespace GaeBullBing.Tests.EditMode
             var state = new GameState();
             new BoardService().Initialize(state.Board);
             var tower = new GaeBullBing.Core.Towers.TowerState { InstanceId = 1, DefinitionId = "TOW_04" };
+            tower.AppliedEffectIds.Add("field_spread");
             state.Board.Tiles[8].Tower = tower;
             state.Board.Tiles[4].FireTurnsRemaining = 1;
             new GaeBullBing.Core.Towers.TowerEffectService().ResolveAfterAttacks(state,
@@ -766,6 +769,7 @@ namespace GaeBullBing.Tests.EditMode
             var state = new GameState();
             new BoardService().Initialize(state.Board);
             var tower = new GaeBullBing.Core.Towers.TowerState { InstanceId = 1, DefinitionId = "TOW_04" };
+            tower.AppliedEffectIds.Add("field_spread");
             tower.AppliedEffectIds.Add("chain_tile");
             tower.EffectValues["chain_tile"] = 3f;
             state.Board.Tiles[8].Tower = tower;
@@ -783,6 +787,7 @@ namespace GaeBullBing.Tests.EditMode
             var state = new GameState();
             new BoardService().Initialize(state.Board);
             var tower = new GaeBullBing.Core.Towers.TowerState { InstanceId = 1, DefinitionId = "TOW_04" };
+            tower.AppliedEffectIds.Add("field_spread");
             tower.AppliedEffectIds.Add("chain_line");
             state.Board.Tiles[5].Tower = tower;
             state.Board.Tiles[1].FireTurnsRemaining = TileState.OneTurnEffectDuration;
@@ -1088,7 +1093,7 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
 
 
         [Test]
-        public void BurnExplode_TriggersAfterAttackRaisesBurnToTen()
+        public void BurnExplode_DoesNotTriggerFromNewlyAppliedBurnStack()
         {
             var state = CreateCombatState();
             var tower = state.Board.Tiles[5].Tower;
@@ -1100,13 +1105,14 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
             state.Monsters.Add(primary);
             state.Monsters.Add(adjacent);
 
-            new GaeBullBing.Core.Towers.TowerEffectService().ResolveAfterAttacks(state,
-                new[] { new GaeBullBing.Core.Towers.TowerAttackResult(1, 1, 10f, false, targetTileIndex: 5) });
+            var hit = GaeBullBing.Core.Towers.TowerUpgradeRules.PrimaryHit(state, tower, primary,
+                10f, GaeBullBing.Core.Towers.TowerAttackVisualKind.Projectile);
+            new GaeBullBing.Core.Towers.TowerEffectService().ResolveAfterAttacks(state, new[] { hit });
 
             Assert.That(primary.BurnStacks, Is.EqualTo(10));
             Assert.That(primary.CurrentHealth, Is.EqualTo(90f));
-            Assert.That(adjacent.CurrentHealth, Is.EqualTo(90f));
-            Assert.That(adjacent.BurnStacks, Is.EqualTo(1));
+            Assert.That(adjacent.CurrentHealth, Is.EqualTo(100f));
+            Assert.That(adjacent.BurnStacks, Is.Zero);
         }
 
         [Test]
@@ -1295,7 +1301,7 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
             new GaeBullBing.Core.Towers.TowerEffectService().ResolveMonsterStandby(state);
 
             Assert.That(monster.BurnStacks, Is.EqualTo(2));
-            Assert.That(monster.CurrentHealth, Is.EqualTo(98.5f).Within(.0001f));
+            Assert.That(monster.CurrentHealth, Is.EqualTo(99.25f).Within(.0001f));
         }
 
         [Test]
@@ -1313,7 +1319,7 @@ Assert.That(oppositeTile.CurrentHealth, Is.EqualTo(100f));
             new GaeBullBing.Core.Monsters.MonsterService().MoveAll(state);
 
             Assert.That(monster.BurnStacks, Is.EqualTo(2));
-            Assert.That(monster.CurrentHealth, Is.EqualTo(98.5f).Within(.0001f));
+            Assert.That(monster.CurrentHealth, Is.EqualTo(99.25f).Within(.0001f));
         }
 
         [Test]

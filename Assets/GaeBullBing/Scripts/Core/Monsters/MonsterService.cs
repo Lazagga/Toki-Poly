@@ -107,6 +107,9 @@ namespace GaeBullBing.Core.Monsters
                 }
                 var remainingToBase = BoardState.DefaultTileCount - monster.DistanceTravelled;
                 var startTileIndex = monster.CurrentTileIndex;
+                if (monster.KnockbackConsumed && monster.KnockbackImmunityLine >= 0 &&
+                    GetLine(startTileIndex) != monster.KnockbackImmunityLine)
+                    monster.KnockbackConsumed = false;
                 monster.TouchedFireThisMove = false;
                 var tileEffects = new List<TowerAttackResult>();
                 if (monster.IsNewlySpawned)
@@ -128,7 +131,10 @@ namespace GaeBullBing.Core.Monsters
                 var iceSlide = onIce ? Math.Max(0, (int)monster.GetPassiveValue("ice_overlay_slide")) : 0;
                 var plannedDistance = cannotMove
                     ? 0
-                    : Math.Min(onIce ? Math.Max(1, iceSlide + 1) : monster.MoveDistance, remainingToBase);
+                    : Math.Min(onIce ? Math.Max(1, iceSlide + 1) :
+                        (monster.NextMoveReduction > 0 && monster.MoveDistance > 0
+                            ? Math.Max(1, monster.MoveDistance - monster.NextMoveReduction) : monster.MoveDistance), remainingToBase);
+                if (!cannotMove) monster.NextMoveReduction = 0;
                 var distance = 0;
                 if (monster.IsBoss)
                 {
@@ -159,6 +165,9 @@ namespace GaeBullBing.Core.Monsters
 
                 monster.DistanceTravelled += distance;
                 monster.CurrentTileIndex = (monster.CurrentTileIndex + distance) % BoardState.DefaultTileCount;
+                if (monster.KnockbackConsumed && monster.KnockbackImmunityLine >= 0 &&
+                    GetLine(monster.CurrentTileIndex) != monster.KnockbackImmunityLine)
+                    monster.KnockbackConsumed = false;
                 var hasReachedBase = monster.DistanceTravelled >= BoardState.DefaultTileCount;
                 results.Add(new MonsterMoveResult(monster.InstanceId, startTileIndex, distance, hasReachedBase,
                     monster.IsBoss, tileEffectResults: tileEffects));
@@ -167,6 +176,20 @@ namespace GaeBullBing.Core.Monsters
                     reachedBase.Add(monster);
             }
 
+            if (results.Count > 0)
+            {
+                var deathEffects = new List<TowerAttackResult>();
+                new TowerEffectService().ResolveDeathEffects(state, deathEffects);
+                if (deathEffects.Count > 0)
+                {
+                    var last = results[results.Count - 1];
+                    var combined = new List<TowerAttackResult>(last.TileEffectResults);
+                    combined.AddRange(deathEffects);
+                    results[results.Count - 1] = new MonsterMoveResult(last.InstanceId,
+                        last.StartTileIndex, last.Distance, last.ReachedBase, last.IsBoss,
+                        last.FeatherEvents, combined);
+                }
+            }
             foreach (var monster in reachedBase)
                 state.Monsters.Remove(monster);
             state.Monsters.RemoveAll(monster => monster.IsDead);
@@ -194,7 +217,7 @@ namespace GaeBullBing.Core.Monsters
                          wallDamageByTowerInstanceId.TryGetValue(tower.InstanceId, out var configured)
                 ? configured
                 : 0f;
-            var actual = monster.ReceiveDamage(damage, state.Difficulty);
+            var actual = TowerUpgradeRules.Receive(state, monster, damage, tower.InstanceId);
             results.Add(new TowerAttackResult(tower.InstanceId, monster.InstanceId, actual, monster.IsDead,
                 targetTileIndex: tileIndex, visualKind: TowerAttackVisualKind.Projectile));
             return stopsGroundMovement;
@@ -209,12 +232,9 @@ namespace GaeBullBing.Core.Monsters
             if (tileIndex < 0 || tileIndex >= state.Board.Tiles.Count ||
                 state.Board.Tiles[tileIndex].FireTurnsRemaining <= 0)
                 return;
-            monster.BurnStacks++;
+            TowerUpgradeRules.AddBurn(state, monster, 1, state.Board.Tiles[tileIndex].FireSourceTowerId);
             monster.TouchedFireThisMove = true;
-            var damage = monster.MaxHealth * .0025f * monster.BurnStacks;
-            var actual = monster.ReceiveDamage(damage, state.Difficulty);
-            results.Add(new TowerAttackResult(0, monster.InstanceId, actual, monster.IsDead,
-                targetTileIndex: tileIndex));
+            TowerUpgradeRules.BurnTick(state, monster, tileIndex, results);
         }
 
         public static int GetLine(int tileIndex)

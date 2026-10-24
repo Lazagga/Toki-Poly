@@ -39,6 +39,8 @@ namespace GaeBullBing.Core.Game
         }
 
         public GameState State { get; }
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> LastPlayerPathResults { get; private set; } =
+            Array.Empty<TowerAttackResult>();
 
         public void StartNewGame(int diceCount = 2, BoardDefinition boardDefinition = null)
         {
@@ -57,6 +59,8 @@ namespace GaeBullBing.Core.Game
 
             State.Player.CurrentTileIndex = 0;
             State.Player.DicePoints = 0;
+            State.Player.PathDamageBuffs.Clear();
+            LastPlayerPathResults = Array.Empty<TowerAttackResult>();
             State.Round = 1;
             State.CompletedLaps = 0;
             State.EscapedMonsterCount = 0;
@@ -120,11 +124,13 @@ namespace GaeBullBing.Core.Game
 
             State.LastMoveDistance = distance;
             State.CurrentPhase = TurnPhase.PlayerMove;
+            LastPlayerPathResults = towerEffectService.ResolvePlayerPath(State, State.Player.CurrentTileIndex, distance, false);
             var completedLap = State.Player.CurrentTileIndex + distance >= State.Board.TileCount;
             movementService.Move(State.Player, State.Board, distance);
             if (completedLap)
                 CompletePlayerLap();
             State.CurrentPhase = TurnPhase.TileResolve;
+            ResolveBossVictory(LastPlayerPathResults);
             return distance;
         }
 
@@ -311,6 +317,10 @@ namespace GaeBullBing.Core.Game
         {
             if (definition == null) throw new ArgumentNullException(nameof(definition));
             var tower = BuildTower(tileIndex, definition.Id);
+            tower.Element = definition.Element;
+            tower.LastResolvedRange = definition.Range;
+            tower.LastResolvedDamage = definition.Damage;
+            tower.LastResolvedTargetCount = definition.TargetCount;
             foreach (var effect in definition.BaseEffects ?? Array.Empty<TowerUpgradeEffect>())
                 if (!string.IsNullOrWhiteSpace(effect.Id))
                 {
@@ -327,13 +337,16 @@ namespace GaeBullBing.Core.Game
             var tower = tile.Tower != null &&
                 tile.Tower.UpgradeTier == 3 &&
                 upgrade.Tier == 3
-                    ? towerService.ApplyBonusTier3Upgrade(tile, upgrade.Id, upgrade.Tier)
+                    ? towerService.ApplyAdditionalTier3Upgrade(tile, upgrade.Id, upgrade.Tier)
                     : towerService.Upgrade(tile, upgrade.Id, upgrade.Tier);
             foreach (var effect in upgrade.Effects)
                 if (!string.IsNullOrWhiteSpace(effect.Id))
                 {
                     if (!tower.AppliedEffectIds.Contains(effect.Id)) tower.AppliedEffectIds.Add(effect.Id);
-                    tower.EffectValues[effect.Id] = effect.Value;
+                    if (effect.Id == TowerEffectCatalog.Burn || effect.Id == TowerEffectCatalog.Frostbite)
+                        tower.EffectValues[effect.Id] = tower.GetEffectValue(effect.Id) + effect.Value;
+                    else
+                        tower.EffectValues[effect.Id] = Math.Max(tower.GetEffectValue(effect.Id), effect.Value);
                 }
             return tower;
         }
@@ -363,20 +376,8 @@ namespace GaeBullBing.Core.Game
                 var tile = State.Board.Tiles[tileIndex];
                 if (!tile.HasTower || !stats.TryGetValue(tile.Tower.InstanceId, out var towerStats))
                     continue;
-                var singleTowerStats = new System.Collections.Generic.Dictionary<int, TowerCombatStats>
-                {
-                    [tile.Tower.InstanceId] = towerStats
-                };
-                var attacks = towerCombatService.ResolveByTower(
-                    State, singleTowerStats, ResolveAttackEffects);
-                foreach (var result in attacks) combined.Add(result);
-                if (tile.Tower.StoneActive)
-                {
-                    var stoneAttacks = new System.Collections.Generic.List<TowerAttackResult>();
-                    towerEffectService.ResolveStone(
-                        State, tile.Tower, stoneAttacks, ResolveAttackEffects);
-                    foreach (var result in stoneAttacks) combined.Add(result);
-                }
+                foreach (var result in ResolveLabTowerPhase(tileIndex, false, 1, 0, false, definitions, upgrades))
+                    combined.Add(result);
             }
             ResolveBossVictory(combined);
             return combined;
@@ -389,11 +390,26 @@ namespace GaeBullBing.Core.Game
             bool ignoreRange,
             System.Collections.Generic.IReadOnlyList<TowerDefinition> definitions,
             System.Collections.Generic.IReadOnlyList<TowerUpgradeDefinition> upgrades)
+            => ResolveSelectedTowerPhase(tileIndex, attackCount, preferredTargetInstanceId, ignoreRange, false, definitions, upgrades);
+
+        /// <summary>One real tower phase, or an explicit forced override. Repetition belongs to the caller.</summary>
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveLabTowerPhase(
+            int tileIndex, bool force, int forcedCount, int preferredTargetInstanceId, bool ignoreRange,
+            System.Collections.Generic.IReadOnlyList<TowerDefinition> definitions,
+            System.Collections.Generic.IReadOnlyList<TowerUpgradeDefinition> upgrades) =>
+            ResolveSelectedTowerPhase(tileIndex, force ? Math.Max(1, forcedCount) : (int?)null,
+                preferredTargetInstanceId, force && ignoreRange, force, definitions, upgrades);
+
+        private System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveSelectedTowerPhase(
+            int tileIndex, int? overrideAttackCount, int preferredTargetInstanceId, bool ignoreRange, bool bypassRestrictions,
+            System.Collections.Generic.IReadOnlyList<TowerDefinition> definitions,
+            System.Collections.Generic.IReadOnlyList<TowerUpgradeDefinition> upgrades)
         {
             if (tileIndex < 0 || tileIndex >= State.Board.TileCount)
                 throw new ArgumentOutOfRangeException(nameof(tileIndex));
             var tile = State.Board.Tiles[tileIndex];
-            if (!tile.HasTower) return System.Array.Empty<TowerAttackResult>();
+            if (!tile.HasTower)
+            { State.CombatTrace?.Add($"Tile {tileIndex}: no tower"); return System.Array.Empty<TowerAttackResult>(); }
 
             TowerDefinition definition = null;
             foreach (var candidate in definitions ?? System.Array.Empty<TowerDefinition>())
@@ -405,31 +421,37 @@ namespace GaeBullBing.Core.Game
             if (definition == null) return System.Array.Empty<TowerAttackResult>();
 
             State.CurrentPhase = TurnPhase.TowerCombat;
-            var resolved = BuildCombatStats(definition, tile, upgrades);
+            var calculation = CalculateTowerStats(definition, tile, upgrades);
+            var resolved = calculation.CombatStats;
+            State.CombatTrace?.Add($"Tile {tileIndex}, damage {calculation.DamageFormula} = {resolved.Damage}; range {resolved.Range}, targets {resolved.TargetCount}, " +
+                $"attacks {resolved.AttackCount}, temporary +{tile.Tower.BonusAttackCount} (locked={tile.Tower.AttackCountLocked}). " +
+                (overrideAttackCount.HasValue ? $"FORCED count {overrideAttackCount}, ignore range={ignoreRange}, bypass restrictions={bypassRestrictions}" : "ACTUAL rules"), tile.Tower.InstanceId);
             var stats = new TowerCombatStats(
                 resolved.Damage,
                 ignoreRange ? State.Board.TileCount : resolved.Range,
                 resolved.TargetCount,
-                Math.Max(1, attackCount));
+                overrideAttackCount ?? resolved.AttackCount);
             tile.Tower.LastResolvedDamage = stats.Damage;
             var byTower = new System.Collections.Generic.Dictionary<int, TowerCombatStats>
             {
                 [tile.Tower.InstanceId] = stats
             };
-            var results = towerCombatService.ResolveByTower(
-                State, byTower, ResolveAttackEffects, preferredTargetInstanceId);
+            var combinedResults = new System.Collections.Generic.List<TowerAttackResult>();
+            // Keep the same periodic -> ordinary -> stone order for single/all/normal gameplay.
+            var periodic = towerEffectService.ResolvePeriodicAttack(State, tile.Tower);
+            if (periodic.Count > 0)
+                foreach (var hit in ResolveAttackEffects(periodic)) combinedResults.Add(hit);
+            foreach (var hit in towerCombatService.ResolveByTower(State, byTower, ResolveAttackEffects,
+                preferredTargetInstanceId, bypassRestrictions, overrideAttackCount.HasValue)) combinedResults.Add(hit);
             if (tile.Tower.StoneActive)
             {
                 var stoneResults = new System.Collections.Generic.List<TowerAttackResult>();
                 towerEffectService.ResolveStone(
                     State, tile.Tower, stoneResults, ResolveAttackEffects);
-                var combined = new System.Collections.Generic.List<TowerAttackResult>(results);
-                combined.AddRange(stoneResults);
-                ResolveBossVictory(combined);
-                return combined;
+                combinedResults.AddRange(stoneResults);
             }
-            ResolveBossVictory(results);
-            return results;
+            ResolveBossVictory(combinedResults);
+            return combinedResults;
         }
 
         private System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveAttackEffects(
@@ -452,7 +474,9 @@ namespace GaeBullBing.Core.Game
                     if (consumedEffects.Contains(index) || !effect.KnockbackApplied ||
                         effect.TowerInstanceId != attack.TowerInstanceId ||
                         effect.TargetInstanceId != attack.TargetInstanceId) continue;
-                    resolved = attack.WithKnockback(effect.KnockbackFromTile, effect.KnockbackToTile);
+                    resolved = effect.TeleportApplied
+                        ? attack.WithTeleport(effect.KnockbackFromTile, effect.KnockbackToTile)
+                        : attack.WithKnockback(effect.KnockbackFromTile, effect.KnockbackToTile);
                     consumedEffects.Add(index);
                     break;
                 }
@@ -530,19 +554,23 @@ namespace GaeBullBing.Core.Game
 
         public System.Collections.Generic.IReadOnlyList<TowerAttackResult> PlaceFireField(int tileIndex)
         {
-            var results = towerEffectService.PlaceFireField(State, tileIndex);
+            var results = new System.Collections.Generic.List<TowerAttackResult>(towerEffectService.PlaceFireField(State, tileIndex));
+            towerEffectService.ResolveDeathEffects(State, results);
+            State.Monsters.RemoveAll(monster => monster.IsDead);
             ResolveBossVictory(results);
             return results;
         }
 
         public System.Collections.Generic.IReadOnlyList<TowerAttackResult> PlaceIceField(int tileIndex)
         {
-            var results = towerEffectService.PlaceIceField(State, tileIndex);
+            var results = new System.Collections.Generic.List<TowerAttackResult>(towerEffectService.PlaceIceField(State, tileIndex));
+            towerEffectService.ResolveDeathEffects(State, results);
+            State.Monsters.RemoveAll(monster => monster.IsDead);
             ResolveBossVictory(results);
             return results;
         }
 
-        private TowerCombatStats BuildCombatStats(
+        public TowerStatCalculation CalculateTowerStats(
             TowerDefinition definition,
             TileState tile,
             System.Collections.Generic.IReadOnlyList<TowerUpgradeDefinition> upgrades)
@@ -550,15 +578,40 @@ namespace GaeBullBing.Core.Game
             var rateBonus = State.PermanentAllTowerDamageRateBonus +
                 State.GetPermanentTowerDamageRateBonus(definition.Element) +
                 State.GetPermanentLineTowerDamageRateBonus(MonsterService.GetLine(tile.Index)) +
-                GetLineAuraDamageRateBonus(tile) + tile.Tower.PersonalDamageRateBonus;
-            return TowerStatCalculator.Calculate(
+                GetLineAuraDamageRateBonus(tile) + tile.Tower.PersonalDamageRateBonus +
+                TowerUpgradeRules.ExtraDamageRate(State, tile);
+            tile.Tower.Element = definition.Element;
+            var calculation = TowerStatCalculator.Calculate(
                 definition,
                 tile.Tower,
                 upgrades,
                 rateBonus,
                 State.GetPermanentTowerDamageFlatBonus(definition.Element) + tile.Tower.PersonalDamageFlatBonus,
-                tile.Tower.PermanentBonusAttackCount).CombatStats;
+                tile.Tower.PermanentBonusAttackCount + TowerUpgradeRules.ExtraAttackCount(State, tile.Tower),
+                TowerUpgradeRules.ExtraBaseDamage(State, tile.Tower));
+            tile.Tower.LastResolvedDamage = calculation.CombatStats.Damage;
+            tile.Tower.LastResolvedRange = calculation.CombatStats.Range;
+            tile.Tower.LastResolvedTargetCount = calculation.CombatStats.TargetCount;
+            return calculation;
         }
+
+        private TowerCombatStats BuildCombatStats(TowerDefinition definition, TileState tile,
+            System.Collections.Generic.IReadOnlyList<TowerUpgradeDefinition> upgrades) =>
+            CalculateTowerStats(definition, tile, upgrades).CombatStats;
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolvePlayerPathEffects(
+            int start, int distance, bool teleport = false)
+        {
+            var results = towerEffectService.ResolvePlayerPath(State, start, distance, teleport);
+            ResolveBossVictory(results);
+            return results;
+        }
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolvePlayerArrivalEffects(int tileIndex) =>
+            towerEffectService.ResolvePlayerArrival(State, tileIndex);
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveTurnStartEffects() =>
+            towerEffectService.ResolveTurnStart(State);
 
         private float GetLineAuraDamageRateBonus(TileState targetTile)
         {
@@ -586,8 +639,12 @@ namespace GaeBullBing.Core.Game
 
         public void CompletePlayerLap()
         {
+            State.Player.PathDamageBuffs.Clear();
             State.CompletedLaps++;
             State.AddPermanentAllTowerDamageRateBonus(.05f);
+            foreach (var tile in State.Board.Tiles)
+                if (tile.HasTower) tile.Tower.LapGrowthDamage +=
+                    (int)Math.Round(tile.Tower.GetEffectValue("lap_damage_stack"));
         }
 
         public void TeleportPlayer(int tileIndex)

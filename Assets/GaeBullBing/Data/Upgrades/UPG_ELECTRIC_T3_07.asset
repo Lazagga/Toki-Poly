@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6659c42042a1024449a41dd8505788fa, type: 3}
+  m_Name: UPG_ELECTRIC_T3_07
+  m_EditorClassIdentifier: GaeBullBing.Core::GaeBullBing.Core.Data.TowerUpgradeDefinition
+  id: UPG_ELECTRIC_T3_07
+  displayName: "TOW_04_\uC804\uAE30_T3_07"
+  description: "\uC774 \uD0C0\uC6CC\uAC00 \uAC10\uC804\uB41C \uC801\uC5D0\uAC8C \uD53C\uD574\uB97C
+    \uC785\uD788\uBA74, \uAC19\uC740 \uB77C\uC778\uC758 \uB2E4\uB978 \uAC10\uC804\uB41C
+    \uC801 1\uBA85\uC5D0\uAC8C \uADF8 \uD53C\uD574\uC758 30%\uB97C \uC804\uB2EC\uD569\uB2C8\uB2E4."
+  element: 4
+  tier: 3
+  weight: 1
+  statModifiers:
+  - Stat: damage
+    Operation: add
+    Value: 25
+  effects:
+  - Id: shock_link
+    Value: 30

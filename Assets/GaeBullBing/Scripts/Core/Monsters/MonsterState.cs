@@ -18,8 +18,28 @@ namespace GaeBullBing.Core.Monsters
         public int BurnStacks
         {
             get => burnStacks;
-            set => burnStacks = value < 0 ? 0 : value > 20 ? 20 : value;
+            set
+            {
+                burnStacks = Math.Max(0, Math.Min(MaxBurnStacks, value));
+                while (BurnSourceTowerIds.Count < burnStacks) BurnSourceTowerIds.Add(0);
+                if (BurnSourceTowerIds.Count > burnStacks)
+                    BurnSourceTowerIds.RemoveRange(burnStacks, BurnSourceTowerIds.Count - burnStacks);
+            }
         }
+        public List<int> BurnSourceTowerIds { get; } = new();
+        public int MaxBurnStacks { get; set; } = 20;
+        public int BurnSourceTowerId { get; set; }
+        public float ShockDamageBonus { get; set; } = .3f;
+        public float TileVulnerability { get; set; }
+        public bool DamageStoreMarked { get; set; }
+        public float StoredDamage { get; set; }
+        public float DamageStoreMultiplier { get; set; }
+        public int DamageStoreSourceTowerId { get; set; }
+        public bool LineTeleportConsumed { get; set; }
+        public int NextMoveReduction { get; set; }
+        public int KnockbackImmunityLine { get; set; } = -1;
+        public int LastDamageTowerId { get; set; }
+        public bool DeathEffectsHandled { get; set; }
         public int FrostbiteStacks { get; set; }
         public int FrostbiteBurstThreshold { get; set; } = 3;
         public float FrostbiteBurstDamageMultiplier { get; set; } = 3f;
@@ -59,10 +79,12 @@ namespace GaeBullBing.Core.Monsters
 
         public float ReceiveDamage(float rawDamage, DifficultyState difficulty)
         {
-            var modifiedDamage = Math.Max(0f, rawDamage) * (Shocked ? 1.3f : 1f);
+            var modifiedDamage = Math.Max(0f, rawDamage) *
+                (1f + (Shocked ? ShockDamageBonus : 0f) + TileVulnerability);
             var defense = GetDefense(difficulty);
             var actualDamage = modifiedDamage * 100f / (defense + 100f);
             CurrentHealth -= actualDamage;
+            if (DamageStoreMarked) StoredDamage += actualDamage;
             return actualDamage;
         }
     }

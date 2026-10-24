@@ -21,7 +21,7 @@ using System.Globalization;
 
 namespace GaeBullBing.Presentation.Game
 {
-    public sealed class GameController : MonoBehaviour
+    public sealed partial class GameController : MonoBehaviour
     {
         private enum GameFlowState
         {
@@ -121,17 +121,30 @@ private bool finishRoutineStarted;
                 return false;
             }
             var tile = State.Board.Tiles[tileIndex];
+            var selected = new List<TowerUpgradeDefinition>();
+            if (!tile.CanBuildTower || tile.BuildTowerDefinitionId != definition.Id)
+            { message = "Tower element must match the tile's build property."; return false; }
+            if (upgradeIds != null)
+                foreach (var id in upgradeIds)
+                {
+                    var upgrade = FindUpgradeDefinition(id);
+                    if (upgrade == null || upgrade.Element != definition.Element || selected.Contains(upgrade))
+                    { message = $"Invalid upgrade selection: {id}"; return false; }
+                    selected.Add(upgrade);
+                }
+            var tier2Count = selected.FindAll(upgrade => upgrade.Tier == 2).Count;
+            if (tier2Count > 1 || (selected.Exists(upgrade => upgrade.Tier == 3) && tier2Count != 1))
+            { message = "Select exactly one tier-2 upgrade before selecting tier-3 upgrades."; return false; }
+            var tier3Limit = (bonusTile ? 2 : 1) +
+                (definition.Element == TowerElement.Electric && State.Dice.Exists(d => d != null && d.HasEffect("electric_maxtier_extra_upgrade_choice")) ? 1 : 0);
+            if (selected.FindAll(upgrade => upgrade.Tier == 3).Count > tier3Limit)
+            { message = $"Tier-3 selection limit: {tier3Limit}."; return false; }
+            selected.Sort((left, right) => left.Tier.CompareTo(right.Tier));
             tile.Tower = null;
             tile.IsBonusTile = bonusTile;
             Session.BuildTower(tileIndex, definition);
-            if (upgradeIds != null)
-                foreach (var id in upgradeIds)
-                    foreach (var upgrade in towerUpgradeDefinitions)
-                        if (upgrade != null && upgrade.Id == id)
-                        {
-                            Session.UpgradeTower(tileIndex, upgrade);
-                            break;
-                        }
+            foreach (var upgrade in selected) Session.UpgradeTower(tileIndex, upgrade);
+            Session.CalculateTowerStats(definition, tile, towerUpgradeDefinitions);
             towerPresenter.SetTower(tileIndex, definition, tile.Tower.UpgradeTier);
             boardView.RefreshBonusTileBorders(State.Board);
             message = $"Configured {definition.DisplayName} on tile {tileIndex}.";
@@ -161,7 +174,7 @@ private bool finishRoutineStarted;
             out int instanceId, out string message)
         {
             instanceId = 0;
-            if (!SpawnMonsterFromConsole(definitionId, tileIndex, out message)) return false;
+            if (!SpawnMonsterFromConsole(definitionId, tileIndex, out message, false)) return false;
             var monster = State.Monsters[State.Monsters.Count - 1];
             if (stationary) monster.MoveDistance = 0;
             instanceId = monster.InstanceId;
@@ -184,22 +197,29 @@ private bool finishRoutineStarted;
 
         public IEnumerator TestLabMoveMonster(int instanceId, int distance)
         {
+            if (!State.Monsters.Exists(m => m.InstanceId == instanceId))
+                throw new System.InvalidOperationException("Selected monster no longer exists.");
             var savedDistances = new Dictionary<int, int>();
             foreach (var monster in State.Monsters)
             {
                 savedDistances[monster.InstanceId] = monster.MoveDistance;
                 monster.MoveDistance = monster.InstanceId == instanceId ? Mathf.Max(0, distance) : 0;
             }
-            var results = Session.MoveMonsters(towerDefinitions, towerUpgradeDefinitions);
-            foreach (var result in results)
+            try
             {
-                yield return monsterPresenter.Move(result);
-                foreach (var tileEffect in result.TileEffectResults)
-                    yield return PlayAttackResult(tileEffect, new HashSet<int>());
+                var results = Session.MoveMonsters(towerDefinitions, towerUpgradeDefinitions);
+                foreach (var result in results)
+                {
+                    yield return monsterPresenter.Move(result);
+                    foreach (var tileEffect in result.TileEffectResults)
+                        yield return PlayAttackResult(tileEffect, new HashSet<int>());
+                }
             }
-            foreach (var monster in State.Monsters)
-                if (savedDistances.TryGetValue(monster.InstanceId, out var saved))
-                    monster.MoveDistance = saved;
+            finally
+            {
+                foreach (var monster in State.Monsters)
+                    if (savedDistances.TryGetValue(monster.InstanceId, out var saved)) monster.MoveDistance = saved;
+            }
             monsterPresenter.RefreshAll();
             boardView.RefreshTileEffects(State.Board);
         }
@@ -209,6 +229,32 @@ private bool finishRoutineStarted;
             monsterPresenter.RefreshAll();
             boardView.RefreshTileEffects(State.Board);
             diceHud.RefreshDiceFaces();
+        }
+
+        public IEnumerator TestLabResolveUpgradeEvent(string eventName, int tileIndex, int distance)
+        {
+            IReadOnlyList<TowerAttackResult> results = System.Array.Empty<TowerAttackResult>();
+            foreach (var tile in State.Board.Tiles)
+                if (tile.HasTower)
+                {
+                    var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+                    if (definition != null) Session.CalculateTowerStats(definition, tile, towerUpgradeDefinitions);
+                }
+            switch (eventName)
+            {
+                case "start": results = Session.ResolveTurnStartEffects(); break;
+                case "standby": results = Session.ResolveMonsterStandbyEffects(); break;
+                case "end":
+                    results = Session.ResolveMonsterTurnEndEffects();
+                    State.CurrentPhase = TurnPhase.TileResolve;
+                    Session.CompleteRound();
+                    break;
+                case "arrival": results = Session.ResolvePlayerArrivalEffects(tileIndex); break;
+                case "path": results = Session.ResolvePlayerPathEffects(tileIndex, distance); break;
+                case "lap": Session.CompletePlayerLap(); State.Player.PathDamageBuffs.Clear(); break;
+            }
+            foreach (var result in results) yield return PlayAttackResult(result, new HashSet<int>());
+            TestLabRefreshViews();
         }
 
         public bool TestLabSetDice(string firstId, string secondId, out string message)
@@ -231,6 +277,46 @@ private bool finishRoutineStarted;
             State.Dice.Add(second);
             diceHud.RefreshDiceFaces();
             message = $"Equipped dice: {first.Id}, {second.Id}.";
+            return true;
+        }
+
+        public bool AddDiceFromConsole(string idOrName, int slotNumber, out string message)
+        {
+            if (slotNumber < 1 || slotNumber > DiceInventoryState.Capacity)
+            {
+                message = $"주사위 슬롯 번호는 1~{DiceInventoryState.Capacity}만 사용할 수 있습니다.";
+                return false;
+            }
+
+            var dice = DiceCatalog.GetByIdOrName(idOrName);
+            if (dice == null)
+            {
+                message = $"주사위를 찾을 수 없습니다: {idOrName}";
+                return false;
+            }
+
+            var inventoryIndex = slotNumber - 1;
+            if (inventoryIndex > State.DiceInventory.Dice.Count)
+            {
+                message = $"{slotNumber}번 슬롯에 넣으려면 앞 슬롯부터 채워야 합니다. " +
+                          $"현재 사용 가능한 빈 슬롯: {State.DiceInventory.Dice.Count + 1}번";
+                return false;
+            }
+
+            var replaced = inventoryIndex < State.DiceInventory.Dice.Count;
+            var changed = replaced
+                ? Session.ReplaceReserveDice(inventoryIndex, dice)
+                : Session.StoreDiceReward(dice);
+            if (!changed)
+            {
+                message = "주사위 인벤토리 변경에 실패했습니다.";
+                return false;
+            }
+
+            diceHud.RefreshDiceFaces();
+            RefreshDiceDestinationHighlights();
+            message = $"주사위 {(replaced ? "교체" : "추가")}: {slotNumber}번 슬롯 <- " +
+                      $"{dice.DisplayName} ({dice.Id})";
             return true;
         }
 
@@ -310,7 +396,7 @@ private bool finishRoutineStarted;
             message = $"몬스터를 찾을 수 없습니다: {query}"; return false;
         }
 
-        public bool SpawnMonsterFromConsole(string query, int tileIndex, out string message)
+        public bool SpawnMonsterFromConsole(string query, int tileIndex, out string message, bool playBossEntrance = true)
         {
             if (tileIndex < 0 || tileIndex >= State.Board.TileCount)
             {
@@ -341,7 +427,7 @@ private bool finishRoutineStarted;
             State.CurrentPhase = previousPhase;
             monsterPresenter.Spawn(monster);
             monsterPresenter.RefreshLayout();
-            if (monster.IsBoss)
+            if (monster.IsBoss && playBossEntrance)
                 StartCoroutine(monsterPresenter.PlayBossSpawnEntrance(monster.InstanceId));
             message = $"{definition.DisplayName} ({definition.Id})을 {tileIndex}번 타일에 소환했습니다.";
             return true;
@@ -932,6 +1018,10 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             builder.AppendLine($"\uACF5\uACA9\uB825: {stats.Damage}  |  \uC0AC\uAC70\uB9AC: {stats.Range}");
             builder.AppendLine($"\uB300\uC0C1: {stats.TargetCount}  |  \uACF5\uACA9 \uD69F\uC218: {attackFormula}");
             builder.AppendLine($"\uACF5\uACA9\uB825 \uACC4\uC0B0: {damageFormula}");
+            if (tile.Tower.HasEffect("charge_damage"))
+                builder.AppendLine($"충전: {tile.Tower.ChargeCount}/{tile.Tower.GetEffectValue("charge_cap", 3f):0}");
+            if (tile.Tower.HasEffect("overheat_cycle"))
+                builder.AppendLine($"과열 주기: 공격 {tile.Tower.OverheatAttackTurns:0}/{tile.Tower.GetEffectValue("overheat_cycle", 2f):0}");
             builder.AppendLine();
             builder.AppendLine("[적용된 업그레이드]");
             if (tile.Tower.AppliedUpgradeIds.Count == 0) builder.Append("없음");
@@ -969,6 +1059,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (monster.BurnStacks > 0) values.Add($"화상 {monster.BurnStacks}중첩");
             if (monster.FrostbiteStacks > 0) values.Add($"동상 {monster.FrostbiteStacks}중첩");
             if (monster.Shocked) values.Add("감전");
+            if (monster.DamageStoreMarked) values.Add($"피해 저장 {monster.StoredDamage:0.#}");
+            if (monster.NextMoveReduction > 0) values.Add($"이동력 -{monster.NextMoveReduction}");
             if (monster.FrozenMovesRemaining > 0) values.Add("빙결");
             if (monster.StunnedMovesRemaining > 0) values.Add("이동 불가");
             if (monster.KnockbackConsumed) values.Add("넉백 면역");
@@ -979,17 +1071,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             TowerDefinition definition,
             TileState tile)
         {
-            var rateBonus = State.PermanentAllTowerDamageRateBonus +
-                State.GetPermanentTowerDamageRateBonus(definition.Element) +
-                State.GetPermanentLineTowerDamageRateBonus(MonsterService.GetLine(tile.Index)) +
-                GetLineAuraDamageRateBonus(tile) + tile.Tower.PersonalDamageRateBonus;
-            return TowerStatCalculator.Calculate(
-                definition,
-                tile.Tower,
-                towerUpgradeDefinitions,
-                rateBonus,
-                State.GetPermanentTowerDamageFlatBonus(definition.Element) + tile.Tower.PersonalDamageFlatBonus,
-                tile.Tower.PermanentBonusAttackCount);
+            return Session.CalculateTowerStats(definition, tile, towerUpgradeDefinitions);
         }
 
         private float GetLineAuraDamageRateBonus(TileState targetTile)
@@ -1034,6 +1116,14 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var startTileIndex = State.Player.CurrentTileIndex;
             var distance = Session.RollDiceAndMovePlayer();
             ApplyDiceRollPassives();
+            var pathResults = Session.LastPlayerPathResults;
+            foreach (var result in pathResults)
+                yield return PlayAttackResult(result, new HashSet<int>());
+            Session.CollectKillRewards(pathResults);
+            var pathKills = 0;
+            foreach (var result in pathResults) if (result.Killed) pathKills++;
+            CommitCapturedKills(ref pathKills);
+            if (State.IsVictory) { FinishVictory(); yield break; }
             pendingDiceTuning |= startTileIndex + distance >= State.Board.TileCount;
             diceHud.SetResults(State.LastDiceResults[0], State.LastDiceResults[1]);
             yield return dice3DPresenter.Roll(State.Dice, State.LastDiceResults[0], State.LastDiceResults[1]);
@@ -1122,6 +1212,12 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var tile = State.Board.Tiles[State.Player.CurrentTileIndex];
             Session.ResolvePlayerBonusTile(tile.Index);
             ApplyArrivalTowerEffects(tile);
+            if (tile.HasTower)
+            {
+                var definition = FindTowerDefinition(tile.Tower.DefinitionId);
+                if (definition != null) Session.CalculateTowerStats(definition, tile, towerUpgradeDefinitions);
+                Session.ResolvePlayerArrivalEffects(tile.Index);
+            }
             ShowTileInformation(tile.Index, false, tile.HasTower || tile.CanBuildTower);
             if (TryOpenCornerAction(State.Player.CurrentTileIndex))
                 return;
@@ -1430,6 +1526,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                         pendingBonusBuildDefinition = null;
                         pendingRemoteUpgradeTile = tileIndex;
                         pendingBuildFinalUpgrade = true;
+                        State.CurrentPhase = TurnPhase.TowerSelection;
                         radialMenu.ShowUpgradeChoices(next, SelectUpgrade);
                         return;
                     }
@@ -1468,6 +1565,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             TowerDefinition definition,
             int tier)
         {
+            if (definition != null) Session.CalculateTowerStats(definition, State.Board.Tiles[tileIndex], towerUpgradeDefinitions);
             if (towerPresenter != null && definition != null)
                 yield return towerPresenter.PlayBuildAnimation(tileIndex, definition, tier);
             yield return CompleteTileActionRoutine();
@@ -1485,6 +1583,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             TowerDefinition definition,
             int tier)
         {
+            if (definition != null) Session.CalculateTowerStats(definition, State.Board.Tiles[tileIndex], towerUpgradeDefinitions);
             if (towerPresenter != null && definition != null)
                 yield return towerPresenter.PlayUpgradeAnimation(tileIndex, definition, tier);
             yield return CompleteTileActionRoutine();
@@ -1526,7 +1625,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 return result;
             var pool = new List<TowerUpgradeDefinition>();
             foreach (var upgrade in towerUpgradeDefinitions)
-                if (upgrade != null && upgrade.Element == tower.Element &&
+                if (upgrade != null && upgrade.Weight > 0 && upgrade.Element == tower.Element &&
                     upgrade.Tier == targetTier &&
                     (appliedUpgradeIds == null ||
                      !appliedUpgradeIds.Contains(upgrade.Id)))
@@ -1549,13 +1648,14 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 return -1;
             if (tile.Tower.UpgradeTier < 3)
                 return tile.Tower.UpgradeTier + 1;
-            if (tile.IsBonusTile && tile.Tower.UpgradeTier == 3 &&
-                !tile.Tower.BonusTier3UpgradeClaimed)
-                return 3;
+
+            var additionalTier3ChoiceCount = tile.IsBonusTile ? 1 : 0;
             var definition = FindTowerDefinition(tile.Tower.DefinitionId);
             if (definition != null && definition.Element == TowerElement.Electric &&
-                GetEquippedDiceEffect("electric_maxtier_extra_upgrade_choice") > 0f &&
-                !tile.Tower.BonusTier3UpgradeClaimed)
+                GetEquippedDiceEffect("electric_maxtier_extra_upgrade_choice") > 0f)
+                additionalTier3ChoiceCount++;
+
+            if (tile.Tower.AdditionalTier3UpgradesClaimed < additionalTier3ChoiceCount)
                 return 3;
             return -1;
         }
@@ -1581,7 +1681,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 return;
 
             foreach (var upgrade in towerUpgradeDefinitions)
-                if (upgrade != null &&
+                if (upgrade != null && upgrade.Weight > 0 &&
                     upgrade.Element == towerDefinition.Element &&
                     upgrade.Tier == targetTier &&
                     (appliedUpgradeIds == null ||
@@ -1896,6 +1996,7 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
             }
 
             Session.CompleteRound();
+            Session.ResolveTurnStartEffects();
             ApplyRegionTurnGimmick();
             doubleTriggersThisTurn = 0;
             diceHud.RefreshDiceFaces();
