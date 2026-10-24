@@ -16,6 +16,8 @@ namespace GaeBullBing.Core.Game
         public string CurrentRegionId { get; set; } = "REGION_01";
         public List<string> BossRewardItemIds { get; } = new();
         public int CompletedLaps { get; set; }
+        public int RegionGimmickStartedRound { get; set; } = -1;
+        public int RegionGimmickEndedRound { get; set; } = -1;
         public TurnPhase CurrentPhase { get; set; }
         public int EscapedMonsterCount { get; set; }
         public int EscapeLimit { get; set; } = DefaultEscapeLimit;
@@ -89,6 +91,10 @@ namespace GaeBullBing.Core.Game
         public int GrowthPoints { get; set; }
         public int Gold { get; set; }
         public int DicePoints { get; set; }
+        public int PendingExtraRolls { get; set; }
+        public int AvailableExtraRolls { get; set; }
+        public long ArrivalSerial { get; set; }
+        public long LastOvergrowthRewardArrival { get; set; } = -1;
         public List<PlayerPathDamageBuff> PathDamageBuffs { get; } = new();
     }
 

@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 namespace GaeBullBing.Presentation.Board
 {
     [RequireComponent(typeof(Tilemap), typeof(TilemapRenderer))]
-    public sealed class BoardTilemapView : MonoBehaviour
+    public sealed partial class BoardTilemapView : MonoBehaviour
     {
         [SerializeField] private TileBase normalTile;
         [SerializeField] private TileBase frozenTile;
@@ -68,6 +68,8 @@ namespace GaeBullBing.Presentation.Board
                 PositionBonusTileBorder(pair.Key, pair.Value);
             foreach (var pair in buildElementOverlayRenderers)
                 PositionBuildElementOverlay(pair.Key, pair.Value);
+            foreach (var pair in overgrowthRenderers)
+                PositionOvergrowth(pair.Key, pair.Value);
         }
 
         private void ConfigureSorting()
@@ -108,6 +110,7 @@ public void RefreshTileEffects(BoardState board)
             for (var index = 0; index < count; index++)
                 RefreshTileEffect(board, index);
             RefreshRendererSorting();
+            RefreshOvergrowth(board);
         }
 
         public void RefreshBuildElementOverlays(

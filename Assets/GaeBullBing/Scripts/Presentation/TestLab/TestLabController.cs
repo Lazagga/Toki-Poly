@@ -17,6 +17,7 @@ namespace GaeBullBing.Presentation.TestLab
         private DiceDefinition[] dice = Array.Empty<DiceDefinition>();
         private RegionDefinition[] regions = Array.Empty<RegionDefinition>();
         private int regionIndex;
+        private int oasisSourceIndex;
         private readonly List<string> log = new();
         private Vector2 leftScroll;
         private Vector2 rightScroll;
@@ -144,11 +145,13 @@ namespace GaeBullBing.Presentation.TestLab
             for (var i = 0; i < regions.Length; i++) names[i] = $"{regions[i].Order}: {regions[i].DisplayName}";
             regionIndex = GUILayout.SelectionGrid(regionIndex, names, 2);
             GUILayout.Label(regions[regionIndex].Description, WrapStyle());
+            GUILayout.Label($"현재 지역: {game.State.CurrentRegionId} / 수풀 {game.State.Board.Tiles.FindAll(t => t.HasOvergrowth).Count}개", WrapStyle());
             if (GUILayout.Button("지역 적용 / 테스트랩 초기화", GUILayout.Height(28)))
                 RunSync("지역 적용 / 테스트랩 초기화", () => {
                     if (!game.TestLabSetRegion(regions[regionIndex].Id, out var message)) throw new InvalidOperationException(message);
                     monsterEdit = null; towerEdit = null; AddLog(message);
                 });
+            DrawRegionGimmickTests();
         }
 
         private void DrawTowerSection()
@@ -376,6 +379,7 @@ namespace GaeBullBing.Presentation.TestLab
                     var tile = game.State.Board.Tiles[towerTile];
                     GUILayout.Label($"타일 {towerTile}", SectionStyle());
                     GUILayout.Label($"불 장판: {tile.FireTurnsRemaining} / 얼음 장판: {tile.IceTurnsRemaining}");
+                    GUILayout.Label($"수풀 {tile.OvergrowthTurnsRemaining}턴 / 건설 제한 {TestLabKoreanText.YesNo(tile.IsBuildRestricted)} / 강화 제한 {TestLabKoreanText.YesNo(tile.IsUpgradeRestricted)}", WrapStyle());
                     if (tile.HasTower)
                     {
                         var tower = tile.Tower;

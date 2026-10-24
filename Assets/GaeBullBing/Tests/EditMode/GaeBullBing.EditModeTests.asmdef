@@ -1,7 +1,7 @@
 {
   "name": "GaeBullBing.EditModeTests",
   "rootNamespace": "GaeBullBing.Tests.EditMode",
-  "references": ["GaeBullBing.Core"],
+  "references": ["GaeBullBing.Core", "GaeBullBing.Editor"],
   "includePlatforms": ["Editor"],
   "optionalUnityReferences": ["TestAssemblies"]
 }

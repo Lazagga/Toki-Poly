@@ -30,12 +30,12 @@
       "type": "tile_behavior_override",
       "description": "0번 및 18번 타일(기본: TILE_CORNER, 원하는 타일로 이동)의 동작을 이 지역에서는 오아시스 타일로 교체한다. 이동하는 대신, 원하는 위치에 있는 타워에 업그레이드를 2회 추가로 적용한다. 타워가 없는 경우 즉시 2티어 타워를 건설한다.",
       "parameters": {
-        "target_tile_index": 18,
+        "target_tile_indices": [0, 18],
         "base_tile_id": "TILE_CORNER",
         "base_effect_id": "corner_tile_free_move",
         "override_tile_name": "오아시스 타일",
         "override_effect_id": "oasis_extra_upgrade",
-        "override_effect_value": 1
+        "override_effect_value": 2
       },
       "open_questions": []
     },

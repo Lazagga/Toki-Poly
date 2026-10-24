@@ -122,6 +122,8 @@ private bool finishRoutineStarted;
             }
             var tile = State.Board.Tiles[tileIndex];
             var selected = new List<TowerUpgradeDefinition>();
+            if (tile.IsBuildRestricted || tile.IsUpgradeRestricted)
+            { message = "수풀 타일의 건설·강화 제한을 해제한 뒤 타워를 설정하세요."; return false; }
             if (!tile.CanBuildTower || tile.BuildTowerDefinitionId != definition.Id)
             { message = "Tower element must match the tile's build property."; return false; }
             if (upgradeIds != null)
@@ -159,7 +161,9 @@ private bool finishRoutineStarted;
             monsterPresenter?.ClearAll();
             Session.StartNewGame(boardDefinition: boardDefinition);
             State.StageNumber = region.Order;
+            doubleTriggersThisTurn = 0;
             ConfigureRegion(region.Id);
+            Session.ResolveTurnStartEffects();
             boardView.RefreshBuildElementOverlays(State.Board, towerDefinitions);
             boardView.RefreshBonusTileBorders(State.Board);
             boardView.RefreshTileEffects(State.Board);
@@ -226,6 +230,7 @@ private bool finishRoutineStarted;
 
         public void TestLabRefreshViews()
         {
+            monsterPresenter.SetPlayerTile(State.Player.CurrentTileIndex);
             monsterPresenter.RefreshAll();
             boardView.RefreshTileEffects(State.Board);
             diceHud.RefreshDiceFaces();
@@ -242,14 +247,18 @@ private bool finishRoutineStarted;
                 }
             switch (eventName)
             {
-                case "start": results = Session.ResolveTurnStartEffects(); break;
+                case "start": results = Session.BeginManualTurn(); break;
                 case "standby": results = Session.ResolveMonsterStandbyEffects(); break;
                 case "end":
-                    results = Session.ResolveMonsterTurnEndEffects();
-                    State.CurrentPhase = TurnPhase.TileResolve;
-                    Session.CompleteRound();
+                    results = Session.EndManualTurn();
                     break;
-                case "arrival": results = Session.ResolvePlayerArrivalEffects(tileIndex); break;
+                case "arrival":
+                    Session.TeleportPlayer(tileIndex);
+                    results = Session.ResolvePlayerArrivalEffects(tileIndex);
+                    break;
+                case "extra_roll":
+                    State.CombatTrace?.Add(Session.TryConsumeRegionExtraRoll() ? "추가 굴림 1회 사용" : "사용 가능한 추가 굴림이 없습니다.");
+                    break;
                 case "path": results = Session.ResolvePlayerPathEffects(tileIndex, distance); break;
                 case "lap": Session.CompletePlayerLap(); State.Player.PathDamageBuffs.Clear(); break;
             }
@@ -445,6 +454,8 @@ public bool BuildTowerFromConsole(int tileIndex, out string message)
             }
 
             var tile = State.Board.Tiles[tileIndex];
+            if (tile.HasTower ? tile.IsUpgradeRestricted : tile.IsBuildRestricted)
+            { message = "수풀 타일에서는 건설·강화를 할 수 없습니다."; return false; }
             if (!tile.HasTower)
             {
                 if (!tile.CanBuildTower)
@@ -526,6 +537,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var tileIndex = pendingConsoleUpgradeTile;
             var upgrade = pendingConsoleUpgrades[choiceIndex];
             var tile = State.Board.Tiles[tileIndex];
+            if (tile.IsUpgradeRestricted || pendingConsoleBuildDefinition != null && tile.IsBuildRestricted)
+            { message = "수풀 타일에서는 건설·강화를 할 수 없습니다."; return false; }
             var definition = pendingConsoleBuildDefinition ??
                 FindTowerDefinition(tile.Tower.DefinitionId);
             var previousPhase = State.CurrentPhase;
@@ -810,6 +823,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             isBusy = false;
             AcceptsGameplayInput = false;
             diceHud.SetBusy();
+            Session.ResolveTurnStartEffects();
+            boardView.RefreshTileEffects(State.Board);
             gameFlowView?.EnterTestLabMode();
             // 이동/배치 보조 코루틴은 PlayerBoardView를 참조하므로 오브젝트는 활성 상태로 두고
             // TestLab에서 불필요한 시각 요소만 숨긴다.
@@ -818,6 +833,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
         private IEnumerator BeginFirstPlayerTurnRoutine()
         {
+            yield return ResolvePlayerTurnStartRoutine();
+            if (State.IsFinished) yield break;
             if (turnTransitionBanner != null)
                 yield return turnTransitionBanner.PlayPlayerTurn();
             diceHud.BeginPlayerTurn();
@@ -988,7 +1005,17 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var featherDescription = tile.HasBossFeather
                 ? "[타일 상태: 깃털]\n이 타일의 타워는 까마귀가 깃털을 회수할 때까지 공격할 수 없습니다.\n\n"
                 : string.Empty;
+            if (tile.HasOvergrowth)
+            {
+                var region = regionDatabase?.Get(State.CurrentRegionId);
+                featherDescription += $"[타일 상태: 무성한 수풀]\n남은 지속시간: {tile.OvergrowthTurnsRemaining}턴\n" +
+                    (tile.IsBuildRestricted ? "타워 건설 불가\n" : string.Empty) +
+                    (tile.IsUpgradeRestricted ? "타워 강화 불가 (최대 강화 이후 보상 포함)\n" : string.Empty) +
+                    $"정확히 도착하면 다음 턴 추가 굴림 +{region?.RewardEffectValue ?? 0f:0}회\n\n";
+            }
 
+            if (Session.IsOasisTile(tileIndex))
+                return featherDescription + $"[지역 능력: 오아시스]\n원하는 타일 하나를 선택합니다. 기존 타워에는 서로 다른 강화를 {regionDatabase.Get(State.CurrentRegionId).OverrideEffectValue:0}회 순서대로 적용합니다.\n빈 타일은 2티어 강화 선택 후 즉시 2티어 타워를 건설합니다. 플레이어는 이동하지 않습니다.";
             if (tileIndex == 0 || tileIndex == 18)
                 return featherDescription + "[모서리 능력: 이동]\n원하는 타일을 선택하고 해당 타일까지 시계 방향으로 이동합니다.\n이동 중 출발지를 통과하면 주사위 강화가 발생합니다.";
             if (tileIndex == 9 || tileIndex == 27)
@@ -1216,11 +1243,17 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             {
                 var definition = FindTowerDefinition(tile.Tower.DefinitionId);
                 if (definition != null) Session.CalculateTowerStats(definition, tile, towerUpgradeDefinitions);
-                Session.ResolvePlayerArrivalEffects(tile.Index);
             }
+            Session.ResolvePlayerArrivalEffects(tile.Index);
             ShowTileInformation(tile.Index, false, tile.HasTower || tile.CanBuildTower);
             if (TryOpenCornerAction(State.Player.CurrentTileIndex))
                 return;
+            if (tile.HasTower ? tile.IsUpgradeRestricted : tile.IsBuildRestricted)
+            {
+                radialMenu.Hide();
+                StartCoroutine(CompleteTileActionRoutine());
+                return;
+            }
             if (!tile.HasTower && !tile.CanBuildTower)
             {
                 StartCoroutine(CompleteTileActionRoutine());
@@ -1312,10 +1345,10 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             }
             if (tileIndex == 0 || tileIndex == 18)
             {
-                var region = regionDatabase?.Get(State.CurrentRegionId);
-                if (tileIndex == 18 && region != null && region.OverrideEffectId == "oasis_extra_upgrade")
+                if (Session.IsOasisTile(tileIndex))
                 {
                     State.CurrentPhase = TurnPhase.CornerSelection;
+                    cornerActionMenu.Hide();
                     StartCoroutine(PrepareOasisSelectionRoutine());
                     return true;
                 }
@@ -1332,24 +1365,33 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         {
             yield return boardView.WaitForPressCompletion(State.Player.CurrentTileIndex);
             var destinations = new List<int>();
-            foreach (var tile in State.Board.Tiles) if (tile.HasTower) destinations.Add(tile.Index);
-            boardView.SetSelectionHighlights(destinations);
+            foreach (var tile in State.Board.Tiles)
+                if (Session.GetOasisUpgradeOptions(tile.Index, towerDefinitions, towerUpgradeDefinitions).Count > 0)
+                    destinations.Add(tile.Index);
+            if (destinations.Count == 0)
+            {
+                Debug.LogWarning("오아시스: 건설·강화 가능한 타일이 없어 행동을 종료합니다.");
+                yield return CompleteTileActionRoutine();
+                yield break;
+            }
+            // Oasis selects a remote build/upgrade target, not a movement destination.
+            ClearTileSelectionHighlights();
             yield return cameraController.ReturnToOverview();
-            tileSelectionView.BeginSelection(SelectOasisTower, null, null,
-                tileIndex => tileIndex >= 0 && tileIndex < State.Board.TileCount && State.Board.Tiles[tileIndex].HasTower);
+            ShowTileInformation(State.Player.CurrentTileIndex, false);
+            tileSelectionView.BeginSelection(SelectOasisTower,
+                tileIndex => ShowTileInformation(tileIndex, false),
+                () => ShowTileInformation(State.Player.CurrentTileIndex, false),
+                tileIndex => destinations.Contains(tileIndex));
         }
 
         private void SelectOasisTower(int tileIndex)
         {
+            if (State.CurrentPhase != TurnPhase.CornerSelection ||
+                Session.GetOasisUpgradeOptions(tileIndex, towerDefinitions, towerUpgradeDefinitions).Count == 0) return;
             ClearTileSelectionHighlights();
-            var tile = State.Board.Tiles[tileIndex];
-            var definition = FindTowerDefinition(tile.Tower.DefinitionId);
-            var nextTier = Mathf.Min(3, tile.Tower.UpgradeTier + 1);
-            var choices = GetUpgradeChoices(definition, nextTier, tile.Tower.AppliedUpgradeIds);
-            if (choices.Count == 0) { StartCoroutine(CompleteTileActionRoutine()); return; }
-            pendingRemoteUpgradeTile = tileIndex;
-            State.CurrentPhase = TurnPhase.TowerSelection;
-            radialMenu.ShowUpgradeChoices(choices, SelectUpgrade);
+            HideTileInformation();
+            Session.BeginOasisUpgrade(tileIndex, towerDefinitions, towerUpgradeDefinitions);
+            ShowOasisUpgradeChoices();
         }
 
         private IEnumerator PrepareTileSelectionRoutine()
@@ -1416,6 +1458,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     : null);
             yield return focusRoutine;
             Session.TeleportPlayer(tileIndex);
+            Session.ResolveRegionArrivalEffects(tileIndex);
             cornerMovesRemaining = Mathf.Max(0, cornerMovesRemaining - 1);
             if (cornerMovesRemaining > 0)
             {
@@ -1440,6 +1483,12 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             pendingBonusBuildDefinition = null;
             State.CurrentPhase = TurnPhase.TowerSelection;
             var tile = State.Board.Tiles[State.Player.CurrentTileIndex];
+            if (tile.HasTower ? tile.IsUpgradeRestricted : tile.IsBuildRestricted)
+            {
+                radialMenu.Hide();
+                StartCoroutine(CompleteTileActionRoutine());
+                return;
+            }
             if (tile.HasTower)
             {
                 var upgrades = GetUpgradeChoices(tile);
@@ -1480,6 +1529,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
 
             var tileIndex = State.Player.CurrentTileIndex;
             var tile = State.Board.Tiles[tileIndex];
+            if (tile.IsBuildRestricted)
+            { radialMenu.Hide(); StartCoroutine(CompleteTileActionRoutine()); return; }
             var instantFireUpgrade = definition.Element == TowerElement.Fire &&
                                      GetEquippedDiceEffect("fire_build_instant_upgrade") > 0f;
             if (tile.IsBonusTile || instantFireUpgrade)
@@ -1507,7 +1558,21 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
         public void SelectUpgrade(TowerUpgradeDefinition upgrade)
         {
             if (State.CurrentPhase != TurnPhase.TowerSelection || upgrade == null) return;
+            if (Session.PendingOasisUpgrade != null)
+            {
+                radialMenu.Hide();
+                State.CurrentPhase = TurnPhase.TowerResolve;
+                StartCoroutine(ResolveOasisChoiceRoutine(upgrade, false));
+                return;
+            }
             var tileIndex = pendingRemoteUpgradeTile >= 0 ? pendingRemoteUpgradeTile : State.Player.CurrentTileIndex;
+            if (State.Board.Tiles[tileIndex].IsUpgradeRestricted ||
+                pendingBonusBuildDefinition != null && State.Board.Tiles[tileIndex].IsBuildRestricted)
+            {
+                pendingBonusBuildDefinition = null; pendingBonusBuildTile = pendingRemoteUpgradeTile = -1;
+                pendingBuildFinalUpgrade = false;
+                radialMenu.Hide(); StartCoroutine(CompleteTileActionRoutine()); return;
+            }
             if (pendingBonusBuildDefinition != null &&
                 pendingBonusBuildTile == tileIndex)
             {
@@ -1741,11 +1806,12 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 diceSystem.ShowLapRewards(Session.CreateLapRewardChoices(), () => diceTuningComplete = true);
                 yield return new WaitUntil(() => diceTuningComplete);
             }
-            if (State.LastDiceResults.Count >= 2 &&
+            var rolledDouble = State.LastDiceResults.Count >= 2 &&
                 State.LastDiceResults[0] == State.LastDiceResults[1] &&
-                doubleTriggersThisTurn < MaxDoubleTriggersPerTurn)
+                doubleTriggersThisTurn < MaxDoubleTriggersPerTurn;
+            if (rolledDouble || Session.TryConsumeRegionExtraRoll())
             {
-                doubleTriggersThisTurn++;
+                if (rolledDouble) doubleTriggersThisTurn++;
                 State.CurrentPhase = TurnPhase.DiceRoll;
                 if (turnTransitionBanner != null)
                     yield return turnTransitionBanner.PlayPlayerTurn();
@@ -1996,8 +2062,8 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
             }
 
             Session.CompleteRound();
-            Session.ResolveTurnStartEffects();
-            ApplyRegionTurnGimmick();
+            yield return ResolvePlayerTurnStartRoutine();
+            if (State.IsFinished) yield break;
             doubleTriggersThisTurn = 0;
             diceHud.RefreshDiceFaces();
 
@@ -2006,23 +2072,6 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
                 yield return turnTransitionBanner.PlayPlayerTurn();
             diceHud.BeginPlayerTurn();
             isBusy = false;
-        }
-
-        private void ApplyRegionTurnGimmick()
-        {
-            var region = regionDatabase?.Get(State.CurrentRegionId);
-            if (region == null || region.GimmickId != "GIMMICK_ICE_SHEET") return;
-            var count = Mathf.Clamp(region.TilesPerTurn, 0, State.Board.TileCount - 4);
-            var candidates = new List<int>();
-            for (var i = 0; i < State.Board.TileCount; i++)
-                if (i != 0 && i != 9 && i != 18 && i != 27) candidates.Add(i);
-            for (var placed = 0; placed < count && candidates.Count > 0; placed++)
-            {
-                var pick = Random.Range(0, candidates.Count);
-                State.Board.Tiles[candidates[pick]].IceTurnsRemaining = TileState.OneTurnEffectDuration;
-                candidates.RemoveAt(pick);
-            }
-            boardView.RefreshTileEffects(State.Board);
         }
 
         private void CommitCapturedKills(ref int killedCount)
@@ -2047,7 +2096,8 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
         {
             var data = difficultyDatabase?.GetRegion(regionId);
             if (data == null) throw new System.InvalidOperationException($"지역 난이도 데이터가 없습니다: {regionId}");
-            State.CurrentRegionId = regionId;
+            Session.SetRegion(regionDatabase.Get(regionId) ??
+                throw new System.InvalidOperationException($"지역 기믹 데이터가 없습니다: {regionId}"));
             killsPerDifficultyLevel = data.KillsPerLevel;
             healthMultiplierPerDifficultyLevel = data.HealthMultiplierPerLevel;
             defensePerDifficultyLevel = data.DefensePerLevel;

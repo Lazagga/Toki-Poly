@@ -19,13 +19,21 @@ MonoBehaviour:
     GimmickId: 
     Status: None
     Type: 
-    Description: "\uC5C6\uC74C"
+    Description: "1\uC9C0\uC5ED(\uC232)\uC740 \uBCC4\uB3C4\uC758 \uC2A4\uD14C\uC774\uC9C0
+      \uAE30\uBBF9\uC774 \uC5C6\uB2E4."
     AppliedEffectId: 
     Scope: 
     TilesPerTurn: 0
     TargetTileIndex: -1
+    TargetTileIndices:
     OverrideEffectId: 
     OverrideEffectValue: 0
+    DurationTurns: 0
+    DisallowBuild: 0
+    DisallowUpgrade: 0
+    TriggerCondition: ""
+    RewardEffectId: ""
+    RewardEffectValue: 0
     Background: {fileID: 0}
     BackgroundTint: {r: 1, g: 1, b: 1, a: 1}
   - Id: REGION_02
@@ -34,16 +42,24 @@ MonoBehaviour:
     GimmickId: GIMMICK_ICE_SHEET
     Status: Confirmed
     Type: periodic_random_tile_status
-    Description: "\uB9E4 \uD134 \uBB34\uC791\uC704 \uD0C0\uC77C\uC5D0 \uBE59\uD310\uC744
-      \uC0DD\uC131. \uC5BC\uC74C \uD0C0\uC6CC 3\uD2F0\uC5B4 \uC5C5\uADF8\uB808\uC774\uB4DC(UPG_ICE_T3_03)\uAC00
-      \uC0DD\uC131\uD558\uB294 \uBE59\uD310\uACFC \uB3D9\uC77C\uD55C \uD6A8\uACFC(effect_id:
-      tile_freeze)\uB97C \uC7AC\uC0AC\uC6A9"
+    Description: "\uB9E4 \uD134, \uB77C\uC778\uB9C8\uB2E4 \uBB34\uC791\uC704 \uD0C0\uC77C\uC5D0
+      \uBE59\uD310\uC744 \uC0DD\uC131\uD55C\uB2E4. \uC5BC\uC74C \uD0C0\uC6CC 3\uD2F0\uC5B4
+      \uC5C5\uADF8\uB808\uC774\uB4DC(UPG_ICE_T3_03)\uAC00 \uC0DD\uC131\uD558\uB294
+      \uBE59\uD310\uACFC \uB3D9\uC77C\uD55C \uD6A8\uACFC(effect_id: tile_freeze)\uB97C
+      \uC7AC\uC0AC\uC6A9\uD55C\uB2E4."
     AppliedEffectId: tile_freeze
     Scope: per_line
-    TilesPerTurn: 10
+    TilesPerTurn: 1
     TargetTileIndex: -1
+    TargetTileIndices:
     OverrideEffectId: 
     OverrideEffectValue: 0
+    DurationTurns: 0
+    DisallowBuild: 0
+    DisallowUpgrade: 0
+    TriggerCondition: ""
+    RewardEffectId: ""
+    RewardEffectValue: 0
     Background: {fileID: 0}
     BackgroundTint: {r: 0.78, g: 0.9, b: 1, a: 1}
   - Id: REGION_03
@@ -52,31 +68,55 @@ MonoBehaviour:
     GimmickId: GIMMICK_OASIS_TILE
     Status: Confirmed
     Type: tile_behavior_override
-    Description: "18\uBC88 \uD0C0\uC77C(\uAE30\uBCF8: TILE_CORNER, \uC6D0\uD558\uB294
-      \uD0C0\uC77C\uB85C \uC774\uB3D9)\uC758 \uB3D9\uC791\uC744 \uC774 \uC9C0\uC5ED\uC5D0\uC11C\uB294
-      \uC624\uC544\uC2DC\uC2A4 \uD0C0\uC77C\uB85C \uAD50\uCCB4\uD55C\uB2E4. \uC774\uB3D9\uD558\uB294
-      \uB300\uC2E0, \uC6D0\uD558\uB294 \uC704\uCE58\uC5D0 \uC788\uB294 \uD0C0\uC6CC\uC5D0
-      \uC5C5\uADF8\uB808\uC774\uB4DC\uB97C 1\uD68C \uCD94\uAC00\uB85C \uC801\uC6A9\uD55C\uB2E4."
+    Description: "0\uBC88 \uBC0F 18\uBC88 \uD0C0\uC77C(\uAE30\uBCF8: TILE_CORNER,
+      \uC6D0\uD558\uB294 \uD0C0\uC77C\uB85C \uC774\uB3D9)\uC758 \uB3D9\uC791\uC744
+      \uC774 \uC9C0\uC5ED\uC5D0\uC11C\uB294 \uC624\uC544\uC2DC\uC2A4 \uD0C0\uC77C\uB85C
+      \uAD50\uCCB4\uD55C\uB2E4. \uC774\uB3D9\uD558\uB294 \uB300\uC2E0, \uC6D0\uD558\uB294
+      \uC704\uCE58\uC5D0 \uC788\uB294 \uD0C0\uC6CC\uC5D0 \uC5C5\uADF8\uB808\uC774\uB4DC\uB97C
+      2\uD68C \uCD94\uAC00\uB85C \uC801\uC6A9\uD55C\uB2E4. \uD0C0\uC6CC\uAC00 \uC5C6\uB294
+      \uACBD\uC6B0 \uC989\uC2DC 2\uD2F0\uC5B4 \uD0C0\uC6CC\uB97C \uAC74\uC124\uD55C\uB2E4."
     AppliedEffectId: 
     Scope: 
     TilesPerTurn: 0
-    TargetTileIndex: 18
+    TargetTileIndex: -1
+    TargetTileIndices: 0000000012000000
     OverrideEffectId: oasis_extra_upgrade
-    OverrideEffectValue: 1
+    OverrideEffectValue: 2
+    DurationTurns: 0
+    DisallowBuild: 0
+    DisallowUpgrade: 0
+    TriggerCondition: ""
+    RewardEffectId: ""
+    RewardEffectValue: 0
     Background: {fileID: 0}
     BackgroundTint: {r: 1, g: 0.86, b: 0.62, a: 1}
   - Id: REGION_04
     DisplayName: "\uB2AA\uC9C0\uB300"
     Order: 2
-    GimmickId: 
-    Status: TBD
-    Type: 
-    Description: "\uB2AA\uC9C0\uB300 \uC2A4\uD14C\uC774\uC9C0 \uAE30\uBBF9 \uBBF8\uC815."
+    GimmickId: GIMMICK_OVERGROWN_PATCH
+    Status: Confirmed
+    Type: periodic_random_tile_restriction_reward
+    Description: "\uB9E4 \uD134, \uBCF4\uB4DC \uC804\uCCB4 \uC911 \uBB34\uC791\uC704
+      \uD0C0\uC77C 8\uACF3\uC5D0 \uC218\uD480\uC774 \uC790\uB780\uB2E4. \uC774 \uD0C0\uC77C\uC5D0\uB294
+      \uD0C0\uC6CC\uB97C \uAC74\uC124\uD558\uAC70\uB098 \uC5C5\uADF8\uB808\uC774\uB4DC\uD560
+      \uC218 \uC5C6\uB2E4. \uD50C\uB808\uC774\uC5B4\uAC00 \uC774\uB3D9 \uD6C4 \uC815\uD655\uD788
+      \uC774 \uD0C0\uC77C\uC5D0 \uBA48\uCD94\uBA74 \uBCF4\uB108\uC2A4\uAC00 \uBC1C\uB3D9\uD574
+      \uB2E4\uC74C \uD134\uC5D0 \uC8FC\uC0AC\uC704\uB97C \uD55C \uBC88 \uB354 \uAD74\uB9B4
+      \uC218 \uC788\uB2E4. \uD0C0\uC77C \uC0C1\uD0DC\uB294 \uD574\uB2F9 \uD134 \uC885\uB8CC
+      \uC2DC \uC0AC\uB77C\uC9C0\uACE0, \uB2E4\uC74C \uD134\uC5D0 \uC0C8\uB85C\uC6B4
+      8\uACF3\uC774 \uBB34\uC791\uC704\uB85C \uB2E4\uC2DC \uC9C0\uC815\uB41C\uB2E4."
     AppliedEffectId: 
-    Scope: 
-    TilesPerTurn: 0
+    Scope: board
+    TilesPerTurn: 8
     TargetTileIndex: -1
+    TargetTileIndices:
     OverrideEffectId: 
     OverrideEffectValue: 0
+    DurationTurns: 1
+    DisallowBuild: 1
+    DisallowUpgrade: 1
+    TriggerCondition: stop_exactly_on_tile
+    RewardEffectId: extra_turn
+    RewardEffectValue: 1
     Background: {fileID: 0}
     BackgroundTint: {r: 0.58, g: 0.76, b: 0.58, a: 1}

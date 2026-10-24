@@ -116,6 +116,7 @@ private void InvokeChoice(int index)
         public void ShowUpgradeChoices(IReadOnlyList<TowerUpgradeDefinition> definitions, Action<TowerUpgradeDefinition> onSelected)
         {
             ClearChoices();
+            menuRoot.gameObject.SetActive(true);
             primaryButton.gameObject.SetActive(false);
             upgradeChoicesRoot.gameObject.SetActive(true);
             var visibleCount = Mathf.Min(definitions.Count, upgradeChoiceButtons.Length);

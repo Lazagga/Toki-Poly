@@ -24,6 +24,12 @@ namespace GaeBullBing.Core.Board
         public int FireSourceTowerId { get; set; }
         public bool HasBossFeather { get; set; }
         public bool IsBonusTile { get; set; }
+        public int OvergrowthTurnsRemaining { get; set; }
+        public bool OvergrowthDisallowsBuild { get; set; }
+        public bool OvergrowthDisallowsUpgrade { get; set; }
+        public bool HasOvergrowth => OvergrowthTurnsRemaining > 0;
+        public bool IsBuildRestricted => HasOvergrowth && OvergrowthDisallowsBuild;
+        public bool IsUpgradeRestricted => HasOvergrowth && OvergrowthDisallowsUpgrade;
 
         public bool HasTower => Tower != null;
         public bool CanBuildTower => !string.IsNullOrEmpty(BuildTowerDefinitionId);

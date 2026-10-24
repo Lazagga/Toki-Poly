@@ -7,7 +7,7 @@ using GaeBullBing.Core.Towers;
 
 namespace GaeBullBing.Core.Game
 {
-    public sealed class GameSession
+    public sealed partial class GameSession
     {
         private readonly BoardService boardService;
         private readonly PlayerMovementService movementService;
@@ -16,6 +16,8 @@ namespace GaeBullBing.Core.Game
         private readonly TowerService towerService;
         private readonly TowerCombatService towerCombatService;
         private readonly TowerEffectService towerEffectService = new();
+        private readonly RegionGimmickService regionGimmickService = new();
+        private RegionDefinition currentRegion;
         private readonly System.Collections.Generic.Dictionary<int, int> killRewardDicePoints = new();
         private readonly System.Collections.Generic.HashSet<int> rewardedMonsterIds = new();
         private int[] nextDiceResults;
@@ -60,6 +62,10 @@ namespace GaeBullBing.Core.Game
             State.Player.CurrentTileIndex = 0;
             State.Player.DicePoints = 0;
             State.Player.PathDamageBuffs.Clear();
+            State.Player.ArrivalSerial = 0;
+            regionGimmickService.Reset(State);
+            currentRegion = null;
+            CancelOasisUpgrade();
             LastPlayerPathResults = Array.Empty<TowerAttackResult>();
             State.Round = 1;
             State.CompletedLaps = 0;
@@ -127,6 +133,7 @@ namespace GaeBullBing.Core.Game
             LastPlayerPathResults = towerEffectService.ResolvePlayerPath(State, State.Player.CurrentTileIndex, distance, false);
             var completedLap = State.Player.CurrentTileIndex + distance >= State.Board.TileCount;
             movementService.Move(State.Player, State.Board, distance);
+            State.Player.ArrivalSerial++;
             if (completedLap)
                 CompletePlayerLap();
             State.CurrentPhase = TurnPhase.TileResolve;
@@ -302,6 +309,7 @@ namespace GaeBullBing.Core.Game
             if (State.IsFinished)
                 return;
 
+            CancelOasisUpgrade();
             State.CurrentPhase = TurnPhase.RoundEnd;
             State.Round++;
             State.CurrentPhase = TurnPhase.PlayerTurnStart;
@@ -309,6 +317,8 @@ namespace GaeBullBing.Core.Game
 
         public TowerState BuildTower(int tileIndex, string definitionId)
         {
+            if (State.Board.Tiles[tileIndex].IsBuildRestricted)
+                throw new InvalidOperationException("수풀 타일에는 타워를 건설할 수 없습니다.");
             State.CurrentPhase = TurnPhase.TowerResolve;
             return towerService.Build(State.Board.Tiles[tileIndex], definitionId);
         }
@@ -331,13 +341,18 @@ namespace GaeBullBing.Core.Game
         }
 
         public TowerState UpgradeTower(int tileIndex, TowerUpgradeDefinition upgrade)
+            => ApplyTowerUpgrade(tileIndex, upgrade, true);
+
+        private TowerState ApplyTowerUpgrade(int tileIndex, TowerUpgradeDefinition upgrade, bool consumeVisitGrant)
         {
+            if (State.Board.Tiles[tileIndex].IsUpgradeRestricted)
+                throw new InvalidOperationException("수풀 타일에서는 타워를 강화할 수 없습니다.");
             State.CurrentPhase = TurnPhase.TowerResolve;
             var tile = State.Board.Tiles[tileIndex];
             var tower = tile.Tower != null &&
                 tile.Tower.UpgradeTier == 3 &&
                 upgrade.Tier == 3
-                    ? towerService.ApplyAdditionalTier3Upgrade(tile, upgrade.Id, upgrade.Tier)
+                    ? towerService.ApplyAdditionalTier3Upgrade(tile, upgrade.Id, upgrade.Tier, consumeVisitGrant)
                     : towerService.Upgrade(tile, upgrade.Id, upgrade.Tier);
             foreach (var effect in upgrade.Effects)
                 if (!string.IsNullOrWhiteSpace(effect.Id))
@@ -540,7 +555,9 @@ namespace GaeBullBing.Core.Game
 
         public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveMonsterTurnEndEffects()
         {
+            if (State.RegionGimmickEndedRound == State.Round) return Array.Empty<TowerAttackResult>();
             var results = towerEffectService.ResolveMonsterTurnEnd(State);
+            regionGimmickService.EndTurn(State);
             ResolveBossVictory(results);
             return results;
         }
@@ -607,11 +624,55 @@ namespace GaeBullBing.Core.Game
             return results;
         }
 
-        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolvePlayerArrivalEffects(int tileIndex) =>
-            towerEffectService.ResolvePlayerArrival(State, tileIndex);
+        public void SetRegion(RegionDefinition region)
+        {
+            if (region == null) throw new ArgumentNullException(nameof(region));
+            regionGimmickService.Reset(State);
+            CancelOasisUpgrade();
+            currentRegion = region;
+            State.CurrentRegionId = region.Id;
+        }
 
-        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveTurnStartEffects() =>
-            towerEffectService.ResolveTurnStart(State);
+        public bool TryConsumeRegionExtraRoll() => regionGimmickService.TryConsumeExtraRoll(State);
+        public int ResolveRegionArrivalEffects(int tileIndex) => regionGimmickService.ResolveArrival(State, currentRegion, tileIndex);
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolvePlayerArrivalEffects(int tileIndex)
+        {
+            ResolveRegionArrivalEffects(tileIndex);
+            return towerEffectService.ResolvePlayerArrival(State, tileIndex);
+        }
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveTurnStartEffects()
+        {
+            if (State.RegionGimmickStartedRound == State.Round) return Array.Empty<TowerAttackResult>();
+            var results = new System.Collections.Generic.List<TowerAttackResult>(regionGimmickService.BeginTurn(State, currentRegion));
+            results.AddRange(towerEffectService.ResolveTurnStart(State));
+            ResolveBossVictory(results);
+            return results;
+        }
+
+        // Manual testing advances the round at the NEXT start, never at the end button.
+        // These guards also protect programmatic callers, not just disabled UI buttons.
+        public bool CanBeginManualTurn => !State.IsFinished &&
+            (State.RegionGimmickStartedRound != State.Round || State.RegionGimmickEndedRound == State.Round);
+        public bool CanEndManualTurn => !State.IsFinished &&
+            State.RegionGimmickStartedRound == State.Round && State.RegionGimmickEndedRound != State.Round;
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> BeginManualTurn()
+        {
+            if (!CanBeginManualTurn) throw new InvalidOperationException("이번 턴은 이미 시작되었습니다. 먼저 턴 종료를 실행하세요.");
+            if (State.RegionGimmickEndedRound == State.Round) CompleteRound();
+            State.CurrentPhase = TurnPhase.PlayerTurnStart;
+            return ResolveTurnStartEffects();
+        }
+
+        public System.Collections.Generic.IReadOnlyList<TowerAttackResult> EndManualTurn()
+        {
+            if (!CanEndManualTurn) throw new InvalidOperationException("진행 중인 턴이 없습니다. 먼저 턴 시작을 실행하세요.");
+            CancelOasisUpgrade();
+            State.CurrentPhase = TurnPhase.RoundEnd;
+            return ResolveMonsterTurnEndEffects();
+        }
 
         private float GetLineAuraDamageRateBonus(TileState targetTile)
         {
@@ -651,6 +712,7 @@ namespace GaeBullBing.Core.Game
         {
             if (tileIndex < 0 || tileIndex >= State.Board.TileCount) throw new ArgumentOutOfRangeException(nameof(tileIndex));
             State.Player.CurrentTileIndex = tileIndex;
+            State.Player.ArrivalSerial++;
         }
 
         public bool ResolvePlayerBonusTile(int tileIndex)

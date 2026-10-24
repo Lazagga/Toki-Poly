@@ -42,7 +42,8 @@ namespace GaeBullBing.Core.Towers
         public TowerState ApplyAdditionalTier3Upgrade(
             TileState tile,
             string upgradeDefinitionId,
-            int upgradeTier)
+            int upgradeTier,
+            bool consumeVisitGrant = true)
         {
             if (tile == null)
                 throw new ArgumentNullException(nameof(tile));
@@ -56,7 +57,8 @@ namespace GaeBullBing.Core.Towers
                 throw new InvalidOperationException("The selected upgrade is already applied.");
 
             tile.Tower.AppliedUpgradeIds.Add(upgradeDefinitionId);
-            tile.Tower.AdditionalTier3UpgradesClaimed++;
+            // Region rewards must not consume the separate bonus-tile / dice visit grant.
+            if (consumeVisitGrant) tile.Tower.AdditionalTier3UpgradesClaimed++;
             return tile.Tower;
         }
     }

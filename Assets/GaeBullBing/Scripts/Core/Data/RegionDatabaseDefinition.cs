@@ -17,8 +17,15 @@ namespace GaeBullBing.Core.Data
         public string Scope = string.Empty;
         public int TilesPerTurn;
         public int TargetTileIndex = -1;
+        public int[] TargetTileIndices = Array.Empty<int>();
         public string OverrideEffectId = string.Empty;
         public float OverrideEffectValue;
+        public int DurationTurns;
+        public bool DisallowBuild;
+        public bool DisallowUpgrade;
+        public string TriggerCondition = string.Empty;
+        public string RewardEffectId = string.Empty;
+        public float RewardEffectValue;
         public Sprite Background;
         public Color BackgroundTint = Color.white;
     }

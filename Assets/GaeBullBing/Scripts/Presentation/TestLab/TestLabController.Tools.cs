@@ -64,11 +64,18 @@ namespace GaeBullBing.Presentation.TestLab
             DrawMapPicking();
             DrawTowerStateEditor();
             DrawAttackControls();
-            GUILayout.Label($"효과 실행 ({game.State.Round}턴)", UpgradeTierStyle());
+            var turnOpen = game.Session.CanEndManualTurn;
+            GUILayout.Label($"효과 실행 ({game.State.Round}턴 · {(turnOpen ? "진행 중" : game.State.RegionGimmickEndedRound == game.State.Round ? "종료됨 / 다음 턴 시작 대기" : "시작 전")})", UpgradeTierStyle());
+            GUILayout.Label("지역 적용 시 첫 턴은 자동 시작됩니다. 턴 종료 후 다음 턴 시작을 눌러 맵 기믹을 갱신하세요.", WrapStyle());
+            var enabledBeforeTurnButtons = GUI.enabled;
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("턴 시작")) RunEvent("start", 0);
+            GUI.enabled = enabledBeforeTurnButtons && game.Session.CanBeginManualTurn;
+            if (GUILayout.Button(game.State.RegionGimmickEndedRound == game.State.Round ? "다음 턴 시작" : "턴 시작")) RunEvent("start", 0);
+            GUI.enabled = enabledBeforeTurnButtons;
             if (GUILayout.Button("화상 / 스탠바이")) RunEvent("standby", 0);
+            GUI.enabled = enabledBeforeTurnButtons && game.Session.CanEndManualTurn;
             if (GUILayout.Button("턴 종료")) RunEvent("end", 0);
+            GUI.enabled = enabledBeforeTurnButtons;
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("타워 밟기")) RunEvent("arrival", 0);
@@ -76,6 +83,8 @@ namespace GaeBullBing.Presentation.TestLab
             if (GUILayout.Button("완주 처리")) RunEvent("lap", 0);
             GUILayout.EndHorizontal();
             DrawIntField("경로 길이", ref pathDistance, ref pathDistanceText, 1, 35);
+            GUILayout.Label($"수풀 보상: 이번 턴 남은 추가 굴림 {game.State.Player.AvailableExtraRolls}회 / 다음 턴 대기 {game.State.Player.PendingExtraRolls}회", WrapStyle());
+            if (GUILayout.Button("수풀 추가 굴림 1회 사용")) RunEvent("extra_roll", 0);
         }
 
         private void DrawAttackControls()
@@ -188,10 +197,12 @@ namespace GaeBullBing.Presentation.TestLab
                     if (lastTrace != null)
                     {
                         lastTrace.Add($"Final: round {game.State.Round}, phase {game.State.CurrentPhase}");
+                        lastTrace.Add($"수풀 보상: 이번 턴 {game.State.Player.AvailableExtraRolls}회 / 다음 턴 {game.State.Player.PendingExtraRolls}회");
                         foreach (var monster in game.State.Monsters) lastTrace.Add("Final: " + CombatTrace.Describe(monster), targetId: monster.InstanceId);
                         foreach (var tile in game.State.Board.Tiles)
-                            if (tile.HasTower || tile.FireTurnsRemaining > 0 || tile.IceTurnsRemaining > 0)
+                            if (tile.HasTower || tile.FireTurnsRemaining > 0 || tile.IceTurnsRemaining > 0 || tile.HasOvergrowth)
                                 lastTrace.Add($"Final tile {tile.Index}: fire {tile.FireTurnsRemaining}, ice {tile.IceTurnsRemaining}; " +
+                                    $"수풀 {tile.OvergrowthTurnsRemaining}턴; " +
                                     (tile.HasTower ? $"cooldown {tile.Tower.AttackCooldownRounds}, charge {tile.Tower.ChargeCount}, heat {tile.Tower.OverheatAttackTurns}, periodic {tile.Tower.PeriodicTurnCount}" : "no tower"), tile.Tower?.InstanceId ?? 0);
                     }
                     if (game.State.CombatTrace == lastTrace) game.State.CombatTrace = previousTrace;
@@ -242,14 +253,21 @@ namespace GaeBullBing.Presentation.TestLab
         {
             if (game?.State == null) return "No game state";
             var result = new StringBuilder($"round {game.State.Round}, phase {game.State.CurrentPhase}, laps {game.State.CompletedLaps}; ");
+            result.Append($"extra rolls {game.State.Player.AvailableExtraRolls}/{game.State.Player.PendingExtraRolls}; ");
+            var oasis = game.Session.PendingOasisUpgrade;
+            if (oasis != null) result.Append($"oasis {oasis.TileIndex}:{oasis.RemainingChoices}; ");
             foreach (var monster in game.State.Monsters)
                 result.Append($"M#{monster.InstanceId}: {CombatTrace.Describe(monster)}; ");
             foreach (var tile in game.State.Board.Tiles)
             {
                 if (tile.FireTurnsRemaining > 0 || tile.IceTurnsRemaining > 0)
                     result.Append($"tile {tile.Index} fire {tile.FireTurnsRemaining}/ice {tile.IceTurnsRemaining}; ");
+                if (tile.HasOvergrowth) result.Append($"overgrowth {tile.Index}:{tile.OvergrowthTurnsRemaining}; ");
                 if (tile.HasTower)
+                {
+                    result.Append($"tier {tile.Tower.UpgradeTier}, upgrades {string.Join(",", tile.Tower.AppliedUpgradeIds)}; ");
                     result.Append($"T#{tile.Tower.InstanceId}@{tile.Index}: cd {tile.Tower.AttackCooldownRounds}, charge {tile.Tower.ChargeCount}, heat {tile.Tower.OverheatAttackTurns}, periodic {tile.Tower.PeriodicTurnCount}, consecutive {tile.Tower.ConsecutiveDamageBonus:0.###}, temporary +{tile.Tower.BonusAttackCount}; ");
+                }
             }
             return result.ToString();
         }
