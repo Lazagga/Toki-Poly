@@ -169,12 +169,7 @@
         "base_defense": 60
       },
       "status_immunities": {},
-      "passive_effect_ids": [
-        {
-          "id": "quicksand_slow_immune",
-          "value": 1
-        }
-      ]
+      "passive_effect_ids": []
     },
     {
       "id": "MON_009",
@@ -188,12 +183,7 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": [
-        {
-          "id": "sand_burrow_stealth",
-          "value": 1
-        }
-      ]
+      "passive_effect_ids": []
     },
     {
       "id": "BOSS_003",
@@ -209,12 +199,7 @@
       "status_immunities": [
         "knockback"
       ],
-      "passive_effect_ids": [
-        {
-          "id": "dive_strike",
-          "value": 1
-        }
-      ]
+      "passive_effect_ids": []
     },
     {
       "id": "MON_010",
@@ -228,12 +213,7 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": [
-        {
-          "id": "poison_trail",
-          "value": 1
-        }
-      ]
+      "passive_effect_ids": []
     },
     {
       "id": "MON_011",
@@ -261,12 +241,7 @@
         "base_defense": 90
       },
       "status_immunities": {},
-      "passive_effect_ids": [
-        {
-          "id": "swamp_toxin_immune",
-          "value": 1
-        }
-      ]
+      "passive_effect_ids": []
     },
     {
       "id": "BOSS_004",
@@ -282,12 +257,7 @@
       "status_immunities": [
         "slow"
       ],
-      "passive_effect_ids": [
-        {
-          "id": "ambush_lunge",
-          "value": 1
-        }
-      ]
+      "passive_effect_ids": []
     }
   ]
 }

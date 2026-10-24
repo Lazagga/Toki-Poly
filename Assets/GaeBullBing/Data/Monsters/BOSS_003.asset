@@ -23,7 +23,5 @@ MonoBehaviour:
   baseDefense: 220
   statusImmunities:
   - knockback
-  passiveEffects:
-  - Id: dive_strike
-    Value: 1
+  passiveEffects: []
   killRewardDicePoints: 0
