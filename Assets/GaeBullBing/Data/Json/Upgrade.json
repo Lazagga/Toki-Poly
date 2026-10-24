@@ -1535,27 +1535,6 @@
       ]
     },
     {
-      "id": "UPG_PHYSICS_T3_10",
-      "name": "TOW_03_물리_T3_10",
-      "element": "Physics",
-      "tier": 3,
-      "weight": 1,
-      "description": "적이 넉백되면, 밀려난 타일에 있는 다른 모든 적에게 이 타워 공격력의 50%만큼 피해를 입힙니다.",
-      "stat_modifiers": [
-        {
-          "stat": "damage",
-          "operation": "add",
-          "value": 30
-        }
-      ],
-      "effect_ids": [
-        {
-          "id": "knockback_impact",
-          "value": 50
-        }
-      ]
-    },
-    {
       "id": "UPG_PHYSICS_T3_11",
       "name": "TOW_03_물리_T3_11",
       "element": "Physics",
@@ -1573,27 +1552,6 @@
         {
           "id": "attack_ramp_turn",
           "value": 15
-        }
-      ]
-    },
-    {
-      "id": "UPG_PHYSICS_T3_12",
-      "name": "TOW_03_물리_T3_12",
-      "element": "Physics",
-      "tier": 3,
-      "weight": 1,
-      "description": "구르는 돌에 맞은 적을 1턴간 이동하지 못하게 합니다.",
-      "stat_modifiers": [
-        {
-          "stat": "damage",
-          "operation": "add",
-          "value": 30
-        }
-      ],
-      "effect_ids": [
-        {
-          "id": "rolling_stone_stun",
-          "value": 1
         }
       ]
     },
