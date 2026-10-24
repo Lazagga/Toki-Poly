@@ -35,7 +35,7 @@
       "name": "물리타워",
       "element": "Physics",
       "base_stats": {
-            "damage": 15,
+            "damage": 25,
             "range": 3,
             "target_count": 1,
             "attack_count": 1
@@ -47,7 +47,7 @@
       "name": "전기타워",
       "element": "Electric",
       "base_stats": {
-            "damage": 18,
+            "damage": 20,
             "range": 3,
             "target_count": 1,
             "attack_count": 1

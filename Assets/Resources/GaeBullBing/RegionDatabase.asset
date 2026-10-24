@@ -25,14 +25,14 @@ MonoBehaviour:
     Scope: 
     TilesPerTurn: 0
     TargetTileIndex: -1
-    TargetTileIndices:
+    TargetTileIndices: 
     OverrideEffectId: 
     OverrideEffectValue: 0
     DurationTurns: 0
     DisallowBuild: 0
     DisallowUpgrade: 0
-    TriggerCondition: ""
-    RewardEffectId: ""
+    TriggerCondition: 
+    RewardEffectId: 
     RewardEffectValue: 0
     Background: {fileID: 0}
     BackgroundTint: {r: 1, g: 1, b: 1, a: 1}
@@ -51,14 +51,14 @@ MonoBehaviour:
     Scope: per_line
     TilesPerTurn: 1
     TargetTileIndex: -1
-    TargetTileIndices:
+    TargetTileIndices: 
     OverrideEffectId: 
     OverrideEffectValue: 0
     DurationTurns: 0
     DisallowBuild: 0
     DisallowUpgrade: 0
-    TriggerCondition: ""
-    RewardEffectId: ""
+    TriggerCondition: 
+    RewardEffectId: 
     RewardEffectValue: 0
     Background: {fileID: 0}
     BackgroundTint: {r: 0.78, g: 0.9, b: 1, a: 1}
@@ -85,8 +85,8 @@ MonoBehaviour:
     DurationTurns: 0
     DisallowBuild: 0
     DisallowUpgrade: 0
-    TriggerCondition: ""
-    RewardEffectId: ""
+    TriggerCondition: 
+    RewardEffectId: 
     RewardEffectValue: 0
     Background: {fileID: 0}
     BackgroundTint: {r: 1, g: 0.86, b: 0.62, a: 1}
@@ -109,7 +109,7 @@ MonoBehaviour:
     Scope: board
     TilesPerTurn: 8
     TargetTileIndex: -1
-    TargetTileIndices:
+    TargetTileIndices: 
     OverrideEffectId: 
     OverrideEffectValue: 0
     DurationTurns: 1
