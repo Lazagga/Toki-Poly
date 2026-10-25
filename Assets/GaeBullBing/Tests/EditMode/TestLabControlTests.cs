@@ -79,6 +79,7 @@ namespace GaeBullBing.Tests.EditMode
             Effect("lightning_strike", 300); tower.PeriodicTurnCount = 2;
             var single = Attack().Where(r => r.Damage > 0).Select(r => r.Damage).ToArray();
             monster.CurrentHealth = monster.MaxHealth; monster.Shocked = false; tower.PeriodicTurnCount = 2;
+            tower.EffectReadyPhases.Clear();
             var all = session.ResolveTowerCombat(new[] { definition }, Array.Empty<TowerUpgradeDefinition>())
                 .Where(r => r.Damage > 0).Select(r => r.Damage).ToArray();
             Assert.That(all, Is.EqualTo(single)); Assert.That(single.First(), Is.EqualTo(30));

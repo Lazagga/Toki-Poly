@@ -318,15 +318,18 @@ namespace GaeBullBing.Core.Towers
             tower.PeriodicTurnCount++;
             var tile = TowerUpgradeRules.FindTower(state, tower.InstanceId);
             if (tile == null || tower.IsFeatherSealed) return results;
-            if (tower.HasEffect("blizzard_line") && tower.PeriodicTurnCount %
-                Math.Max(1, (int)Math.Round(tower.GetEffectValue("blizzard_line"))) == 0)
+            if (tower.HasEffect("blizzard_line") && tower.IsEffectReady("blizzard_line"))
+            {
                 foreach (var monster in new List<MonsterState>(state.Monsters))
                     if (!monster.IsDead && MonsterService.GetLine(monster.CurrentTileIndex) == MonsterService.GetLine(tile.Index))
                     {
                         results.Add(TowerUpgradeRules.PrimaryHit(state, tower, monster,
                             tower.LastResolvedDamage, TowerAttackVisualKind.ChainLine));
                     }
-            if (tower.HasEffect("lightning_strike") && tower.PeriodicTurnCount % 3 == 0)
+                if (results.Count > 0)
+                    tower.StartEffectCooldown("blizzard_line", (int)Math.Round(tower.GetEffectValue("blizzard_line")));
+            }
+            if (tower.HasEffect("lightning_strike") && tower.IsEffectReady("lightning_strike"))
             {
                 var candidates = state.Monsters.FindAll(m => !m.IsDead);
                 candidates.Sort((a, b) => b.CurrentHealth != a.CurrentHealth
@@ -338,6 +341,7 @@ namespace GaeBullBing.Core.Towers
                         tower.LastResolvedDamage * tower.GetEffectValue("lightning_strike") / 100f,
                         TowerAttackVisualKind.Projectile));
                     if (!monster.IsImmuneTo("shock")) monster.Shocked = true;
+                    tower.StartEffectCooldown("lightning_strike", 3);
                 }
             }
             return results;

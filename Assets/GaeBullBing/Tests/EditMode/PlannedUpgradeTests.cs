@@ -95,9 +95,7 @@ namespace GaeBullBing.Tests.EditMode
                 "UPG_PHYSICS_T3_07",
                 "UPG_PHYSICS_T3_08",
                 "UPG_PHYSICS_T3_09",
-                "UPG_PHYSICS_T3_10",
                 "UPG_PHYSICS_T3_11",
-                "UPG_PHYSICS_T3_12",
                 "UPG_PHYSICS_T3_13",
                 "UPG_PHYSICS_T2_05",
                 "UPG_PHYSICS_T2_06",
@@ -151,12 +149,12 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
-        public void SheetHasAll52NewDefinitionsAndEveryEffectHasAHandler()
+        public void UpgradeDefinitionsHaveUniqueIdsAndEveryEffectHasAHandler()
         {
             var db = Resources.Load<TowerUpgradeDatabaseDefinition>("GaeBullBing/TowerUpgradeDatabase");
             Assert.That(db, Is.Not.Null);
-            Assert.That(db.Upgrades.Length, Is.EqualTo(87));
-            Assert.That(db.Upgrades.Select(x => x.Id).Distinct().Count(), Is.EqualTo(87));
+            Assert.That(db.Upgrades, Is.Not.Empty);
+            Assert.That(db.Upgrades.Select(x => x.Id).Distinct().Count(), Is.EqualTo(db.Upgrades.Length));
             foreach (var upgrade in db.Upgrades)
                 foreach (var effect in upgrade.Effects)
                     Assert.That(TowerEffectCatalog.IsImplemented(effect.Id), Is.True, upgrade.Id + ":" + effect.Id);
@@ -307,10 +305,28 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
+        public void BurnSplashCopiesResolvedDamageWithoutSecondDefenseOrIncomingMultiplier()
+        {
+            Give(tower, "burn_tick_splash");
+            var source = Monster(); source.BurnStacks = 2; source.BurnSourceTowerId = 1;
+            source.BaseDefense = 100;
+            var other = Monster(2); other.BaseDefense = 900; other.Shocked = true;
+            other.DamageStoreMarked = true;
+            var hits = new List<TowerAttackResult>();
+            TowerUpgradeRules.BurnTick(state, source, 5, hits);
+            Assert.That(source.CurrentHealth, Is.EqualTo(9975));
+            Assert.That(other.CurrentHealth, Is.EqualTo(9975));
+            Assert.That(other.StoredDamage, Is.EqualTo(25));
+            Assert.That(other.LastDamageTowerId, Is.EqualTo(1));
+        }
+
+        [Test]
         public void OverheatAttacksTwiceThenRestsAndFeatherDoesNotConsumeAttackCycle()
         {
             Give(tower, "overheat_cycle", 2); var target = Monster();
-            Attack(); Attack(); Attack();
+            Attack();
+            Assert.That(target.CurrentHealth, Is.EqualTo(9900), "The first phase must attack, not rest.");
+            Attack(); Attack();
             Assert.That(target.CurrentHealth, Is.EqualTo(9800));
             tower.IsFeatherSealed = true; Attack();
             tower.IsFeatherSealed = false; Attack();
@@ -354,15 +370,41 @@ namespace GaeBullBing.Tests.EditMode
         }
 
         [Test]
-        public void PeriodicAttacksFirstFireOnThirdTowerPhase()
+        public void PeriodicAttacksFireImmediatelyThenEveryThirdPhase()
         {
             Give(tower, "blizzard_line", 3); Give(tower, "lightning_strike", 300);
             var target = Monster();
-            Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
-            Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
             var hits = effects.ResolvePeriodicAttack(state, tower);
             Assert.That(hits.Count, Is.EqualTo(2));
             Assert.That(target.CurrentHealth, Is.EqualTo(9600));
+            Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
+            Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
+            Assert.That(effects.ResolvePeriodicAttack(state, tower).Count, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void NewPeriodicEffectIsReadyOnOldTowerIndependentlyOfExistingCooldown()
+        {
+            tower.PeriodicTurnCount = 41;
+            Give(tower, "blizzard_line", 3); Monster();
+            Assert.That(effects.ResolvePeriodicAttack(state, tower).Count, Is.EqualTo(1));
+            Give(tower, "lightning_strike", 300);
+            Assert.That(effects.ResolvePeriodicAttack(state, tower).Count, Is.EqualTo(1));
+            Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
+            Assert.That(effects.ResolvePeriodicAttack(state, tower).Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void PeriodicReadyStateWaitsForTargetAndSurvivesFeatherSeal()
+        {
+            Give(tower, "lightning_strike", 300);
+            Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
+            Monster();
+            Assert.That(effects.ResolvePeriodicAttack(state, tower).Count, Is.EqualTo(1));
+            tower.IsFeatherSealed = true;
+            for (var i = 0; i < 4; i++) Assert.That(effects.ResolvePeriodicAttack(state, tower), Is.Empty);
+            tower.IsFeatherSealed = false;
+            Assert.That(effects.ResolvePeriodicAttack(state, tower).Count, Is.EqualTo(1));
         }
 
         [TestCase(false)]

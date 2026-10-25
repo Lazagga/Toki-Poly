@@ -251,6 +251,38 @@ namespace GaeBullBing.Tests.EditMode
             Assert.That(state.PermanentAllTowerDamageRateBonus, Is.EqualTo(.05f));
         }
 
+        [TestCase(5)]
+        [TestCase(35)]
+        public void AnimatedPlayerPathWaitsForEachLandingAndExpiresAtLap(int start)
+        {
+            var state = new GameState();
+            var session = CreateSession(state);
+            session.StartNewGame();
+            session.QueueDiceEquip(0, 0); session.QueueDiceEquip(1, 1);
+            state.Player.CurrentTileIndex = start;
+            state.Player.PathDamageBuffs.Add(new PlayerPathDamageBuff { SourceTowerId = 1, Damage = 100 });
+            var first = new GaeBullBing.Core.Monsters.MonsterState {
+                InstanceId = 1, CurrentTileIndex = start, MaxHealth = 1000, CurrentHealth = 1000 };
+            var second = new GaeBullBing.Core.Monsters.MonsterState {
+                InstanceId = 2, CurrentTileIndex = (start + 1) % 36, MaxHealth = 1000, CurrentHealth = 1000 };
+            var destination = new GaeBullBing.Core.Monsters.MonsterState {
+                InstanceId = 3, CurrentTileIndex = (start + 2) % 36, MaxHealth = 1000, CurrentHealth = 1000 };
+            state.Monsters.Add(first); state.Monsters.Add(second); state.Monsters.Add(destination);
+            session.SetNextDiceResults(1, 1);
+            session.RollDiceAndMovePlayer(deferPathEffects: true);
+            Assert.That(first.CurrentHealth, Is.EqualTo(1000));
+            Assert.That(state.CompletedLaps, Is.Zero);
+            Assert.That(state.Player.PathDamageBuffs.Count, Is.EqualTo(1));
+            session.ResolvePlayerPathEffects(start, 1);
+            Assert.That(first.CurrentHealth, Is.EqualTo(900));
+            Assert.That(second.CurrentHealth, Is.EqualTo(1000));
+            if (start == 35) session.CompletePlayerLap();
+            session.ResolvePlayerPathEffects((start + 1) % 36, 1);
+            Assert.That(second.CurrentHealth, Is.EqualTo(start == 35 ? 1000 : 900));
+            Assert.That(destination.CurrentHealth, Is.EqualTo(1000));
+            Assert.That(state.CompletedLaps, Is.EqualTo(start == 35 ? 1 : 0));
+        }
+
         [Test]
         public void MonsterService_MovesMonsterByTurnDistance()
         {

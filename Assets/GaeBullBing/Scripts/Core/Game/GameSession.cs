@@ -109,7 +109,7 @@ namespace GaeBullBing.Core.Game
             return true;
         }
 
-        public int RollDiceAndMovePlayer()
+        public int RollDiceAndMovePlayer(bool deferPathEffects = false)
         {
             if (State.Board.TileCount == 0 || !CanRollDice)
                 throw new InvalidOperationException("Start a game before rolling dice.");
@@ -130,11 +130,14 @@ namespace GaeBullBing.Core.Game
 
             State.LastMoveDistance = distance;
             State.CurrentPhase = TurnPhase.PlayerMove;
-            LastPlayerPathResults = towerEffectService.ResolvePlayerPath(State, State.Player.CurrentTileIndex, distance, false);
+            // Animated gameplay resolves each departed tile after landing on
+            // the next tile. Headless callers retain synchronous resolution.
+            LastPlayerPathResults = deferPathEffects ? Array.Empty<TowerAttackResult>() :
+                towerEffectService.ResolvePlayerPath(State, State.Player.CurrentTileIndex, distance, false);
             var completedLap = State.Player.CurrentTileIndex + distance >= State.Board.TileCount;
             movementService.Move(State.Player, State.Board, distance);
             State.Player.ArrivalSerial++;
-            if (completedLap)
+            if (completedLap && !deferPathEffects)
                 CompletePlayerLap();
             State.CurrentPhase = TurnPhase.TileResolve;
             ResolveBossVictory(LastPlayerPathResults);

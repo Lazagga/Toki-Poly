@@ -98,6 +98,7 @@ namespace GaeBullBing.Core.Game
         public static void ClearCounters(TowerState t)
         {
             t.AttackCooldownRounds = t.ChargeCount = t.OverheatAttackTurns = t.PeriodicTurnCount = 0;
+            t.EffectReadyPhases.Clear();
             t.LastAttackTargetId = 0; t.ConsecutiveDamageBonus = t.ActiveChargeBonus = 0;
             t.AttacksThisTurn = t.BonusAttackCount = t.BonusAttackTurnsRemaining = 0;
             t.PendingBonusAttackCount = t.PendingBonusAttackTurns = 0;

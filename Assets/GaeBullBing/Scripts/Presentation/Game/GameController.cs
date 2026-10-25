@@ -1141,16 +1141,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             yield return new WaitForSeconds(diceRevealDelay);
 
             var startTileIndex = State.Player.CurrentTileIndex;
-            var distance = Session.RollDiceAndMovePlayer();
+            var distance = Session.RollDiceAndMovePlayer(deferPathEffects: true);
             ApplyDiceRollPassives();
-            var pathResults = Session.LastPlayerPathResults;
-            foreach (var result in pathResults)
-                yield return PlayAttackResult(result, new HashSet<int>());
-            Session.CollectKillRewards(pathResults);
-            var pathKills = 0;
-            foreach (var result in pathResults) if (result.Killed) pathKills++;
-            CommitCapturedKills(ref pathKills);
-            if (State.IsVictory) { FinishVictory(); yield break; }
             pendingDiceTuning |= startTileIndex + distance >= State.Board.TileCount;
             diceHud.SetResults(State.LastDiceResults[0], State.LastDiceResults[1]);
             yield return dice3DPresenter.Roll(State.Dice, State.LastDiceResults[0], State.LastDiceResults[1]);
@@ -1166,10 +1158,27 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     if (completesLap && tileIndex == 0)
                         lapOverviewRoutine = StartCoroutine(ReturnToOverviewAfterPress(tileIndex));
                 },
-                tileIndex => completesLap && tileIndex == 0
-                    ? PlayLapCompletionPresentation(lapOverviewRoutine)
-                    : null);
+                tileIndex => ResolvePlayerStepAfterLanding(tileIndex, lapOverviewRoutine));
+            if (State.IsVictory) { FinishVictory(); yield break; }
             BeginCurrentTileAction();
+        }
+
+        private IEnumerator ResolvePlayerStepAfterLanding(int enteredTile, Coroutine lapOverviewRoutine)
+        {
+            var departedTile = (enteredTile + State.Board.TileCount - 1) % State.Board.TileCount;
+            var results = Session.ResolvePlayerPathEffects(departedTile, 1);
+            var captured = new HashSet<int>();
+            foreach (var result in results)
+                yield return PlayAttackResult(result, captured);
+            Session.CollectKillRewards(results);
+            var kills = 0;
+            foreach (var result in results) if (result.Killed) kills++;
+            CommitCapturedKills(ref kills);
+            if (enteredTile == 0)
+            {
+                Session.CompletePlayerLap();
+                yield return PlayLapCompletionPresentation(lapOverviewRoutine);
+            }
         }
 
         private IEnumerator ReturnToOverviewAfterPress(int tileIndex)

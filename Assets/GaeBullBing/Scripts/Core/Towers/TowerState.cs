@@ -48,6 +48,13 @@ namespace GaeBullBing.Core.Towers
         public int AttacksThisTurn { get; set; }
         public int OverheatAttackTurns { get; set; }
         public int PeriodicTurnCount { get; set; }
+        // Missing entries are ready immediately, including effects acquired on
+        // an old tower. Only a successful activation starts its own cooldown.
+        public Dictionary<string, int> EffectReadyPhases { get; } = new();
+        public bool IsEffectReady(string effectId) =>
+            !EffectReadyPhases.TryGetValue(effectId, out var phase) || PeriodicTurnCount >= phase;
+        public void StartEffectCooldown(string effectId, int interval) =>
+            EffectReadyPhases[effectId] = PeriodicTurnCount + System.Math.Max(1, interval);
         public int ChargeCount { get; set; }
         public float ActiveChargeBonus { get; set; }
         public int StepDamageRound { get; set; } = -1;

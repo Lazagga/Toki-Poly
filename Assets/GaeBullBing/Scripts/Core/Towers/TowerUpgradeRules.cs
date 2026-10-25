@@ -75,7 +75,9 @@ namespace GaeBullBing.Core.Towers
                 foreach (var other in new List<MonsterState>(state.Monsters))
                     if (other != target && !other.IsDead && other.CurrentTileIndex == tileIndex)
                     {
-                        var actual = Receive(state, other, damage * pair.Value / target.BurnStacks, pair.Key);
+                        other.LastDamageTowerId = pair.Key;
+                        var actual = other.ReceiveResolvedDamage(damage * pair.Value / target.BurnStacks);
+                        state.CombatTrace?.Add($"burn splash resolved damage {actual:0.###} (no second defense/multiplier)", pair.Key, other.InstanceId);
                         results.Add(new TowerAttackResult(pair.Key, other.InstanceId, actual, other.IsDead,
                             targetTileIndex: tileIndex));
                     }

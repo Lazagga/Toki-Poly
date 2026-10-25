@@ -83,6 +83,14 @@ namespace GaeBullBing.Core.Monsters
                 (1f + (Shocked ? ShockDamageBonus : 0f) + TileVulnerability);
             var defense = GetDefense(difficulty);
             var actualDamage = modifiedDamage * 100f / (defense + 100f);
+            return ReceiveResolvedDamage(actualDamage);
+        }
+
+        // Damage copied from an already resolved hit must not apply defense or
+        // incoming multipliers a second time. Keep damage-store accounting.
+        public float ReceiveResolvedDamage(float damage)
+        {
+            var actualDamage = Math.Max(0f, damage);
             CurrentHealth -= actualDamage;
             if (DamageStoreMarked) StoredDamage += actualDamage;
             return actualDamage;
