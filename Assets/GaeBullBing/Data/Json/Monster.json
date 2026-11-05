@@ -111,7 +111,12 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "ice_overlay_damage_reduction_percent",
+          "value": 20
+        }
+      ]
     },
     {
       "id": "MON_006",
@@ -125,7 +130,12 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "spawn_group_size",
+          "value": 2
+        }
+      ]
     },
     {
       "id": "BOSS_002",
@@ -141,7 +151,24 @@
       "status_immunities": [
         "freeze"
       ],
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "submerge_cycle_length_turns",
+          "value": 3
+        },
+        {
+          "id": "submerge_duration_turns",
+          "value": 2
+        },
+        {
+          "id": "submerged_invincible",
+          "value": 1
+        },
+        {
+          "id": "submerged_tile_effect_immune",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "MON_007",
@@ -151,7 +178,7 @@
       "appearance_wave": 9,
       "base_stats": {
         "max_hp": 280,
-        "move_speed": 3,
+        "move_speed": 4,
         "base_defense": 0
       },
       "status_immunities": {},
@@ -183,7 +210,12 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "molt_status_block_per_turn",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "BOSS_003",
@@ -199,7 +231,24 @@
       "status_immunities": [
         "knockback"
       ],
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "move_tile_effect_immune",
+          "value": 1
+        },
+        {
+          "id": "tower_snatch_count",
+          "value": 1
+        },
+        {
+          "id": "tower_snatch_swap_release",
+          "value": 1
+        },
+        {
+          "id": "tower_snatch_disable_attack",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "MON_010",
@@ -213,7 +262,12 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "move_tile_effect_immune",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "MON_011",
@@ -227,7 +281,16 @@
         "base_defense": 0
       },
       "status_immunities": {},
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "water_trail_duration_turns",
+          "value": 1
+        },
+        {
+          "id": "water_trail_move_speed_bonus",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "MON_012",
@@ -241,7 +304,24 @@
         "base_defense": 90
       },
       "status_immunities": {},
-      "passive_effect_ids": []
+      "passive_effect_ids": [
+        {
+          "id": "periodic_stop_interval_turns",
+          "value": 3
+        },
+        {
+          "id": "periodic_stop_duration_turns",
+          "value": 1
+        },
+        {
+          "id": "stop_damage_reduction_percent",
+          "value": 50
+        },
+        {
+          "id": "stop_damage_reduction_only_while_stopped",
+          "value": 1
+        }
+      ]
     },
     {
       "id": "BOSS_004",
@@ -254,10 +334,17 @@
         "move_speed": 3,
         "base_defense": 260
       },
-      "status_immunities": [
-        "slow"
-      ],
-      "passive_effect_ids": []
+      "status_immunities": [],
+      "passive_effect_ids": [
+        {
+          "id": "bush_pass_heal_percent",
+          "value": 20
+        },
+        {
+          "id": "bush_pass_heal_use_max_hp",
+          "value": 1
+        }
+      ]
     }
   ]
 }
