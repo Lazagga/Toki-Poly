@@ -190,10 +190,10 @@ namespace GaeBullBing.Core.Towers
                     state.CombatTrace?.Add("No ordinary attack: overheat rest phase", tower.InstanceId);
                     continue;
                 }
-                var hasTargetInRange = state.Monsters.Exists(m => !m.IsDead &&
+                var hasTargetInRange = state.Monsters.Exists(m => m.IsTargetable &&
                     GetBoardDistance(tile.Index, m.CurrentTileIndex) <= stats.Range);
                 if (HasEffect(tower, TowerEffectCatalog.ChainLine))
-                    hasTargetInRange = state.Monsters.Exists(m => !m.IsDead &&
+                    hasTargetInRange = state.Monsters.Exists(m => m.IsTargetable &&
                         MonsterService.GetLine(tile.Index) == MonsterService.GetLine(m.CurrentTileIndex));
                 if (tower.HasEffect("charge_damage") && !hasTargetInRange)
                 {
@@ -309,15 +309,15 @@ namespace GaeBullBing.Core.Towers
         }
 
         private static void ResolvePhysicsGuard(GameState s,TileState tile,int damage,ICollection<TowerAttackResult> r)
-        { foreach(var m in new List<MonsterState>(s.Monsters)) if(!m.IsBoss&&!m.IsDead&&m.CurrentTileIndex==tile.Index&&m.PhysicsGuardTriggeredThisTurn){m.PhysicsGuardTriggeredThisTurn=false;Damage(s,m,damage,tile.Tower.InstanceId,r,TowerAttackVisualKind.Projectile);} }
+        { foreach(var m in new List<MonsterState>(s.Monsters)) if(!m.IsBoss&&m.IsTargetable&&m.CurrentTileIndex==tile.Index&&m.PhysicsGuardTriggeredThisTurn){m.PhysicsGuardTriggeredThisTurn=false;Damage(s,m,damage,tile.Tower.InstanceId,r,TowerAttackVisualKind.Projectile);} }
         private static void ResolveLineAttack(GameState s,TileState tile,int damage,ICollection<TowerAttackResult> r)
-        { var line=MonsterService.GetLine(tile.Index);foreach(var m in new List<MonsterState>(s.Monsters))if(!m.IsDead&&MonsterService.GetLine(m.CurrentTileIndex)==line)Damage(s,m,damage,tile.Tower.InstanceId,r,TowerAttackVisualKind.ChainLine); }
+        { var line=MonsterService.GetLine(tile.Index);foreach(var m in new List<MonsterState>(s.Monsters))if(m.IsTargetable&&MonsterService.GetLine(m.CurrentTileIndex)==line)Damage(s,m,damage,tile.Tower.InstanceId,r,TowerAttackVisualKind.ChainLine); }
         private static readonly Random EffectRandom=new Random();
         private static void ResolveRandomElectric(GameState s,TileState source,int damage,int attackCount,ICollection<TowerAttackResult> r)
         {
             var tiles=s.Board.Tiles.FindAll(t=>t.HasTower&&t.Tower.DefinitionId=="TOW_04"&&t.Tower.InstanceId!=source.Tower.InstanceId);
             if(tiles.Count==0)return;
-            var occupied=tiles.FindAll(t=>s.Monsters.Exists(m=>!m.IsDead&&m.CurrentTileIndex==t.Index));
+            var occupied=tiles.FindAll(t=>s.Monsters.Exists(m=>m.IsTargetable&&m.CurrentTileIndex==t.Index));
             var candidates=occupied.Count>0?occupied:tiles;
             for(var i=0;i<attackCount;i++)
             {
@@ -381,7 +381,7 @@ namespace GaeBullBing.Core.Towers
             var candidates = new List<MonsterState>();
             foreach (var monster in state.Monsters)
             {
-                if (!monster.IsDead && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
+                if (monster.IsTargetable && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
                     candidates.Add(monster);
             }
 
@@ -394,7 +394,7 @@ namespace GaeBullBing.Core.Towers
             {
                 var target = candidates[index];
                 Damage(state, target, stats.Damage, tower.InstanceId, results, TowerAttackVisualKind.Projectile);
-                if (!target.IsDead)
+                if (target.IsTargetable)
                     tower.TargetInstanceIds.Add(target.InstanceId);
             }
 
@@ -410,7 +410,7 @@ namespace GaeBullBing.Core.Towers
             var tower = tile.Tower;
             var candidates = new List<MonsterState>();
             foreach (var monster in state.Monsters)
-                if (!monster.IsDead && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
+                if (monster.IsTargetable && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
                     candidates.Add(monster);
             candidates.Sort(CompareTargets);
             MovePreferredTargetFirst(candidates, preferredTargetInstanceId);
@@ -426,9 +426,9 @@ namespace GaeBullBing.Core.Towers
             AddAreaTileMarkers(tower.InstanceId, selectedTiles, results);
             foreach (var monster in new List<MonsterState>(state.Monsters))
             {
-                if (monster.IsDead || !selectedTiles.Contains(monster.CurrentTileIndex)) continue;
+                if (!monster.IsTargetable || !selectedTiles.Contains(monster.CurrentTileIndex)) continue;
                 Damage(state, monster, stats.Damage, tile.Tower.InstanceId, results);
-                if (!monster.IsDead) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
+                if (monster.IsTargetable) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
             }
         }
 
@@ -441,7 +441,7 @@ namespace GaeBullBing.Core.Towers
         {
             var candidates = new List<MonsterState>();
             foreach (var monster in state.Monsters)
-                if (!monster.IsDead && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
+                if (monster.IsTargetable && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
                     candidates.Add(monster);
             candidates.Sort(CompareTargets);
             MovePreferredTargetFirst(candidates, preferredTargetInstanceId);
@@ -459,9 +459,9 @@ namespace GaeBullBing.Core.Towers
             AddAreaTileMarkers(tile.Tower.InstanceId, attackedTiles, results);
             foreach (var monster in new List<MonsterState>(state.Monsters))
             {
-                if (monster.IsDead || !attackedTiles.Contains(monster.CurrentTileIndex)) continue;
+                if (!monster.IsTargetable || !attackedTiles.Contains(monster.CurrentTileIndex)) continue;
                 Damage(state, monster, stats.Damage, tile.Tower.InstanceId, results);
-                if (!monster.IsDead) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
+                if (monster.IsTargetable) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
             }
         }
 
@@ -474,7 +474,7 @@ namespace GaeBullBing.Core.Towers
             var targets = new List<MonsterState>();
             var attackedTiles = new HashSet<int>();
             foreach (var monster in state.Monsters)
-                if (!monster.IsDead && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
+                if (monster.IsTargetable && GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= stats.Range)
                 {
                     targets.Add(monster);
                     attackedTiles.Add(monster.CurrentTileIndex);
@@ -485,7 +485,7 @@ namespace GaeBullBing.Core.Towers
             foreach (var monster in targets)
             {
                 Damage(state, monster, stats.Damage, tile.Tower.InstanceId, results);
-                if (!monster.IsDead) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
+                if (monster.IsTargetable) tile.Tower.TargetInstanceIds.Add(monster.InstanceId);
             }
         }
 

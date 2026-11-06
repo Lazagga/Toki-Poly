@@ -22,5 +22,7 @@ MonoBehaviour:
   moveDistance: 2
   baseDefense: 0
   statusImmunities: []
-  passiveEffects: []
+  passiveEffects:
+  - Id: move_tile_effect_immune
+    Value: 1
   killRewardDicePoints: 0

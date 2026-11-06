@@ -20,6 +20,7 @@ namespace GaeBullBing.Core.Game
         private RegionDefinition currentRegion;
         private readonly System.Collections.Generic.Dictionary<int, int> killRewardDicePoints = new();
         private readonly System.Collections.Generic.HashSet<int> rewardedMonsterIds = new();
+        private readonly System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<int>> spawnGroups = new();
         private int[] nextDiceResults;
 
         public GameSession(
@@ -55,6 +56,7 @@ namespace GaeBullBing.Core.Game
                 boardService.Initialize(State.Board);
             State.DiceInventory.ResetToDefaults();
             State.Monsters.Clear();
+            State.PendingTowerReturns.Clear();
             State.Dice.Clear();
             State.Dice.Add(State.DiceInventory.Dice[0]);
             State.Dice.Add(State.DiceInventory.Dice[1]);
@@ -82,6 +84,8 @@ namespace GaeBullBing.Core.Game
             nextDiceResults = null;
             killRewardDicePoints.Clear();
             rewardedMonsterIds.Clear();
+            spawnGroups.Clear();
+            State.PendingProgressKills = State.CapturedMonsterCount = 0;
         }
 
         public void SetNextDiceResults(int first, int second)
@@ -151,9 +155,11 @@ namespace GaeBullBing.Core.Game
             State.CurrentPhase = TurnPhase.MonsterMove;
             var bossEvents = new System.Collections.Generic.Dictionary<int,
                 System.Collections.Generic.List<BossFeatherEvent>>();
+            var crowIds = new System.Collections.Generic.HashSet<int>();
             foreach (var monster in State.Monsters)
             {
-                if (!monster.IsBoss || monster.BossInitialFeatherPlaced) continue;
+                if (monster.UsesCrowPattern) crowIds.Add(monster.InstanceId);
+                if (!monster.UsesCrowPattern || monster.BossInitialFeatherPlaced) continue;
                 monster.BossInitialFeatherPlaced = true;
                 var events = new System.Collections.Generic.List<BossFeatherEvent>();
                 bossEvents[monster.InstanceId] = events;
@@ -170,7 +176,7 @@ namespace GaeBullBing.Core.Game
                 if (definition != null)
                     wallDamage[tile.Tower.InstanceId] = BuildCombatStats(definition, tile, upgrades).Damage;
             }
-            var moved = monsterService.MoveAll(State, wallDamage);
+            var moved = monsterService.MoveAll(State, wallDamage, definitions);
             var results = new System.Collections.Generic.List<MonsterMoveResult>(moved.Count);
             foreach (var result in moved)
             {
@@ -184,7 +190,8 @@ namespace GaeBullBing.Core.Game
 
                 if (!bossEvents.TryGetValue(result.InstanceId, out var events))
                     events = new System.Collections.Generic.List<BossFeatherEvent>();
-                for (var step = 1; step <= result.Distance; step++)
+                var crowPattern = crowIds.Contains(result.InstanceId);
+                for (var step = 1; crowPattern && step <= result.Distance; step++)
                 {
                     var enteredTileIndex = (result.StartTileIndex + step) % State.Board.TileCount;
                     RecoverBossFeather(enteredTileIndex, step, events);
@@ -292,6 +299,21 @@ namespace GaeBullBing.Core.Game
             return monster;
         }
 
+        // A pattern slot can contain multiple individuals; rewards and kill progression remain per monster.
+        public System.Collections.Generic.IReadOnlyList<MonsterState> SpawnMonsterGroup(
+            MonsterDefinition definition, float healthMultiplier = 1f)
+        {
+            var count = 1;
+            foreach (var effect in definition.PassiveEffects ?? Array.Empty<TowerUpgradeEffect>())
+                if (effect.Id == "spawn_group_size") count = Math.Max(1, (int)effect.Value);
+            var group = new System.Collections.Generic.List<MonsterState>();
+            for (var i = 0; i < count; i++) group.Add(SpawnMonster(definition, healthMultiplier));
+            var ids = new System.Collections.Generic.List<int>();
+            foreach (var monster in group) ids.Add(monster.InstanceId);
+            foreach (var id in ids) spawnGroups[id] = ids;
+            return group;
+        }
+
         public int CollectKillRewards(System.Collections.Generic.IEnumerable<TowerAttackResult> results)
         {
             if (results == null) return 0;
@@ -300,6 +322,11 @@ namespace GaeBullBing.Core.Game
             {
                 if (!result.Killed || result.TargetInstanceId <= 0 ||
                     !rewardedMonsterIds.Add(result.TargetInstanceId)) continue;
+                State.CapturedMonsterCount++;
+                if (!State.MonsterPassiveRules.CountSpawnGroupAsOneKill ||
+                    !spawnGroups.TryGetValue(result.TargetInstanceId, out var group) ||
+                    group.TrueForAll(id => rewardedMonsterIds.Contains(id)))
+                    State.PendingProgressKills++;
                 if (killRewardDicePoints.TryGetValue(result.TargetInstanceId, out var reward))
                     awarded += System.Math.Max(0, reward);
             }
@@ -396,6 +423,32 @@ namespace GaeBullBing.Core.Game
                     continue;
                 foreach (var result in ResolveLabTowerPhase(tileIndex, false, 1, 0, false, definitions, upgrades))
                     combined.Add(result);
+            }
+            // A carried tower normally has no board slot and cannot attack. The optional flag
+            // allows a phase at the carrier's position while retaining the same tower instance.
+            foreach (var carrier in new System.Collections.Generic.List<MonsterState>(State.Monsters))
+            {
+                if (carrier.IsDead || carrier.HasPassive("tower_snatch_disable_attack")) continue;
+                foreach (var carried in new System.Collections.Generic.List<CarriedTower>(carrier.CarriedTowers))
+                {
+                    if (carrier.IsDead) break;
+                    var tile = State.Board.Tiles[carrier.CurrentTileIndex];
+                    var resident = tile.Tower;
+                    // Keep this temporary attack slot out of death-return processing.
+                    // Restore the resident before returning a tower whose carrier died.
+                    carrier.CarriedTowers.Remove(carried);
+                    tile.Tower = carried.Tower;
+                    try
+                    {
+                        combined.AddRange(ResolveLabTowerPhase(tile.Index, false, 1, 0, false, definitions, upgrades));
+                    }
+                    finally
+                    {
+                        tile.Tower = resident;
+                        carrier.CarriedTowers.Add(carried);
+                        if (carrier.IsDead) MonsterService.ReleaseCarriedTowers(State, carrier);
+                    }
+                }
             }
             ResolveBossVictory(combined);
             return combined;
@@ -648,6 +701,9 @@ namespace GaeBullBing.Core.Game
         public System.Collections.Generic.IReadOnlyList<TowerAttackResult> ResolveTurnStartEffects()
         {
             if (State.RegionGimmickStartedRound == State.Round) return Array.Empty<TowerAttackResult>();
+            foreach (var monster in State.Monsters) monster.BeginPassiveTurn(State.Round);
+            foreach (var carrier in new System.Collections.Generic.List<MonsterState>(State.PendingTowerReturns))
+                MonsterService.ReleaseCarriedTowers(State, carrier);
             var results = new System.Collections.Generic.List<TowerAttackResult>(regionGimmickService.BeginTurn(State, currentRegion));
             results.AddRange(towerEffectService.ResolveTurnStart(State));
             ResolveBossVictory(results);

@@ -70,6 +70,8 @@ namespace GaeBullBing.Presentation.Board
                 PositionBuildElementOverlay(pair.Key, pair.Value);
             foreach (var pair in overgrowthRenderers)
                 PositionOvergrowth(pair.Key, pair.Value);
+            foreach (var pair in waterTrailRenderers)
+                PositionWaterTrail(pair.Key, pair.Value);
         }
 
         private void ConfigureSorting()
@@ -111,6 +113,7 @@ public void RefreshTileEffects(BoardState board)
                 RefreshTileEffect(board, index);
             RefreshRendererSorting();
             RefreshOvergrowth(board);
+            RefreshWaterTrails(board);
         }
 
         public void RefreshBuildElementOverlays(

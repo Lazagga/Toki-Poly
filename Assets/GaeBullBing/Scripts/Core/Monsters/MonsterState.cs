@@ -1,8 +1,15 @@
 using System;
 using System.Collections.Generic;
+using GaeBullBing.Core.Towers;
 
 namespace GaeBullBing.Core.Monsters
 {
+    public sealed class CarriedTower
+    {
+        public TowerState Tower;
+        public int OriginTileIndex;
+    }
+
     public sealed class MonsterState
     {
         public int InstanceId { get; set; }
@@ -59,6 +66,62 @@ namespace GaeBullBing.Core.Monsters
         public HashSet<string> StatusImmunities { get; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, float> PassiveEffects { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+        public int PassiveTurn { get; private set; } = 1;
+        private int passiveRound = int.MinValue;
+        private int blockedStatuses;
+        public MonsterPassiveRules PassiveRules { get; set; } = new();
+        public bool BushHealedThisTurn { get; set; }
+        public List<CarriedTower> CarriedTowers { get; } = new();
+        public bool IsSubmerged => GetPassiveValue("submerge_cycle_length_turns") >= 1 &&
+            (PassiveTurn - 1) % Math.Max(1, (int)GetPassiveValue("submerge_cycle_length_turns")) <
+            Math.Max(0, (int)GetPassiveValue("submerge_duration_turns"));
+        public bool IsInvincible => IsSubmerged && HasPassive("submerged_invincible");
+        public bool IsTargetable => !IsDead && !(IsSubmerged && PassiveRules.ExcludeSubmergedFromTargeting);
+        public bool IgnoresTileEffects => IsSubmerged && HasPassive("submerged_tile_effect_immune");
+        public bool IgnoresMovementTileEffects => IgnoresTileEffects || HasPassive("move_tile_effect_immune");
+        // The legacy boss movement/feather pattern belongs to the crow, not every boss.
+        public bool UsesCrowPattern => IsBoss && (DefinitionId == "BOSS_001" || string.IsNullOrEmpty(DefinitionId));
+        public bool SkipsIntermediateTiles => UsesCrowPattern || HasPassive("move_tile_effect_immune");
+        public bool IsPeriodicallyStopped
+        {
+            get
+            {
+                var interval = (int)GetPassiveValue("periodic_stop_interval_turns");
+                return interval > 0 && PassiveTurn >= interval &&
+                    (PassiveTurn - interval) % interval < Math.Max(0, (int)GetPassiveValue("periodic_stop_duration_turns"));
+            }
+        }
+        public bool OnIceOverlay { get; set; }
+        public void BeginPassiveTurn(int round)
+        {
+            if (passiveRound == round) return;
+            if (passiveRound != int.MinValue) PassiveTurn++;
+            passiveRound = round;
+            blockedStatuses = 0;
+            BushHealedThisTurn = false;
+        }
+        public bool TryReceiveStatus(string status, bool transferred = false)
+        {
+            if (IsDead || IsImmuneTo(status)) return false;
+            if ((transferred && !PassiveRules.MoltBlocksTransferredStatuses) ||
+                (status == "burn" && !PassiveRules.MoltBlocksBurnStacks)) return true;
+            if (blockedStatuses >= Math.Max(0, (int)GetPassiveValue("molt_status_block_per_turn"))) return true;
+            blockedStatuses++;
+            return false;
+        }
+        private float PassiveDamageMultiplier
+        {
+            get
+            {
+                var multiplier = 1f;
+                if (OnIceOverlay && !IgnoresTileEffects)
+                    multiplier *= 1f - Math.Max(0f, Math.Min(100f, GetPassiveValue("ice_overlay_damage_reduction_percent"))) / 100f;
+                if (!HasPassive("stop_damage_reduction_only_while_stopped") || IsPeriodicallyStopped)
+                    multiplier *= 1f - Math.Max(0f, Math.Min(100f, GetPassiveValue("stop_damage_reduction_percent"))) / 100f;
+                return multiplier;
+            }
+        }
+
         public bool IsDead => CurrentHealth <= 0;
         public bool IsBoss => Tier == MonsterTier.Boss;
         public bool IsImmuneTo(string statusId) =>
@@ -90,7 +153,7 @@ namespace GaeBullBing.Core.Monsters
         // incoming multipliers a second time. Keep damage-store accounting.
         public float ReceiveResolvedDamage(float damage)
         {
-            var actualDamage = Math.Max(0f, damage);
+            var actualDamage = IsInvincible ? 0f : Math.Max(0f, damage) * PassiveDamageMultiplier;
             CurrentHealth -= actualDamage;
             if (DamageStoreMarked) StoredDamage += actualDamage;
             return actualDamage;

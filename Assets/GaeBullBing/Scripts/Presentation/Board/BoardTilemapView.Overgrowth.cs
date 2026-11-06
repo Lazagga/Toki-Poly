@@ -82,6 +82,8 @@ namespace GaeBullBing.Presentation.Board
 
         private void OnDestroy()
         {
+            if (waterTrailMesh != null) Destroy(waterTrailMesh);
+            if (waterTrailMaterial != null) Destroy(waterTrailMaterial);
             if (overgrowthMesh != null) Destroy(overgrowthMesh);
             if (overgrowthMaterial != null) Destroy(overgrowthMaterial);
         }

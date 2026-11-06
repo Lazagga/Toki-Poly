@@ -53,6 +53,26 @@ namespace GaeBullBing.Presentation.Towers
             renderer.transform.localScale = Vector3.one;
         }
 
+        public void RefreshOccupants(GaeBullBing.Core.Board.BoardState board, IReadOnlyList<TowerDefinition> definitions)
+        {
+            foreach (var tile in board.Tiles)
+            {
+                if (!tile.HasTower)
+                {
+                    if (towerViews.TryGetValue(tile.Index, out var view))
+                    {
+                        if (view != null) Destroy(view.gameObject);
+                        towerViews.Remove(tile.Index);
+                        towerVerticalOffsets.Remove(tile.Index);
+                    }
+                    continue;
+                }
+                foreach (var definition in definitions)
+                    if (definition != null && definition.Id == tile.Tower.DefinitionId)
+                    { SetTower(tile.Index, definition, tile.Tower.UpgradeTier); break; }
+            }
+        }
+
         public void ClearAll()
         {
             foreach (var renderer in towerViews.Values)

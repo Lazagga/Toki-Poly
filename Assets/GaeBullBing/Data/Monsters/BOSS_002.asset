@@ -23,5 +23,13 @@ MonoBehaviour:
   baseDefense: 250
   statusImmunities:
   - freeze
-  passiveEffects: []
+  passiveEffects:
+  - Id: submerge_cycle_length_turns
+    Value: 3
+  - Id: submerge_duration_turns
+    Value: 2
+  - Id: submerged_invincible
+    Value: 1
+  - Id: submerged_tile_effect_immune
+    Value: 1
   killRewardDicePoints: 0

@@ -19,6 +19,8 @@ namespace GaeBullBing.Core.Board
         public string DefinitionId { get; set; } = string.Empty;
         public string BuildTowerDefinitionId { get; set; } = string.Empty;
         public TowerState Tower { get; set; }
+        public int WaterTrailTurnsRemaining { get; set; }
+        public int WaterTrailMoveSpeedBonus { get; set; }
         public int IceTurnsRemaining { get; set; }
         public int FireTurnsRemaining { get; set; }
         public int FireSourceTowerId { get; set; }

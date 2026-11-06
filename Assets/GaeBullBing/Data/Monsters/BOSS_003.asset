@@ -23,5 +23,13 @@ MonoBehaviour:
   baseDefense: 220
   statusImmunities:
   - knockback
-  passiveEffects: []
+  passiveEffects:
+  - Id: move_tile_effect_immune
+    Value: 1
+  - Id: tower_snatch_count
+    Value: 1
+  - Id: tower_snatch_swap_release
+    Value: 1
+  - Id: tower_snatch_disable_attack
+    Value: 1
   killRewardDicePoints: 0

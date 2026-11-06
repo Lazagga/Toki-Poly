@@ -22,5 +22,13 @@ MonoBehaviour:
   moveDistance: 1
   baseDefense: 90
   statusImmunities: []
-  passiveEffects: []
+  passiveEffects:
+  - Id: periodic_stop_interval_turns
+    Value: 3
+  - Id: periodic_stop_duration_turns
+    Value: 1
+  - Id: stop_damage_reduction_percent
+    Value: 50
+  - Id: stop_damage_reduction_only_while_stopped
+    Value: 1
   killRewardDicePoints: 0

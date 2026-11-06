@@ -19,7 +19,7 @@ MonoBehaviour:
   story: 
   appearanceWave: 9
   maxHp: 280
-  moveDistance: 3
+  moveDistance: 4
   baseDefense: 0
   statusImmunities: []
   passiveEffects: []

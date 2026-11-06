@@ -68,6 +68,27 @@ namespace GaeBullBing.Presentation.Game
             TestLabRefreshViews();
         }
 
+        public IEnumerator TestLabSpawnPatternSlot(string definitionId, int tile, bool stationary,
+            System.Action<int> onSpawned)
+        {
+            if (tile < 0 || tile >= State.Board.TileCount) throw new System.ArgumentOutOfRangeException(nameof(tile));
+            var definition = System.Array.Find(monsterDefinitions, d => d.Id == definitionId);
+            if (definition == null) throw new System.InvalidOperationException("몬스터 데이터를 찾을 수 없습니다.");
+            var phase = State.CurrentPhase;
+            var group = Session.SpawnMonsterGroup(definition, difficultyService.GetHealthMultiplier(State.Difficulty));
+            State.CurrentPhase = phase;
+            var animations = new List<UnityEngine.Coroutine>();
+            foreach (var monster in group)
+            {
+                monster.CurrentTileIndex = monster.DistanceTravelled = tile;
+                if (stationary) monster.MoveDistance = 0;
+                onSpawned?.Invoke(monster.InstanceId);
+                animations.Add(StartCoroutine(monsterPresenter.SpawnWithEntrance(monster)));
+            }
+            foreach (var animation in animations) yield return animation;
+            TestLabRefreshViews();
+        }
+
         public IEnumerator TestLabPlaceField(int index, string effect)
         {
             var results = effect == "ignite" ? Session.PlaceFireField(index) : Session.PlaceIceField(index);

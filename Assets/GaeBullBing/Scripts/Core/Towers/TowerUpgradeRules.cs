@@ -16,12 +16,12 @@ namespace GaeBullBing.Core.Towers
         public static int LineStart(int tileIndex) =>
             tileIndex <= 9 ? 0 : tileIndex <= 18 ? 10 : tileIndex <= 27 ? 19 : 28;
 
-        public static void AddBurn(GameState state, MonsterState target, int stacks, int sourceId)
+        public static void AddBurn(GameState state, MonsterState target, int stacks, int sourceId, bool transferred = false)
         {
             var source = FindTower(state, sourceId)?.Tower;
             if (source != null && source.HasEffect("disable_burn"))
             { state.CombatTrace?.Add("burn skipped: disable_burn", sourceId, target.InstanceId); return; }
-            if (target.IsImmuneTo("burn") || stacks <= 0)
+            if (stacks <= 0 || !target.TryReceiveStatus("burn", transferred))
             { state.CombatTrace?.Add("burn skipped: immune or no stacks", sourceId, target.InstanceId); return; }
             var previous = target.BurnStacks;
             target.BurnStacks += stacks;
@@ -33,9 +33,10 @@ namespace GaeBullBing.Core.Towers
         public static float Receive(GameState state, MonsterState target, float rawDamage, int sourceId)
         {
             if (target.IsDead) return 0f;
+            target.OnIceOverlay = state.Board.Tiles[target.CurrentTileIndex].IceTurnsRemaining > 0;
             target.LastDamageTowerId = sourceId;
             target.TileVulnerability = 0f;
-            if (state.Board.Tiles[target.CurrentTileIndex].IceTurnsRemaining > 0)
+            if (!target.IgnoresTileEffects && state.Board.Tiles[target.CurrentTileIndex].IceTurnsRemaining > 0)
                 foreach (var tile in state.Board.Tiles)
                     if (tile.HasTower && !tile.Tower.IsFeatherSealed &&
                         tile.Tower.HasEffect("ice_tile_vulnerability") &&
@@ -75,6 +76,7 @@ namespace GaeBullBing.Core.Towers
                 foreach (var other in new List<MonsterState>(state.Monsters))
                     if (other != target && !other.IsDead && other.CurrentTileIndex == tileIndex)
                     {
+                        other.OnIceOverlay = state.Board.Tiles[tileIndex].IceTurnsRemaining > 0;
                         other.LastDamageTowerId = pair.Key;
                         var actual = other.ReceiveResolvedDamage(damage * pair.Value / target.BurnStacks);
                         state.CombatTrace?.Add($"burn splash resolved damage {actual:0.###} (no second defense/multiplier)", pair.Key, other.InstanceId);

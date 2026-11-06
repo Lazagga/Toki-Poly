@@ -37,6 +37,8 @@ namespace GaeBullBing.Presentation.Game
         [SerializeField] private DiceHudView diceHud;
         [SerializeField] private MonsterPresenter monsterPresenter;
         [SerializeField] private BoardDefinition boardDefinition;
+        [Header("Monster Passive Interpretation Rules")]
+        [SerializeField] private MonsterPassiveRules monsterPassiveRules = new();
         [SerializeField] private BoardCameraController cameraController;
         [SerializeField] private RadialActionMenu radialMenu;
         [SerializeField] private CornerActionMenu cornerActionMenu;
@@ -99,7 +101,7 @@ private bool finishRoutineStarted;
         public IReadOnlyList<TowerDefinition> TestTowerDefinitions => towerDefinitions;
         public IReadOnlyList<TowerUpgradeDefinition> TestTowerUpgradeDefinitions => towerUpgradeDefinitions;
         public IReadOnlyList<RegionDefinition> TestRegionDefinitions => regionDatabase?.Regions ?? System.Array.Empty<RegionDefinition>();
-        public int TotalKills => State?.Difficulty?.KillCount ?? 0;
+        public int TotalKills => State?.CapturedMonsterCount ?? 0;
         public bool HasGameplayStarted { get; private set; }
 
         public bool TestLabConfigureTower(
@@ -224,12 +226,14 @@ private bool finishRoutineStarted;
                 foreach (var monster in State.Monsters)
                     if (savedDistances.TryGetValue(monster.InstanceId, out var saved)) monster.MoveDistance = saved;
             }
+            towerPresenter.RefreshOccupants(State.Board, towerDefinitions);
             monsterPresenter.RefreshAll();
             boardView.RefreshTileEffects(State.Board);
         }
 
         public void TestLabRefreshViews()
         {
+            towerPresenter.RefreshOccupants(State.Board, towerDefinitions);
             monsterPresenter.SetPlayerTile(State.Player.CurrentTileIndex);
             monsterPresenter.RefreshAll();
             boardView.RefreshTileEffects(State.Board);
@@ -680,7 +684,7 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             towerDefinitions = towerData.Towers;
             towerUpgradeDefinitions = runtimeUpgradeDatabase.Upgrades;
             difficultyDatabase = difficultyData;
-            State = new GameState();
+            State = new GameState { MonsterPassiveRules = monsterPassiveRules ?? new MonsterPassiveRules() };
             Session = new GameSession(
                 State,
                 new BoardService(),
@@ -1005,6 +1009,8 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             var featherDescription = tile.HasBossFeather
                 ? "[타일 상태: 깃털]\n이 타일의 타워는 까마귀가 깃털을 회수할 때까지 공격할 수 없습니다.\n\n"
                 : string.Empty;
+            if (tile.WaterTrailTurnsRemaining > 0)
+                featherDescription += $"[타일 상태: 물길]\n남은 지속시간: {tile.WaterTrailTurnsRemaining}턴 / 이동력 +{tile.WaterTrailMoveSpeedBonus}\n\n";
             if (tile.HasOvergrowth)
             {
                 var region = regionDatabase?.Get(State.CurrentRegionId);
@@ -1091,6 +1097,9 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
             if (monster.FrozenMovesRemaining > 0) values.Add("빙결");
             if (monster.StunnedMovesRemaining > 0) values.Add("이동 불가");
             if (monster.KnockbackConsumed) values.Add("넉백 면역");
+            if (monster.IsSubmerged) values.Add(monster.IsInvincible ? "잠수·무적" : "잠수");
+            if (monster.IsPeriodicallyStopped) values.Add("제자리 정지");
+            if (monster.CarriedTowers.Count > 0) values.Add($"운반 중인 타워 {monster.CarriedTowers.Count}개");
             return string.Join(", ", values);
         }
 
@@ -1910,12 +1919,12 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                     : nextMonsterOverrideId;
                 nextMonsterOverrideId = null;
                 var definition = monsterDatabase.Get(monsterId);
-                var spawnedMonster = Session.SpawnMonster(definition,
+                var group = Session.SpawnMonsterGroup(definition,
                     difficultyService.GetHealthMultiplier(State.Difficulty));
-                if (spawnedMonster.IsBoss)
-                    yield return monsterPresenter.SpawnWithEntrance(spawnedMonster);
-                else
-                    yield return monsterPresenter.SpawnWithEntrance(spawnedMonster);
+                var entrances = new List<Coroutine>();
+                foreach (var spawnedMonster in group)
+                    entrances.Add(StartCoroutine(monsterPresenter.SpawnWithEntrance(spawnedMonster)));
+                foreach (var entrance in entrances) yield return entrance;
             }
 
             if (State.IsGameOver)
@@ -1955,7 +1964,9 @@ public bool ApplyConsoleUpgradeChoice(int choiceIndex, out string message)
                 yield break;
             }
 
+            towerPresenter.RefreshOccupants(State.Board, towerDefinitions);
             var attackResults = Session.ResolveTowerCombat(towerDefinitions, towerUpgradeDefinitions);
+            towerPresenter.RefreshOccupants(State.Board, towerDefinitions);
             var illuminatedLineTowerIds = new HashSet<int>();
             var consumedStoneAttackResults = new HashSet<int>();
             for (var attackIndex = 0; attackIndex < attackResults.Count; attackIndex++)
@@ -2085,8 +2096,9 @@ if (attackResult.VisualKind != TowerAttackVisualKind.AreaTile)
 
         private void CommitCapturedKills(ref int killedCount)
         {
-            if (killedCount > 0)
-                difficultyService.AddKills(State.Difficulty, killedCount);
+            if (State.PendingProgressKills > 0)
+                difficultyService.AddKills(State.Difficulty, State.PendingProgressKills);
+            State.PendingProgressKills = 0;
             killedCount = 0;
             diceHud.RefreshDifficulty();
         }

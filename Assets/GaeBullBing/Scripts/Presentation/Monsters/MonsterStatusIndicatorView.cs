@@ -21,6 +21,9 @@ namespace GaeBullBing.Presentation.Monsters
         private Icon knockback;
         private Icon shock;
         private Icon damageStore;
+        private Icon submerged;
+        private Icon stopped;
+        private Icon carried;
         private Transform iconRoot;
         private Sprite squareSprite;
         private bool visible = true;
@@ -37,6 +40,9 @@ namespace GaeBullBing.Presentation.Monsters
             freeze = CreateIcon("Freeze", new Color(.12f, .46f, .95f, 1f), false);
             knockback = CreateIcon("Knockback Immunity", new Color(.18f, .72f, .28f, 1f), false);
             shock = CreateIcon("Shock", new Color(.64f, .20f, .86f, 1f), false);
+            submerged = CreateIcon("Submerged", new Color(.1f, .45f, .65f, 1f), false);
+            stopped = CreateIcon("Shell Guard", new Color(.35f, .6f, .25f, 1f), false);
+            carried = CreateIcon("Carried Towers", new Color(.8f, .5f, .15f, 1f), true);
             damageStore = CreateIcon("Damage Store", new Color(1f, .72f, .16f, 1f), true);
         }
 
@@ -73,6 +79,10 @@ namespace GaeBullBing.Presentation.Monsters
                 damageStore.Count.text = Mathf.FloorToInt(state.StoredDamage).ToString();
                 damageStore.Count.gameObject.SetActive(state.DamageStoreMarked);
             }
+            SetIconActive(submerged, state.IsSubmerged);
+            SetIconActive(stopped, state.IsPeriodicallyStopped);
+            SetIconActive(carried, state.CarriedTowers.Count > 0);
+            if (carried.Count != null) carried.Count.text = state.CarriedTowers.Count.ToString();
             LayoutActiveIcons();
         }
 

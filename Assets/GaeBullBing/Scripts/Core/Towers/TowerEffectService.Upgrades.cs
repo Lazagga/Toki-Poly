@@ -34,16 +34,16 @@ namespace GaeBullBing.Core.Towers
                 if (tower.HasEffect("burn_max_stack_add"))
                     target.MaxBurnStacks = Math.Max(target.MaxBurnStacks,
                         20 + (int)Math.Round(tower.GetEffectValue("burn_max_stack_add")));
-                if (tower.HasEffect("shock_amplify") && !target.IsImmuneTo("shock"))
+                if (tower.HasEffect("shock_amplify") && target.TryReceiveStatus("shock"))
                 {
                     target.Shocked = true;
                     target.ShockDamageBonus = Math.Max(target.ShockDamageBonus,
                         tower.GetEffectValue("shock_amplify") / 100f);
                 }
-                if (tower.HasEffect("move_reduce"))
+                if (tower.HasEffect("move_reduce") && target.TryReceiveStatus("move_reduce"))
                     target.NextMoveReduction = Math.Max(target.NextMoveReduction,
                         (int)Math.Round(tower.GetEffectValue("move_reduce")));
-                if (tower.HasEffect("rolling_stone_stun") && attack.VisualKind == TowerAttackVisualKind.RollingStone)
+                if (tower.HasEffect("rolling_stone_stun") && attack.VisualKind == TowerAttackVisualKind.RollingStone && target.TryReceiveStatus("stun"))
                     target.StunnedMovesRemaining = Math.Max(target.StunnedMovesRemaining, 1);
                 if (tower.HasEffect("teleport_line_start") && !target.LineTeleportConsumed)
                 {
@@ -97,7 +97,7 @@ namespace GaeBullBing.Core.Towers
                 attack.PreAttackHealthRatio <= tower.GetEffectValue("execute_threshold") / 100f + .000001f)
             {
                 if (target.IsBoss) conditionalRate += 1f;
-                else if (!target.IsDead)
+                else if (!target.IsDead && !target.IsInvincible)
                 {
                     var damage = target.CurrentHealth;
                     target.CurrentHealth = 0f;
@@ -207,6 +207,8 @@ namespace GaeBullBing.Core.Towers
             using var trace = CombatTrace.StepFor(state, 4, "knockback", tower.InstanceId, monster);
             if (monster.IsDead || monster.IsImmuneTo("knockback") || monster.KnockbackConsumed)
             { state.CombatTrace?.Add("knockback skipped: dead / innate or temporary immunity", tower.InstanceId, monster.InstanceId); return false; }
+            if (monster.CurrentTileIndex <= TowerUpgradeRules.LineStart(monster.CurrentTileIndex) ||
+                !monster.TryReceiveStatus("knockback")) return false;
             var from = monster.CurrentTileIndex;
             var lineStart = TowerUpgradeRules.LineStart(from);
             for (var step = 0; step < Math.Max(1, distance) && monster.CurrentTileIndex > lineStart && !monster.IsDead; step++)
@@ -239,6 +241,7 @@ namespace GaeBullBing.Core.Towers
                 if (dead == null) break;
                 using var trace = CombatTrace.StepFor(state, 0, "death follow-up effects", dead.LastDamageTowerId, dead);
                 dead.DeathEffectsHandled = true;
+                MonsterService.ReleaseCarriedTowers(state, dead);
                 var tower = TowerUpgradeRules.FindTower(state, dead.LastDamageTowerId)?.Tower;
                 if (tower == null) continue;
                 var tiles = new HashSet<int>();
@@ -270,7 +273,7 @@ namespace GaeBullBing.Core.Towers
             if (tower.HasEffect("quake_line_stun"))
                 foreach (var monster in state.Monsters)
                     if (MonsterService.GetLine(monster.CurrentTileIndex) == MonsterService.GetLine(tileIndex) &&
-                        !monster.IsImmuneTo("stun"))
+                        monster.TryReceiveStatus("stun"))
                         monster.StunnedMovesRemaining = Math.Max(monster.StunnedMovesRemaining, 1);
             return results;
         }
@@ -305,8 +308,8 @@ namespace GaeBullBing.Core.Towers
                 var tower = tile.Tower;
                 if (tower == null || tower.IsFeatherSealed || !tower.HasEffect("shock_aura")) continue;
                 foreach (var monster in state.Monsters)
-                    if (!monster.IsDead && !monster.IsImmuneTo("shock") &&
-                        TowerCombatService.GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= tower.LastResolvedRange)
+                    if (!monster.IsDead &&
+                        TowerCombatService.GetBoardDistance(tile.Index, monster.CurrentTileIndex) <= tower.LastResolvedRange && monster.TryReceiveStatus("shock"))
                         monster.Shocked = true;
             }
             return results;
@@ -331,7 +334,7 @@ namespace GaeBullBing.Core.Towers
             }
             if (tower.HasEffect("lightning_strike") && tower.IsEffectReady("lightning_strike"))
             {
-                var candidates = state.Monsters.FindAll(m => !m.IsDead);
+                var candidates = state.Monsters.FindAll(m => m.IsTargetable);
                 candidates.Sort((a, b) => b.CurrentHealth != a.CurrentHealth
                     ? b.CurrentHealth.CompareTo(a.CurrentHealth) : a.InstanceId.CompareTo(b.InstanceId));
                 if (candidates.Count > 0)
@@ -340,7 +343,7 @@ namespace GaeBullBing.Core.Towers
                     results.Add(TowerUpgradeRules.PrimaryHit(state, tower, monster,
                         tower.LastResolvedDamage * tower.GetEffectValue("lightning_strike") / 100f,
                         TowerAttackVisualKind.Projectile));
-                    if (!monster.IsImmuneTo("shock")) monster.Shocked = true;
+                    if (monster.TryReceiveStatus("shock")) monster.Shocked = true;
                     tower.StartEffectCooldown("lightning_strike", 3);
                 }
             }

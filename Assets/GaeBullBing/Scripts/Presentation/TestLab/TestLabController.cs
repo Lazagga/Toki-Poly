@@ -305,6 +305,12 @@ namespace GaeBullBing.Presentation.TestLab
                         id => { selectedMonsterId = id; monsterEdit = null; });
                 });
             }
+            if (GUILayout.Button("패턴 1슬롯 소환 (그룹 패시브 적용)", GUILayout.Height(28)))
+                RunAction("패턴 슬롯 소환", () => {
+                    RequireTileInput(monsterTileText);
+                    return game.TestLabSpawnPatternSlot(monsters[monsterIndex].Id, monsterTile, stationary,
+                        id => { selectedMonsterId = id; monsterEdit = null; });
+                });
             DrawMonsterSelector();
             DrawMonsterStateEditor();
             DrawIntField("이동 칸 수", ref moveDistance, ref moveDistanceText, 1, 35);

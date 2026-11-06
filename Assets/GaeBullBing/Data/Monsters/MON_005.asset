@@ -22,5 +22,7 @@ MonoBehaviour:
   moveDistance: 3
   baseDefense: 0
   statusImmunities: []
-  passiveEffects: []
+  passiveEffects:
+  - Id: ice_overlay_damage_reduction_percent
+    Value: 20
   killRewardDicePoints: 0

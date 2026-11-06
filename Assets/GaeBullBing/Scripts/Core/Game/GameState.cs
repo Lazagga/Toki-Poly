@@ -11,6 +11,10 @@ namespace GaeBullBing.Core.Game
         public const int DefaultEscapeLimit = 5;
 
         public int Round { get; set; }
+        public MonsterPassiveRules MonsterPassiveRules { get; set; } = new();
+        public int PendingProgressKills { get; set; }
+        public int CapturedMonsterCount { get; set; }
+        public List<MonsterState> PendingTowerReturns { get; } = new();
         public GaeBullBing.Core.Towers.CombatTrace CombatTrace { get; set; }
         public int StageNumber { get; set; } = 1;
         public string CurrentRegionId { get; set; } = "REGION_01";

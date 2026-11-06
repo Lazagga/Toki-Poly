@@ -21,7 +21,10 @@ MonoBehaviour:
   maxHp: 3300
   moveDistance: 3
   baseDefense: 260
-  statusImmunities:
-  - slow
-  passiveEffects: []
+  statusImmunities: []
+  passiveEffects:
+  - Id: bush_pass_heal_percent
+    Value: 20
+  - Id: bush_pass_heal_use_max_hp
+    Value: 1
   killRewardDicePoints: 0
